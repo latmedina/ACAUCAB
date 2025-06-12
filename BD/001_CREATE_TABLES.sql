@@ -8,7 +8,7 @@ CREATE TABLE LUGAR
     lug_nombre VARCHAR(90) NOT NULL,
     lug_tipo   VARCHAR(20),
     fk_lugar  INT,
-    -- Relación recursiva con la entidad LUGAR
+    -- Relación recursiva con lad entidad LUGAR
     CONSTRAINT fk_lugar
         FOREIGN KEY (fk_lugar)
             REFERENCES LUGAR (lug_id) ON DELETE CASCADE
@@ -930,6 +930,73 @@ CREATE TABLE VENTA_ONLINE
         CHECK (ven_onl_total > 0)
 );
 
+CREATE TABLE ALMACEN
+(
+    alm_id              SERIAL PRIMARY KEY,
+    alm_nombre          VARCHAR(100) NOT NULL,
+    alm_descripcion     TEXT NOT NULL,
+    fk_tienda           INT NOT NULL,
+
+    CONSTRAINT fk_tienda
+        FOREIGN KEY (fk_tienda) REFERENCES TIENDA (tie_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT ck_alm_nombre
+        CHECK (alm_nombre ~ '^[A-Z][a-zA-Z\s]+$'),
+
+    CONSTRAINT ck_alm_descripcion
+        CHECK (alm_descripcion ~ '^[A-Za-z0-9\s,.-]+$')
+);
+
+CREATE TABLE PRE_ALM
+(
+    pre_alm_precio DECIMAL(10, 2) NOT NULL,
+    pre_alm_cantidad INT NOT NULL,
+    fk_almacen INT NOT NULL,
+    fk_presentacion INT NOT NULL,
+    fk_oferta INT,
+    PRIMARY KEY (fk_almacen, fk_presentacion)
+
+    CONSTRAINT fk_almacen
+        FOREIGN KEY (fk_almacen) REFERENCES ALMACEN (alm_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_presentacion
+        FOREIGN KEY (fk_presentacion) REFERENCES PRESENTACION (pre_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_oferta
+        FOREIGN KEY (fk_oferta) REFERENCES OFERTA (ofe_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT ck_pre_alm_precio
+        CHECK (pre_alm_precio > 0), -- Restricción para asegurar que el precio sea mayor a 0.
+);  
+
+
+
+CREATE TABLE DETALLE_VENTA_ONLINE
+(
+    det_ven_onl_id SERIAL PRIMARY KEY,
+    det_ven_onl_cantidad INT NOT NULL,
+    det_ven_onl_precio DECIMAL(10, 2) NOT NULL,
+    fk_venta_online INT NOT NULL,
+    fk_presentacion INT NOT NULL,
+
+    CONSTRAINT fk_venta_online
+        FOREIGN KEY (fk_venta_online) REFERENCES VENTA_ONLINE (ven_onl_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_presentacion
+        FOREIGN KEY (fk_presentacion) REFERENCES PRESENTACION (pre_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT ck_det_ven_onl_cantidad
+        CHECK (det_ven_onl_cantidad > 0), -- Restricción para asegurar que la cantidad sea mayor a 0.
+);
+(
+
+);
 --------------------------------------------------------------------------------
 -- . EVENTO
 --------------------------------------------------------------------------------
@@ -1100,9 +1167,9 @@ CREATE TABLE CUENTA_PUNTO
 -- Tabla: HISTORICO_PRECIO_PUNTO
 CREATE TABLE HISTORICO_PRECIO_PUNTO
 (
-    his_pre_pun_id     SERIAL PRIMARY KEY,
-    his_pre_pun_fecha  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    his_pre_pun_valor  INT NOT NULL,
+    his_pre_pun_id          SERIAL PRIMARY KEY,
+    his_pre_pun_fecha_hora  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    his_pre_pun_valor       INT NOT NULL,
 
     CONSTRAINT ck_his_pre_pun_fecha
         CHECK (his_pre_pun_fecha <= CURRENT_TIMESTAMP AND his_pre_pun_fecha >= '1900-01-01 00:00:00')
@@ -1120,15 +1187,24 @@ CREATE TABLE METODO_PAGO
     tar_cre_numero      INT,
     tar_cre_vencimiento DATE,
     met_pag_tipo_pago   VARCHAR(50) NOT NULL,
-    FK_his_pre_pun      INT,
+    fk_his_pre_pun      INT,
 
     CONSTRAINT fk_his_pre_pun
         FOREIGN KEY (fk_his_pre_pun) REFERENCES HISTORICO_PRECIO_PUNTO (his_pre_pun_id)
             ON DELETE CASCADE,
 
     CONSTRAINT ck_met_pag_tipo_pago
-        CHECK (UPPER(met_pag_tipo_pago) IN ('EFECTIVO', 'CHEQUE', 'TARJETA_DEBITO', 'TARJETA_CREDITO', 'PUNTO') OR
-               met_pag_tipo_pago ~ '^[A-Z]+$')
+        CHECK (UPPER(met_pag_tipo_pago) IN ('EFECTIVO', 'CHEQUE', 'TARJETA_DEBITO', 'TARJETA_CREDITO', 'PUNTO'))
+);
+
+CREATE TABLE MONEDA
+(
+    mon_id              SERIAL PRIMARY KEY,
+    mon_tipo            VARCHAR(50) NOT NULL UNIQUE,
+
+    CONSTRAINT ck_mon_tipo
+        CHECK (UPPER(mon_tipo) IN ('BOLIVAR', 'DOLAR', 'EURO', 'YEN', 'LIBRA') OR
+               mon_tipo ~ '^[A-Z]+$')
 );
 
 -- Tabla: PAGO
@@ -1142,6 +1218,7 @@ CREATE TABLE PAGO
     fk_venta_online     INT NULL,
     fk_afiliacion       INT NULL,
     fk_venta_evento     INT NULL,
+    fk_moneda           INT NOT NULL,
 
     -- --- Restricciones de Clave Foránea ---
     CONSTRAINT fk_pago_a_venta_fisica
@@ -1156,6 +1233,10 @@ CREATE TABLE PAGO
     CONSTRAINT fk_pago_a_venta_evento
         FOREIGN KEY (fk_venta_evento) REFERENCES VENTA_EVENTO (ven_eve_id),
 
+    CONSTRAINT fk_moneda
+        FOREIGN KEY (fk_moneda) REFERENCES MONEDA (mon_id)
+            ON DELETE CASCADE,
+
     CONSTRAINT fk_metodo_pago
         FOREIGN KEY (fk_metodo_pago) REFERENCES METODO_PAGO (met_pag_id)
             ON DELETE CASCADE,
@@ -1168,6 +1249,24 @@ CREATE TABLE PAGO
             (fk_venta_evento IS NOT NULL)::int
             = 1
         )
+);
+
+CREATE TABLE HISTORICO_MONEDA
+(
+    his_mon_id          SERIAL PRIMARY KEY,
+    his_mon_fecha_hora  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    his_valor_cambio    DECIMAL(12, 2) NOT NULL,
+    fk_moneda           INT NOT NULL,
+
+    CONSTRAINT fk_moneda
+        FOREIGN KEY (fk_moneda) REFERENCES MONEDA (mon_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT ck_his_mon_fecha
+        CHECK (his_mon_fecha <= CURRENT_TIMESTAMP AND his_mon_fecha >= '1900-01-01 00:00:00'),
+
+    CONSTRAINT ck_his_valor_cambio
+        CHECK (his_valor_cambio > 0)
 );
 
 
@@ -1236,6 +1335,7 @@ CREATE TABLE AFI_EST
     CONSTRAINT ck_afi_est_fecha_fin
         CHECK (afi_est_fecha_fin IS NULL OR afi_est_fecha_fin >= afi_est_fecha_inicio)
 );
+
 --DROP A TODA LAS TABLAS 
 DROP TABLE IF EXISTS VEN_ONL_EST CASCADE;
 DROP TABLE IF EXISTS EVE_PRO CASCADE;
