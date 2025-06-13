@@ -1,0 +1,38 @@
+{% extends "main.html" %}
+{% block content %}
+<div class="text-center">
+    <h1>Bienvenido {{ usuario.username }}</h1>
+
+    <h3 class="mt-4">Grupos</h3>
+    <ul class="list-group mb-4">
+        {% for g in grupos %}
+            <li class="list-group-item">{{ g.name }}</li>
+        {% empty %}
+            <li class="list-group-item">Sin grupos asignados</li>
+        {% endfor %}
+    </ul>
+
+    <h3>Permisos</h3>
+    <ul class="list-group">
+        {% for p in permisos %}
+            <li class="list-group-item">{{ p.name }}</li>
+        {% empty %}
+            <li class="list-group-item">Sin permisos asignados</li>
+        {% endfor %}
+    </ul>
+
+    <div class="text-center">
+    {% if usuario.is_superuser %}
+        <div class="alert alert-success mt-4">
+            <strong>Este usuario es un superusuario verificado.</strong>
+        </div>
+
+        <a href="/admin/" class="btn btn-dark mt-3">Entrar al panel de administración</a>
+    {% else %}
+        <div class="alert alert-secondary mt-4">
+            Este usuario NO es un superusuario.
+        </div>
+    {% endif %}
+    </div>
+</div>
+{% endblock %}
