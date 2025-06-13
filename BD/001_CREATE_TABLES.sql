@@ -974,29 +974,28 @@ CREATE TABLE PRE_ALM
 );  
 
 
-
 CREATE TABLE DETALLE_VENTA_ONLINE
 (
-    det_ven_onl_id SERIAL PRIMARY KEY,
     det_ven_onl_cantidad INT NOT NULL,
     det_ven_onl_precio DECIMAL(10, 2) NOT NULL,
     fk_venta_online INT NOT NULL,
     fk_presentacion INT NOT NULL,
+    fk_almacen INT NOT NULL,
+
+    PRIMARY KEY (fk_venta_online, fk_presentacion, fk_almacen),
 
     CONSTRAINT fk_venta_online
         FOREIGN KEY (fk_venta_online) REFERENCES VENTA_ONLINE (ven_onl_id)
             ON DELETE CASCADE,
 
-    CONSTRAINT fk_presentacion
-        FOREIGN KEY (fk_presentacion) REFERENCES PRESENTACION (pre_id)
+    CONSTRAINT fk_pre_alm
+        FOREIGN KEY (fk_presentacion, fk_almacen) REFERENCES PRE_ALM (fk_presentacion, fk_almacen)
             ON DELETE CASCADE,
 
     CONSTRAINT ck_det_ven_onl_cantidad
-        CHECK (det_ven_onl_cantidad > 0), -- Restricción para asegurar que la cantidad sea mayor a 0.
+        CHECK (det_ven_onl_cantidad > 0),
 );
-(
 
-);
 --------------------------------------------------------------------------------
 -- . EVENTO
 --------------------------------------------------------------------------------
