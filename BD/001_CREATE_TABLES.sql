@@ -4,10 +4,10 @@
 
 CREATE TABLE LUGAR
 (
-    lug_id     SERIAL PRIMARY KEY,
-    lug_nombre VARCHAR(90) NOT NULL,
-    lug_tipo   VARCHAR(20),
-    fk_lugar  INT,
+    lug_id     SERIAL PRIMARY KEY COMMENT 'Identificador único del lugar.',
+    lug_nombre VARCHAR(90) NOT NULL COMMENT 'Nombre del lugar.',
+    lug_tipo   VARCHAR(20) COMMENT 'Tipo de lugar.',
+    fk_lugar  INT COMMENT 'Identificador del lugar padre.',
     -- Relación recursiva con lad entidad LUGAR
     CONSTRAINT fk_lugar
         FOREIGN KEY (fk_lugar)
@@ -25,11 +25,11 @@ CREATE INDEX idx_lugar_padre
 --  Tienda
 CREATE TABLE TIENDA
 (
-    tie_id              SERIAL PRIMARY KEY,
-    tie_nombre          VARCHAR(150) NOT NULL,
-    tie_direccion       VARCHAR(255) NOT NULL,
-    tie_tipo            VARCHAR(20)  NOT NULL,
-    fk_lugar            INT          NOT NULL,
+    tie_id              SERIAL PRIMARY KEY COMMENT 'Identificador único de la tienda.',
+    tie_nombre          VARCHAR(150) NOT NULL COMMENT 'Nombre de la tienda.',
+    tie_direccion       VARCHAR(255) NOT NULL COMMENT 'Dirección de la tienda.',
+    tie_tipo            VARCHAR(20)  NOT NULL COMMENT 'Tipo de tienda.',
+    fk_lugar            INT          NOT NULL COMMENT 'Identificador del lugar.',
 
     CONSTRAINT fk_lugar
         FOREIGN KEY (fk_lugar) REFERENCES LUGAR (lug_id)
@@ -48,11 +48,11 @@ CREATE TABLE TIENDA
 
 CREATE TABLE LUGAR_TIENDA
 (
-    lug_tie_id SERIAL PRIMARY KEY,
-    lug_tie_nombre VARCHAR(255) NOT NULL,
-    lug_tie_tipo VARCHAR(255) NOT NULL,
-    fk_tienda INT NOT NULL,
-    fk_lugar_tienda INT,
+    lug_tie_id SERIAL PRIMARY KEY COMMENT 'Identificador único de la relación entre lugar y tienda.',
+    lug_tie_nombre VARCHAR(255) NOT NULL COMMENT 'Nombre del lugar de la tienda.',
+    lug_tie_tipo VARCHAR(255) NOT NULL COMMENT 'Tipo de lugar de la tienda.',
+    fk_tienda INT NOT NULL COMMENT 'Identificador de la tienda.',
+    fk_lugar_tienda INT COMMENT 'Identificador del lugar de la tienda.',
 
     CONSTRAINT fk_tienda
         FOREIGN KEY (fk_tienda) REFERENCES TIENDA (tie_id)
@@ -79,29 +79,7 @@ CREATE TABLE ANAQUEL
 
 );
 
-CREATE TABLE INVENTARIO
-(
-    inv_id SERIAL PRIMARY KEY,
-    inv_cantidad INT NOT NULL,
-    fk_anaquel INT NOT NULL,
-    fk_presentacion INT NOT NULL,
-    fk_oferta INT,
 
-    PRIMARY KEY (inv_id, fk_anaquel, fk_presentacion),
-
-    CONSTRAINT fk_anaquel
-        FOREIGN KEY (fk_anaquel) REFERENCES ANAQUEL (ana_id)
-            ON DELETE CASCADE,
-
-    CONSTRAINT fk_presentacion
-        FOREIGN KEY (fk_presentacion) REFERENCES PRESENTACION (pre_id)
-            ON DELETE CASCADE,
-
-    CONSTRAINT fk_oferta
-        FOREIGN KEY (fk_oferta) REFERENCES OFERTA (ofe_id)
-            ON DELETE CASCADE,
-
-);
 --------------------------------------------------------------------------------
 -- . CERVEZA
 --------------------------------------------------------------------------------
@@ -109,8 +87,8 @@ CREATE TABLE INVENTARIO
 -- Tabla: TIPO_CERVEZA
 CREATE TABLE TIPO_CERVEZA 
 (
-    tip_cer_id      SERIAL       PRIMARY KEY, -- Identificador único del tipo de cerveza.
-    tip_cer_familia VARCHAR(255) NOT NULL, -- Familia o clasificación del tipo de cerveza.
+    tip_cer_id      SERIAL       PRIMARY KEY COMMENT 'Identificador único del tipo de cerveza.',
+    tip_cer_familia VARCHAR(255) NOT NULL COMMENT 'Familia o clasificación del tipo de cerveza.',
 
     CONSTRAINT ck_tip_cer_familia
         CHECK (tip_cer_familia IN ('Lager', 'Ale', 'Wheat Beer')) -- Restricción para asegurar que la familia de cerveza sea una de las opciones válidas.
@@ -118,9 +96,9 @@ CREATE TABLE TIPO_CERVEZA
 
 CREATE TABLE ESTILO_CERVEZA 
 (
-    est_cer_id          SERIAL       PRIMARY KEY, -- Identificador único del estilo de cerveza.
-    est_cer_nombre      VARCHAR(255) NOT NULL, -- Nombre del estilo de cerveza.
-    est_cer_descripcion VARCHAR(255) NOT NULL, -- Descripción del estilo de cerveza.
+    est_cer_id          SERIAL       PRIMARY KEY COMMENT 'Identificador único del estilo de cerveza.',
+    est_cer_nombre      VARCHAR(255) NOT NULL COMMENT 'Nombre del estilo de cerveza.',
+    est_cer_descripcion VARCHAR(255) NOT NULL COMMENT 'Descripción del estilo de cerveza.',
 
     CONSTRAINT ck_est_cer_nombre
         CHECK (est_cer_nombre ~ '^[A-Z][a-zA-Z\s]+$'),
@@ -131,11 +109,11 @@ CREATE TABLE ESTILO_CERVEZA
 
 CREATE TABLE TIPO_ESTILO_CERVEZA
 (
-    tip_est_cer_id          SERIAL       PRIMARY KEY, -- Identificador único del tipo de estilo de cerveza.
-    tip_est_cer_nombre      VARCHAR(255) NOT NULL, -- Nombre del tipo de estilo de cerveza.
-    tip_est_cer_descripcion VARCHAR(255) NOT NULL, -- Descripción del tipo de estilo de cerveza.
-    fk_estilo_cerveza       INT          NOT NULL, -- Clave foránea que referencia el estilo de cerveza.
-    fk_tipo_cerveza         INT          NOT NULL, -- Clave foránea que referencia el tipo de cerveza.
+    tip_est_cer_id          SERIAL       PRIMARY KEY COMMENT 'Identificador único del tipo de estilo de cerveza.',
+    tip_est_cer_nombre      VARCHAR(255) NOT NULL COMMENT 'Nombre del tipo de estilo de cerveza.',
+    tip_est_cer_descripcion VARCHAR(255) NOT NULL COMMENT 'Descripción del tipo de estilo de cerveza.',
+    fk_estilo_cerveza       INT          NOT NULL COMMENT 'Clave foránea que referencia el estilo de cerveza.',
+    fk_tipo_cerveza         INT          NOT NULL COMMENT 'Clave foránea que referencia el tipo de cerveza.',
 
     CONSTRAINT fk_estilo_cerveza
         FOREIGN KEY (fk_estilo_cerveza) REFERENCES ESTILO_CERVEZA (est_cer_id)
@@ -155,9 +133,9 @@ CREATE TABLE TIPO_ESTILO_CERVEZA
 -- Tabla: RECETA
 CREATE TABLE RECETA
 (
-    rec_id          SERIAL PRIMARY KEY, -- Identificador único de la receta.
-    rec_nombre      VARCHAR(255) NOT NULL, -- Nombre de la receta.
-    rec_descripcion VARCHAR(255) NOT NULL, -- Descripción de la receta.
+    rec_id          SERIAL PRIMARY KEY COMMENT 'Identificador único de la receta.',
+    rec_nombre      VARCHAR(255) NOT NULL COMMENT 'Nombre de la receta.',
+    rec_descripcion VARCHAR(255) NOT NULL COMMENT 'Descripción de la receta.',
 
     CONSTRAINT ck_rec_nombre
         CHECK (rec_nombre ~ '^[A-Z][a-zA-Z\s]+$'), -- Restricción para asegurar que el nombre de la receta tenga un formato válido.
@@ -169,11 +147,11 @@ CREATE TABLE RECETA
 -- Tabla: CERVEZA
 CREATE TABLE CERVEZA 
 (
-    cer_id                 SERIAL        PRIMARY KEY, -- Identificador único de la cerveza.
-    cer_nombre             VARCHAR(255)  NOT NULL, -- Nombre de la cerveza.
-    cer_descripcion        VARCHAR(255)  NOT NULL, -- Descripción de la cerveza.
-    cer_grado_alcohol      DECIMAL(5, 2) NOT NULL, -- Grado de alcohol de la cerveza.
-    fk_tipo_estilo_cerveza INT           NOT NULL, -- Clave foránea que referencia el tipo de cerveza.
+    cer_id                 SERIAL        PRIMARY KEY COMMENT 'Identificador único de la cerveza.',
+    cer_nombre             VARCHAR(255)  NOT NULL COMMENT 'Nombre de la cerveza.',
+    cer_descripcion        VARCHAR(255)  NOT NULL COMMENT 'Descripción de la cerveza.',
+    cer_grado_alcohol      DECIMAL(5, 2) NOT NULL COMMENT 'Grado de alcohol de la cerveza.',
+    fk_tipo_estilo_cerveza INT           NOT NULL COMMENT 'Clave foránea que referencia el tipo de cerveza.',
     
     CONSTRAINT fk_tipo_estilo_cerveza
         FOREIGN KEY (fk_tipo_estilo_cerveza) REFERENCES TIPO_ESTILO_CERVEZA (tip_est_cer_id)
@@ -192,13 +170,13 @@ CREATE TABLE CERVEZA
 -- Tabla: PRESENTACION
 CREATE TABLE PRESENTACION 
 (
-    prese_id         SERIAL         PRIMARY KEY, -- Identificador único de la presentación.
-    prese_volumen    DECIMAL(10, 2) NOT NULL, -- Volumen de la presentación.
-    prese_recipiente VARCHAR(255)   NOT NULL, -- Tipo de recipiente de la presentación.
-    fk_cerveza       INT,                     -- Clave foránea que referencia la cerveza asociada a la presentación.
-    prese_imagen     VARCHAR(255)   NOT NULL, -- Imagen de la presentación del producto.
-    prese_alto       DECIMAL(10, 2), -- Alto del recipiente de la presentación.
-    prese_ancho      DECIMAL(10, 2), -- Ancho del recipiente de la presentación.
+    prese_id         SERIAL         PRIMARY KEY COMMENT 'Identificador único de la presentación.',
+    prese_volumen    DECIMAL(10, 2) NOT NULL COMMENT 'Volumen de la presentación.',
+    prese_recipiente VARCHAR(255)   NOT NULL COMMENT 'Tipo de recipiente de la presentación.',
+    fk_cerveza       INT COMMENT 'Clave foránea que referencia la cerveza asociada a la presentación.',
+    prese_imagen     VARCHAR(255)   NOT NULL COMMENT 'Imagen de la presentación del producto.',
+    prese_alto       DECIMAL(10, 2) COMMENT 'Alto del recipiente de la presentación.',
+    prese_ancho      DECIMAL(10, 2) COMMENT 'Ancho del recipiente de la presentación.',
 
     CONSTRAINT fk_cerveza
         FOREIGN KEY (fk_cerveza) REFERENCES CERVEZA (cer_id)
@@ -223,9 +201,9 @@ CREATE TABLE PRESENTACION
 -- Tabla: INGREDIENTE
 CREATE TABLE INGREDIENTE 
 (
-    ing_id          SERIAL PRIMARY KEY, -- Identificador único del ingrediente.
-    ing_nombre      VARCHAR(255) NOT NULL, -- Nombre del ingrediente.
-    ing_descripcion VARCHAR(255) NOT NULL, -- Descripción del ingrediente.
+    ing_id          SERIAL PRIMARY KEY COMMENT 'Identificador único del ingrediente.',
+    ing_nombre      VARCHAR(255) NOT NULL COMMENT 'Nombre del ingrediente.',
+    ing_descripcion VARCHAR(255) NOT NULL COMMENT 'Descripción del ingrediente.',
 
     CONSTRAINT ck_ing_nombre
         CHECK (ing_nombre ~ '^[A-Z][a-zA-Z\s]+$'), -- Restricción para asegurar que el nombre del ingrediente tenga un formato válido.
@@ -236,9 +214,9 @@ CREATE TABLE INGREDIENTE
 -- Tabla: REC_ING
 CREATE TABLE REC_ING 
 (
-    rec_ing_id       SERIAL NOT NULL, -- Identificador único.
-    fk_receta        INT NOT NULL, -- Clave foránea que referencia a la receta.
-    fk_ingrediente   INT NOT NULL, -- Clave foránea que referencia al ingrediente.
+    rec_ing_id       SERIAL NOT NULL COMMENT 'Identificador único.',
+    fk_receta        INT NOT NULL COMMENT 'Clave foránea que referencia a la receta.',
+    fk_ingrediente   INT NOT NULL COMMENT 'Clave foránea que referencia al ingrediente.',
     rec_ing_cantidad DECIMAL(10, 3) NOT NULL,
 
     PRIMARY KEY (rec_ing_id, fk_receta, fk_ingrediente),
@@ -258,8 +236,8 @@ CREATE TABLE REC_ING
 -- Tabla: INSTRUCCION
 CREATE TABLE INSTRUCCION 
 (
-    ins_id          SERIAL PRIMARY KEY, -- Identificador único de la instrucción.
-    ins_descripcion VARCHAR(1000) NOT NULL, -- Descripción detallada de la instrucción.
+    ins_id          SERIAL PRIMARY KEY COMMENT 'Identificador único de la instrucción.',
+    ins_descripcion VARCHAR(1000) NOT NULL COMMENT 'Descripción detallada de la instrucción.',
 
     CONSTRAINT ck_ins_descripcion
         CHECK (ins_descripcion ~ '^[A-Za-z0-9\s,.-]+$') -- Restricción para asegurar que la descripción tenga un formato válido.
@@ -284,9 +262,9 @@ CREATE TABLE REC_INS
 
 CREATE TABLE CARACTERISTICA
 (
-    car_id          SERIAL PRIMARY KEY, -- Identificador único de la característica.
-    car_nombre      VARCHAR(255) NOT NULL, -- Nombre de la característica.
-    car_descripcion VARCHAR(255) NOT NULL, -- Descripción de la característica.
+    car_id          SERIAL PRIMARY KEY COMMENT 'Identificador único de la característica.',
+    car_nombre      VARCHAR(255) NOT NULL COMMENT 'Nombre de la característica.',
+    car_descripcion VARCHAR(255) NOT NULL COMMENT 'Descripción de la característica.',
 
     CONSTRAINT ck_car_nombre
         CHECK (car_nombre ~ '^[A-Z][a-zA-Z\s]+$'), -- Restricción para asegurar que el nombre tenga un formato válido.
@@ -297,9 +275,9 @@ CREATE TABLE CARACTERISTICA
 
 CREATE TABLE CERV_CAR
 (
-    fk_cerveza        INT NOT NULL, -- Clave foránea que referencia a la cerveza.
-    fk_caracteristica INT NOT NULL, -- Clave foránea que referencia a la característica.
-    carac_cer_valor   VARCHAR(255) NOT NULL, -- Valor de la característica asociada a la cerveza.
+    fk_cerveza        INT NOT NULL COMMENT 'Clave foránea que referencia a la cerveza.',
+    fk_caracteristica INT NOT NULL COMMENT 'Clave foránea que referencia a la característica.',
+    carac_cer_valor   VARCHAR(255) NOT NULL COMMENT 'Valor de la característica asociada a la cerveza.',
     PRIMARY KEY (fk_cerveza, fk_caracteristica), -- Clave primaria compuesta por cer_car_id, fk_cerveza y fk_caracteristica.
 
     CONSTRAINT fk_cerveza
@@ -313,9 +291,9 @@ CREATE TABLE CERV_CAR
 
 CREATE TABLE CAR_TIP_CER
 (
-    fk_caracteristica INT NOT NULL, -- Clave foránea que referencia a la característica.
-    fk_tipo_cerveza  INT NOT NULL, -- Clave foránea que referencia al tipo de cerveza.
-    carac_tip_cer_valor   VARCHAR(255) NOT NULL,
+    fk_caracteristica INT NOT NULL COMMENT 'Clave foránea que referencia a la característica.',
+    fk_tipo_cerveza  INT NOT NULL COMMENT 'Clave foránea que referencia al tipo de cerveza.',
+    carac_tip_cer_valor   VARCHAR(255) NOT NULL COMMENT 'Valor de la característica asociada al tipo de cerveza.',
     PRIMARY KEY (fk_caracteristica, fk_tipo_cerveza), -- Clave primaria compuesta por fk_caracteristica y fk_tipo_cerveza.
 
     CONSTRAINT fk_caracteristica
@@ -491,16 +469,16 @@ CREATE TABLE AFILIACION
 --  Empleado
 CREATE TABLE EMPLEADO
 (
-    emp_id                 SERIAL        PRIMARY KEY,
-    emp_ci                 VARCHAR(12)   NOT NULL UNIQUE,
-    emp_pnombre            VARCHAR(30)   NOT NULL,
-    emp_snombre            VARCHAR(30),
-    emp_papellido          VARCHAR(30)   NOT NULL,
-    emp_sapellido          VARCHAR(30),
-    emp_direccion          VARCHAR(70)   NOT NULL,
-    emp_fecha_nacimiento   DATE          NOT NULL,
-    emp_sexo               CHAR(1)       NOT NULL,
-    fk_lugar               INT           NOT NULL,
+    emp_id                 SERIAL        PRIMARY KEY COMMENT 'Identificador único del empleado.',
+    emp_ci                 VARCHAR(12)   NOT NULL UNIQUE COMMENT 'Cédula de identidad del empleado.',
+    emp_pnombre            VARCHAR(30)   NOT NULL COMMENT 'Primer nombre del empleado.',
+    emp_snombre            VARCHAR(30)   COMMENT 'Segundo nombre del empleado.',
+    emp_papellido          VARCHAR(30)   NOT NULL COMMENT 'Primer apellido del empleado.',
+    emp_sapellido          VARCHAR(30)   COMMENT 'Segundo apellido del empleado.',
+    emp_direccion          VARCHAR(70)   NOT NULL COMMENT 'Dirección del empleado.',
+    emp_fecha_nacimiento   DATE          NOT NULL COMMENT 'Fecha de nacimiento del empleado.',
+    emp_sexo               CHAR(1)       NOT NULL COMMENT 'Sexo del empleado.',
+    fk_lugar               INT           NOT NULL COMMENT 'Identificador del lugar.',
     CONSTRAINT fk_lugar
         FOREIGN KEY (fk_lugar) REFERENCES LUGAR (lug_id),
 
@@ -531,10 +509,10 @@ CREATE TABLE EMPLEADO
 
 CREATE TABLE CARGO
 (
-    car_id              SERIAL PRIMARY KEY,
-    car_nombre          VARCHAR(100) NOT NULL UNIQUE,
-    car_descripcion     TEXT NOT NULL,
-    car_salario         INT NOT NULL,
+    car_id              SERIAL PRIMARY KEY COMMENT 'Identificador único del cargo.',
+    car_nombre          VARCHAR(100) NOT NULL UNIQUE COMMENT 'Nombre del cargo.',
+    car_descripcion     TEXT NOT NULL COMMENT 'Descripción del cargo.',
+    car_salario         INT NOT NULL COMMENT 'Salario del cargo.',
 
     CONSTRAINT ck_car_nombre
         CHECK (car_nombre ~ '^[A-Z][a-zA-Z0-9\s]+$'),
@@ -545,9 +523,9 @@ CREATE TABLE CARGO
 
 CREATE TABLE DEPARTAMENTO
 (
-    dep_id              SERIAL PRIMARY KEY,
-    dep_nombre          VARCHAR(100) NOT NULL UNIQUE,
-    dep_descripcion     TEXT NOT NULL,
+    dep_id              SERIAL PRIMARY KEY COMMENT 'Identificador único del departamento.',
+    dep_nombre          VARCHAR(100) NOT NULL UNIQUE COMMENT 'Nombre del departamento.',
+    dep_descripcion     TEXT NOT NULL COMMENT 'Descripción del departamento.',
 
     CONSTRAINT ck_dep_nombre
         CHECK (dep_nombre ~ '^[A-Z][a-zA-Z0-9\s]+$')
@@ -555,10 +533,10 @@ CREATE TABLE DEPARTAMENTO
 
 CREATE TABLE DEP_TIE 
 (
-    fk_departamento INT NOT NULL,
-    fk_tienda       INT NOT NULL,
-    dep_tie_fecha_inicio DATE NOT NULL DEFAULT CURRENT_DATE,
-    dep_tie_fecha_fin    DATE,
+    fk_departamento INT NOT NULL COMMENT 'Identificador del departamento.',
+    fk_tienda       INT NOT NULL COMMENT 'Identificador de la tienda.',
+    dep_tie_fecha_inicio DATE NOT NULL DEFAULT CURRENT_DATE COMMENT 'Fecha de inicio de la relación entre departamento y tienda.',
+    dep_tie_fecha_fin    DATE COMMENT 'Fecha de fin de la relación entre departamento y tienda.',
 
     CONSTRAINT pk_dep_tie
         PRIMARY KEY (fk_departamento, fk_tienda),
@@ -580,12 +558,12 @@ CREATE TABLE DEP_TIE
 
 CREATE TABLE EMP_CAR
 (
-    fk_empleado          INT NOT NULL,
-    fk_cargo             INT NOT NULL,
-    fk_departamento      INT NOT NULL,
-    fk_tienda            INT NOT NULL,
-    emp_car_fecha_inicio DATE NOT NULL DEFAULT CURRENT_DATE,
-    emp_car_fecha_fin    DATE,
+    fk_empleado          INT NOT NULL COMMENT 'Identificador del empleado.',
+    fk_cargo             INT NOT NULL COMMENT 'Identificador del cargo.',
+    fk_departamento      INT NOT NULL COMMENT 'Identificador del departamento.',
+    fk_tienda            INT NOT NULL COMMENT 'Identificador de la tienda.',
+    emp_car_fecha_inicio DATE NOT NULL DEFAULT CURRENT_DATE COMMENT 'Fecha de inicio de la relación entre empleado y cargo.',
+    emp_car_fecha_fin    DATE COMMENT 'Fecha de fin de la relación entre empleado y cargo.',
 
     CONSTRAINT pk_empleado_cargo
         PRIMARY KEY (fk_empleado, fk_cargo, fk_departamento, fk_tienda),
@@ -616,10 +594,10 @@ CREATE TABLE EMP_CAR
 
 CREATE TABLE ASISTENCIA
 (
-    asi_id               SERIAL PRIMARY KEY,
-    asi_fecha_hora_inico TIMESTAMP NOT NULL,
-    asi_fecha_hora_fin   TIMESTAMP,
-    fk_empleado          INT NOT NULL,
+    asi_id               SERIAL PRIMARY KEY COMMENT 'Identificador único de la asistencia.',
+    asi_fecha_hora_inico TIMESTAMP NOT NULL COMMENT 'Fecha y hora de inicio de la asistencia.',
+    asi_fecha_hora_fin   TIMESTAMP COMMENT 'Fecha y hora de fin de la asistencia.',
+    fk_empleado          INT NOT NULL COMMENT 'Identificador del empleado.',
 
     CONSTRAINT fk_empleado
         FOREIGN KEY (fk_empleado) REFERENCES EMPLEADO (emp_id)
@@ -634,10 +612,10 @@ CREATE TABLE ASISTENCIA
 
 CREATE TABLE HORARIO
 (
-    hor_id              SERIAL PRIMARY KEY,
-    hor_dia            VARCHAR(10) NOT NULL,
-    hor_hora_inicio     TIME NOT NULL,
-    hor_hora_fin        TIME NOT NULL,
+    hor_id              SERIAL PRIMARY KEY COMMENT 'Identificador único del horario.',
+    hor_dia            VARCHAR(10) NOT NULL COMMENT 'Día de la semana.',
+    hor_hora_inicio     TIME NOT NULL COMMENT 'Hora de inicio del horario.',
+    hor_hora_fin        TIME NOT NULL COMMENT 'Hora de fin del horario.',
 
     CONSTRAINT ck_hor_dia
         CHECK (hor_dia IN ('Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo')),
@@ -651,11 +629,11 @@ CREATE TABLE HORARIO
 
 CREATE TABLE EMP_CAR_HOR 
 (
-    fk_empleado          INT NOT NULL,
-    fk_cargo             INT NOT NULL,
-    fk_departamento      INT NOT NULL,
-    fk_tienda            INT NOT NULL,
-    fk_horario           INT NOT NULL,
+    fk_empleado          INT NOT NULL COMMENT 'Identificador del empleado.',
+    fk_cargo             INT NOT NULL COMMENT 'Identificador del cargo.',
+    fk_departamento      INT NOT NULL COMMENT 'Identificador del departamento.',
+    fk_tienda            INT NOT NULL COMMENT 'Identificador de la tienda.',
+    fk_horario           INT NOT NULL COMMENT 'Identificador del horario.',
 
     CONSTRAINT pk_emp_car_hor
         PRIMARY KEY (fk_empleado, fk_cargo, fk_departamento, fk_tienda, fk_horario),
@@ -683,10 +661,10 @@ CREATE TABLE EMP_CAR_HOR
 
 CREATE TABLE VACACION
 (
-    vac_id              SERIAL PRIMARY KEY,
-    vac_fecha_inicio    DATE NOT NULL DEFAULT CURRENT_DATE,
-    vac_fecha_fin       DATE,
-    fk_empleado         INT NOT NULL,
+    vac_id              SERIAL PRIMARY KEY COMMENT 'Identificador único de la vacación.',
+    vac_fecha_inicio    DATE NOT NULL DEFAULT CURRENT_DATE COMMENT 'Fecha de inicio de la vacación.',
+    vac_fecha_fin       DATE COMMENT 'Fecha de fin de la vacación.',
+    fk_empleado         INT NOT NULL COMMENT 'Identificador del empleado.',
 
     CONSTRAINT fk_empleado
         FOREIGN KEY (fk_empleado) REFERENCES EMPLEADO (emp_id)
@@ -701,9 +679,9 @@ CREATE TABLE VACACION
 
 CREATE TABLE TIPO_BENEFICIO
 (
-    tip_ben_id          SERIAL PRIMARY KEY,
-    tip_ben_nombre      VARCHAR(100) NOT NULL UNIQUE,
-    tip_ben_descripcion TEXT NOT NULL,
+    tip_ben_id          SERIAL PRIMARY KEY COMMENT 'Identificador único del tipo de beneficio.',
+    tip_ben_nombre      VARCHAR(100) NOT NULL UNIQUE COMMENT 'Nombre del tipo de beneficio.',
+    tip_ben_descripcion TEXT NOT NULL COMMENT 'Descripción del tipo de beneficio.',
 
     CONSTRAINT ck_tip_ben_nombre
         CHECK (tip_ben_nombre ~ '^[A-Z][a-zA-Z\s]+$'),
@@ -714,9 +692,9 @@ CREATE TABLE TIPO_BENEFICIO
 
 CREATE TABLE EMP_TIP_BEN
 (
-    fk_empleado         INT NOT NULL,
-    fk_tipo_beneficio   INT NOT NULL,
-    emp_tip_ben_monto   INT NOT NULL,
+    fk_empleado         INT NOT NULL COMMENT 'Identificador del empleado.',
+    fk_tipo_beneficio   INT NOT NULL COMMENT 'Identificador del tipo de beneficio.',
+    emp_tip_ben_monto   INT NOT NULL COMMENT 'Monto del beneficio.',
 
     CONSTRAINT pk_emp_tip_ben
         PRIMARY KEY (fk_empleado, fk_tipo_beneficio),
@@ -737,14 +715,14 @@ CREATE TABLE EMP_TIP_BEN
 --  Teléfono
 CREATE TABLE TELEFONO
 (
-    tel_id                  SERIAL PRIMARY KEY,
-    tel_codigo_area         VARCHAR(30) NOT NULL,
-    tel_numero              INT NOT NULL,
-    fk_empleado             INT,
-    fk_cliente              INT,
-    fk_contacto_cliente     INT,
-    fk_contacto_proveedor   INT,
-    fk_proveedor            INT,
+    tel_id                  SERIAL PRIMARY KEY COMMENT 'Identificador único del teléfono.',
+    tel_codigo_area         VARCHAR(30) NOT NULL COMMENT 'Código de área del teléfono.',
+    tel_numero              INT NOT NULL COMMENT 'Número del teléfono.',
+    fk_empleado             INT COMMENT 'Identificador del empleado.',
+    fk_cliente              INT COMMENT 'Identificador del cliente.',
+    fk_contacto_cliente     INT COMMENT 'Identificador del contacto del cliente.',
+    fk_contacto_proveedor   INT COMMENT 'Identificador del contacto del proveedor.',
+    fk_proveedor            INT COMMENT 'Identificador del proveedor.',
     CONSTRAINT fk_empleado 
         FOREIGN KEY (fk_empleado ) REFERENCES EMPLEADO (emp_id)
             ON DELETE CASCADE,
@@ -785,13 +763,13 @@ CREATE TABLE TELEFONO
 --  Correo Electrónico
 CREATE TABLE CORREO_ELECTRONICO
 (
-    cor_ele_id         SERIAL PRIMARY KEY,
-    cor_ele_direccion  VARCHAR(70) NOT NULL,
-    fk_empleado             INT,
-    fk_cliente              INT,
-    fk_contacto_cliente     INT,
-    fk_contacto_proveedor   INT,
-    fk_proveedor            INT,
+    cor_ele_id         SERIAL PRIMARY KEY COMMENT 'Identificador único del correo electrónico.',
+    cor_ele_direccion  VARCHAR(70) NOT NULL COMMENT 'Dirección de correo electrónico.',
+    fk_empleado             INT COMMENT 'Identificador del empleado.',
+    fk_cliente              INT COMMENT 'Identificador del cliente.',
+    fk_contacto_cliente     INT COMMENT 'Identificador del contacto del cliente.',
+    fk_contacto_proveedor   INT COMMENT 'Identificador del contacto del proveedor.',
+    fk_proveedor            INT COMMENT 'Identificador del proveedor.',
     CONSTRAINT fk_empleado 
         FOREIGN KEY (fk_empleado ) REFERENCES EMPLEADO (emp_id)
             ON DELETE CASCADE,
@@ -834,9 +812,9 @@ CREATE TABLE CORREO_ELECTRONICO
 --  Rol
 CREATE TABLE ROL
 (
-    rol_id          SERIAL PRIMARY KEY,
-    rol_nombre      VARCHAR(30) NOT NULL,
-    rol_descripcion VARCHAR(255),
+    rol_id          SERIAL PRIMARY KEY COMMENT 'Identificador único del rol.',
+    rol_nombre      VARCHAR(30) NOT NULL COMMENT 'Nombre del rol.',
+    rol_descripcion VARCHAR(255) COMMENT 'Descripción del rol.',
 
     CONSTRAINT ck_rol_nombre
         CHECK (UPPER(rol_nombre) in ('EMPLEADO', 'CLIENTE', 'PROVEEDOR', 'ADMINISTRADOR') OR
@@ -846,9 +824,9 @@ CREATE TABLE ROL
 --  Privilegio
 CREATE TABLE PRIVILEGIO
 (
-    pri_id     SERIAL PRIMARY KEY,
-    pri_accion VARCHAR(30) NOT NULL,
-    pri_vista  VARCHAR(30) NOT NULL,
+    pri_id     SERIAL PRIMARY KEY COMMENT 'Identificador único del privilegio.',
+    pri_accion VARCHAR(30) NOT NULL COMMENT 'Acción del privilegio.',
+    pri_vista  VARCHAR(30) NOT NULL COMMENT 'Vista del privilegio.',
     CONSTRAINT ck_pri_accion
         CHECK (UPPER(pri_accion) in ('CREATE', 'DELETE', 'UPDATE', 'READ'))
 );
@@ -856,8 +834,8 @@ CREATE TABLE PRIVILEGIO
 --  Privilegio Rol (relación)
 CREATE TABLE PRI_ROL
 (
-    fk_rol INT NOT NULL,
-    fk_privilegio INT NOT NULL,
+    fk_rol INT NOT NULL COMMENT 'Identificador del rol.',
+    fk_privilegio INT NOT NULL COMMENT 'Identificador del privilegio.',
     CONSTRAINT pk_pri_rol
         PRIMARY KEY (fk_privilegio, fk_rol),
 
@@ -872,17 +850,17 @@ CREATE TABLE PRI_ROL
 -- Usuario
 CREATE TABLE USUARIO
 (
-    usu_id             SERIAL PRIMARY KEY,
-    usu_nombre_usuario VARCHAR(30) NOT NULL,
-    usu_contrasena     VARCHAR(30) NOT NULL,
-    usu_email          VARCHAR(60) NOT NULL,
-    fk_rol             INT         NOT NULL,
-    fk_empleado        INT,
-    fk_cargo           INT,
-    fk_departamernto   INT,
-    fk_tienda          INT,
-    fk_cliente         INT,
-    fk_proveedor       INT,
+    usu_id             SERIAL PRIMARY KEY COMMENT 'Identificador único del usuario.',
+    usu_nombre_usuario VARCHAR(30) NOT NULL COMMENT 'Nombre de usuario.',
+    usu_contrasena     VARCHAR(30) NOT NULL COMMENT 'Contraseña del usuario.',
+    usu_email          VARCHAR(60) NOT NULL COMMENT 'Correo electrónico del usuario.',
+    fk_rol             INT         NOT NULL COMMENT 'Identificador del rol.',
+    fk_empleado        INT COMMENT 'Identificador del empleado.',
+    fk_cargo           INT COMMENT 'Identificador del cargo.',
+    fk_departamernto   INT COMMENT 'Identificador del departamento.',
+    fk_tienda          INT COMMENT 'Identificador de la tienda.',
+    fk_cliente         INT COMMENT 'Identificador del cliente.',
+    fk_proveedor       INT COMMENT 'Identificador del proveedor.',
 
     CONSTRAINT fk_rol
         FOREIGN KEY (fk_rol) REFERENCES ROL (rol_id),
@@ -916,12 +894,12 @@ CREATE TABLE USUARIO
 -- Oferta
 CREATE TABLE OFERTA
 (
-    ofe_id              SERIAL PRIMARY KEY,
-    ofe_nombre          VARCHAR(100) NOT NULL,
-    ofe_descripcion     TEXT NOT NULL,
-    ofe_fecha_inicio    DATE NOT NULL DEFAULT CURRENT_DATE,
-    ofe_fecha_fin       DATE,
-    of_procentaje       INT NOT NULL,
+    ofe_id              SERIAL PRIMARY KEY COMMENT 'Identificador único de la oferta.',
+    ofe_nombre          VARCHAR(100) NOT NULL COMMENT 'Nombre de la oferta.',
+    ofe_descripcion     TEXT NOT NULL COMMENT 'Descripción de la oferta.',
+    ofe_fecha_inicio    DATE NOT NULL DEFAULT CURRENT_DATE COMMENT 'Fecha de inicio de la oferta.',
+    ofe_fecha_fin       DATE COMMENT 'Fecha de fin de la oferta.',
+    of_procentaje       INT NOT NULL COMMENT 'Porcentaje de descuento de la oferta.',
     
     CONSTRAINT ck_ofe_fecha_inicio
         CHECK (ofe_fecha_inicio <= CURRENT_DATE AND ofe_fecha_inicio >= '1900-01-01'),
@@ -930,15 +908,39 @@ CREATE TABLE OFERTA
         CHECK (ofe_fecha_fin IS NULL OR ofe_fecha_fin >= ofe_fecha_inicio)
 );
 
+CREATE TABLE INVENTARIO
+(
+    inv_id SERIAL PRIMARY KEY COMMENT 'Identificador único del inventario.',
+    inv_cantidad INT NOT NULL COMMENT 'Cantidad de inventario.',
+    fk_anaquel INT NOT NULL COMMENT 'Identificador del anaquel.',
+    fk_presentacion INT NOT NULL COMMENT 'Identificador de la presentación.',
+    fk_oferta INT COMMENT 'Identificador de la oferta.',
+
+    PRIMARY KEY (inv_id, fk_anaquel, fk_presentacion),
+
+    CONSTRAINT fk_anaquel
+        FOREIGN KEY (fk_anaquel) REFERENCES ANAQUEL (ana_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_presentacion
+        FOREIGN KEY (fk_presentacion) REFERENCES PRESENTACION (pre_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_oferta
+        FOREIGN KEY (fk_oferta) REFERENCES OFERTA (ofe_id)
+            ON DELETE CASCADE,
+
+);
+
 -- Venta Física
 CREATE TABLE VENTA_FISICA
 (
-    ven_fis_id          SERIAL PRIMARY KEY,
-    ven_fis_fecha       DATE NOT NULL DEFAULT CURRENT_DATE,
-    ven_fis_total       INT NOT NULL,
-    fk_tienda           INT NOT NULL,
-    fk_cliente          INT NOT NULL,
-    fk_oferta           INT,
+    ven_fis_id          SERIAL PRIMARY KEY COMMENT 'Identificador único de la venta física.',
+    ven_fis_fecha       DATE NOT NULL DEFAULT CURRENT_DATE COMMENT 'Fecha de la venta física.',
+    ven_fis_total       INT NOT NULL COMMENT 'Total de la venta física.',
+    fk_tienda           INT NOT NULL COMMENT 'Identificador de la tienda.',
+    fk_cliente          INT NOT NULL COMMENT 'Identificador del cliente.',
+    fk_oferta           INT COMMENT 'Identificador de la oferta.',
 
     CONSTRAINT fk_tienda
         FOREIGN KEY (fk_tienda) REFERENCES TIENDA (tie_id),
@@ -960,11 +962,11 @@ CREATE TABLE VENTA_FISICA
 
 CREATE TABLE DETALLE_VENTA_FISICA
 (
-    det_ven_fis_id SERIAL PRIMARY KEY,
-    det_ven_fis_cantidad INT NOT NULL,
-    det_ven_fis_precio_unitario DECIMAL(10, 2) NOT NULL,
-    fk_venta_fisica INT NOT NULL,
-    fk_presentacion INT NOT NULL,
+    det_ven_fis_id SERIAL PRIMARY KEY COMMENT 'Identificador único del detalle de la venta física.',
+    det_ven_fis_cantidad INT NOT NULL COMMENT 'Cantidad de la venta física.',
+    det_ven_fis_precio_unitario DECIMAL(10, 2) NOT NULL COMMENT 'Precio unitario de la venta física.',
+    fk_venta_fisica INT NOT NULL COMMENT 'Identificador de la venta física.',
+    fk_presentacion INT NOT NULL COMMENT 'Identificador de la presentación.',
 
     PRIMARY KEY (det_ven_fis_id, fk_venta_fisica, fk_presentacion),
     
@@ -983,12 +985,12 @@ CREATE TABLE DETALLE_VENTA_FISICA
 -- Venta Online
 CREATE TABLE VENTA_ONLINE
 (
-    ven_onl_id          SERIAL PRIMARY KEY,
-    ven_onl_fecha       DATE NOT NULL DEFAULT CURRENT_DATE,
-    ven_onl_total       INT NOT NULL,
-    fk_usuario          INT NOT NULL,
-    fk_oferta           INT,
-    fk_tienda           INT NOT NULL,
+    ven_onl_id          SERIAL PRIMARY KEY COMMENT 'Identificador único de la venta online.',
+    ven_onl_fecha       DATE NOT NULL DEFAULT CURRENT_DATE COMMENT 'Fecha de la venta online.',
+    ven_onl_total       INT NOT NULL COMMENT 'Total de la venta online.',
+    fk_usuario          INT NOT NULL COMMENT 'Identificador del usuario.',
+    fk_oferta           INT COMMENT 'Identificador de la oferta.',
+    fk_tienda           INT NOT NULL COMMENT 'Identificador de la tienda.',
 
     CONSTRAINT fk_tienda
         FOREIGN KEY (fk_tienda) REFERENCES TIENDA (tie_id),
@@ -1010,10 +1012,10 @@ CREATE TABLE VENTA_ONLINE
 
 CREATE TABLE ALMACEN
 (
-    alm_id              SERIAL PRIMARY KEY,
-    alm_nombre          VARCHAR(100) NOT NULL,
-    alm_descripcion     TEXT NOT NULL,
-    fk_tienda           INT NOT NULL,
+    alm_id              SERIAL PRIMARY KEY COMMENT 'Identificador único del almacén.',
+    alm_nombre          VARCHAR(100) NOT NULL COMMENT 'Nombre del almacén.',
+    alm_descripcion     TEXT NOT NULL COMMENT 'Descripción del almacén.',
+    fk_tienda           INT NOT NULL COMMENT 'Identificador de la tienda.',
 
     CONSTRAINT fk_tienda
         FOREIGN KEY (fk_tienda) REFERENCES TIENDA (tie_id)
@@ -1028,11 +1030,11 @@ CREATE TABLE ALMACEN
 
 CREATE TABLE PRE_ALM
 (
-    pre_alm_precio DECIMAL(10, 2) NOT NULL,
-    pre_alm_cantidad INT NOT NULL,
-    fk_almacen INT NOT NULL,
-    fk_presentacion INT NOT NULL,
-    fk_oferta INT,
+    pre_alm_precio DECIMAL(10, 2) NOT NULL COMMENT 'Precio de la presentación en el almacén.',
+    pre_alm_cantidad INT NOT NULL COMMENT 'Cantidad de la presentación en el almacén.',
+    fk_almacen INT NOT NULL COMMENT 'Identificador del almacén.',
+    fk_presentacion INT NOT NULL COMMENT 'Identificador de la presentación.',
+    fk_oferta INT COMMENT 'Identificador de la oferta.',
     PRIMARY KEY (fk_almacen, fk_presentacion)
 
     CONSTRAINT fk_almacen
@@ -1054,10 +1056,10 @@ CREATE TABLE PRE_ALM
 
 CREATE TABLE DETALLE_VENTA_ONLINE
 (
-    det_ven_onl_cantidad INT NOT NULL,
-    det_ven_onl_precio DECIMAL(10, 2) NOT NULL,
-    fk_venta_online INT NOT NULL,
-    fk_presentacion INT NOT NULL,
+    det_ven_onl_cantidad INT NOT NULL COMMENT 'Cantidad de la venta online.',
+    det_ven_onl_precio DECIMAL(10, 2) NOT NULL COMMENT 'Precio de la venta online.',
+    fk_venta_online INT NOT NULL COMMENT 'Identificador de la venta online.',
+    fk_presentacion INT NOT NULL COMMENT 'Identificador de la presentación.',
     fk_almacen INT NOT NULL,
 
     PRIMARY KEY (fk_venta_online, fk_presentacion, fk_almacen),
@@ -1074,7 +1076,6 @@ CREATE TABLE DETALLE_VENTA_ONLINE
         CHECK (det_ven_onl_cantidad > 0),
 );
 
-);
 --------------------------------------------------------------------------------
 -- . EVENTO
 --------------------------------------------------------------------------------
@@ -1082,10 +1083,10 @@ CREATE TABLE DETALLE_VENTA_ONLINE
 -- TIPO_EVENTO
 CREATE TABLE TIPO_EVENTO 
 (
-    tip_eve_id          SERIAL PRIMARY KEY, -- Identificador único del tipo de evento.
-    tip_eve_nombre      VARCHAR(255) NOT NULL, -- Nombre del tipo de evento.
-    tip_eve_descripcion VARCHAR(255) NOT NULL, -- Descripción del tipo de evento.
-    fk_tipo_evento      INT, -- Clave foránea que referencia el tipo de evento padre (para jerarquías).
+    tip_eve_id          SERIAL PRIMARY KEY COMMENT 'Identificador único del tipo de evento.',
+    tip_eve_nombre      VARCHAR(255) NOT NULL COMMENT 'Nombre del tipo de evento.',
+    tip_eve_descripcion VARCHAR(255) NOT NULL COMMENT 'Descripción del tipo de evento.',
+    fk_tipo_evento      INT COMMENT 'Identificador del tipo de evento padre (para jerarquías).',
 
     CONSTRAINT fk_tipo_evento
         FOREIGN KEY (fk_tipo_evento) REFERENCES TIPO_EVENTO (tip_eve_id)
@@ -1106,13 +1107,13 @@ CREATE INDEX idx_tipo_evento_padre
 -- Tabla: EVENTO
 CREATE TABLE EVENTO 
 (
-    eve_id          SERIAL PRIMARY KEY, -- Identificador único del evento.
-    eve_nombre      VARCHAR(255) NOT NULL, -- Nombre del evento.
-    eve_descripcion VARCHAR(255) NOT NULL, -- Descripción detallada del evento.
-    eve_fecha_hora  TIMESTAMP NOT NULL, -- Fecha y hora en que el evento tendrá lugar.
-    eve_nro_boletos INT NOT NULL, -- Número total de boletos disponibles para el evento.
-    fk_tip_eve      INT NOT NULL, -- Clave foránea que referencia el tipo de evento.
-    fk_lugar       INT NOT NULL, -- Clave foránea que referencia el lugar donde se llevará a cabo el evento.
+    eve_id          SERIAL PRIMARY KEY COMMENT 'Identificador único del evento.',
+    eve_nombre      VARCHAR(255) NOT NULL COMMENT 'Nombre del evento.',
+    eve_descripcion VARCHAR(255) NOT NULL COMMENT 'Descripción detallada del evento.',
+    eve_fecha_hora  TIMESTAMP NOT NULL COMMENT 'Fecha y hora en que el evento tendrá lugar.',
+    eve_nro_boletos INT NOT NULL COMMENT 'Número total de boletos disponibles para el evento.',
+    fk_tip_eve      INT NOT NULL COMMENT 'Identificador del tipo de evento.',
+    fk_lugar       INT NOT NULL COMMENT 'Identificador del lugar donde se llevará a cabo el evento.',
 
     CONSTRAINT fk_lugar
         FOREIGN KEY (fk_lugar) REFERENCES LUGAR (lug_id)
@@ -1138,12 +1139,12 @@ CREATE TABLE EVENTO
 -- Tabla: VENTA_EVENTO
 CREATE TABLE VENTA_EVENTO
 (
-    ven_eve_id          SERIAL PRIMARY KEY, -- Identificador único de la venta del evento.
-    ven_eve_fecha_hora  TIMESTAMP NOT NULL, -- Fecha y hora en que se realizó la venta del evento.
-    ven_eve_monto_total DECIMAL(18, 2) NOT NULL, -- Monto total de la venta del evento.
-    ven_eve_descripcion VARCHAR(255) NOT NULL, -- Descripción de la venta del evento.
-    fk_evento           INT NOT NULL, -- Clave foránea que referencia el evento asociado a la venta.
-    fk_cliente          INT NOT NULL, -- Clave foránea que referencia al cliente que realizó la compra.
+    ven_eve_id          SERIAL PRIMARY KEY COMMENT 'Identificador único de la venta del evento.',
+    ven_eve_fecha_hora  TIMESTAMP NOT NULL COMMENT 'Fecha y hora en que se realizó la venta del evento.',
+    ven_eve_monto_total DECIMAL(18, 2) NOT NULL COMMENT 'Monto total de la venta del evento.',
+    ven_eve_descripcion VARCHAR(255) NOT NULL COMMENT 'Descripción de la venta del evento.',
+    fk_evento           INT NOT NULL COMMENT 'Identificador del evento asociado a la venta.',
+    fk_cliente          INT NOT NULL COMMENT 'Identificador del cliente que realizó la compra.',
 
     CONSTRAINT fk_evento
         FOREIGN KEY (fk_evento) REFERENCES EVENTO (eve_id)
@@ -1165,10 +1166,10 @@ CREATE TABLE VENTA_EVENTO
 
 CREATE TABLE EXISTENCIA_EVENTO
 (
-    exi_eve_id SERIAL PRIMARY KEY,
-    exi_eve_cantidad INT NOT NULL,
-    fk_eve_pro INT NOT NULL,
-    fk_presentacion INT NOT NULL,
+    exi_eve_id SERIAL PRIMARY KEY COMMENT 'Identificador único de la existencia del evento.',
+    exi_eve_cantidad INT NOT NULL COMMENT 'Cantidad de la existencia del evento.',
+    fk_eve_pro INT NOT NULL COMMENT 'Identificador del evento asociado a la existencia.',
+    fk_presentacion INT NOT NULL COMMENT 'Identificador de la presentación.',
 
     PRIMARY KEY (exi_eve_id, fk_eve_pro, fk_presentacion),
 
@@ -1186,11 +1187,11 @@ CREATE TABLE EXISTENCIA_EVENTO
 
 CREATE TABLE DETALLE_VENTA_EVENTO
 (
-    det_ven_eve_id SERIAL PRIMARY KEY,
-    det_ven_eve_cantidad INT NOT NULL,
-    det_ven_eve_precio_unitario DECIMAL(10, 2) NOT NULL,
-    fk_venta_evento INT NOT NULL,
-    fk_exi_eve INT NOT NULL,
+    det_ven_eve_id SERIAL PRIMARY KEY COMMENT 'Identificador único del detalle de la venta del evento.',
+    det_ven_eve_cantidad INT NOT NULL COMMENT 'Cantidad de la venta del evento.',
+    det_ven_eve_precio_unitario DECIMAL(10, 2) NOT NULL COMMENT 'Precio unitario de la venta del evento.',
+    fk_venta_evento INT NOT NULL COMMENT 'Identificador de la venta del evento.',
+    fk_exi_eve INT NOT NULL COMMENT 'Identificador de la existencia del evento.',
 
     PRIMARY KEY (det_ven_eve_id, fk_venta_evento, fk_exi_eve),
 
@@ -1211,10 +1212,10 @@ CREATE TABLE DETALLE_VENTA_EVENTO
 -- Tabla: VENTA_BOLETO_EVENTO
 CREATE TABLE VENTA_BOLETO_EVENTO 
 (
-    ven_bol_eve_id          SERIAL PRIMARY KEY, -- Identificador único de la venta del boleto del evento.
-    ven_bol_eve_fecha_hora  TIMESTAMP NOT NULL, -- Fecha y hora en que se realizó la venta del boleto del evento.
-    ven_bol_eve_monto_total DECIMAL(18, 2) NOT NULL, -- Monto total de la venta del boleto del evento.
-    ven_bol_eve_descripcion VARCHAR(255) NOT NULL, -- Descripción de la venta del boleto del evento.
+    ven_bol_eve_id          SERIAL PRIMARY KEY COMMENT 'Identificador único de la venta del boleto del evento.',
+    ven_bol_eve_fecha_hora  TIMESTAMP NOT NULL COMMENT 'Fecha y hora en que se realizó la venta del boleto del evento.',
+    ven_bol_eve_monto_total DECIMAL(18, 2) NOT NULL COMMENT 'Monto total de la venta del boleto del evento.',
+    ven_bol_eve_descripcion VARCHAR(255) NOT NULL COMMENT 'Descripción de la venta del boleto del evento.',
 
     CONSTRAINT ck_ven_bol_eve_fecha_hora
         CHECK (ven_bol_eve_fecha_hora >= CURRENT_DATE AND ven_bol_eve_fecha_hora <= '2100-12-31 23:59:59'),
@@ -1226,11 +1227,11 @@ CREATE TABLE VENTA_BOLETO_EVENTO
 -- Tabla: ASISTENCIA_EVENTO
 CREATE TABLE ASISTENCIA_EVENTO 
 (
-    asi_eve_id          SERIAL NOT NULL, -- Identificador único de la asistencia al evento.
-    fk_evento           INT NOT NULL, -- Clave foránea que referencia el evento al que se asistió.
-    fk_cliente          INT NOT NULL, -- Clave foránea que referencia al cliente que asistió al evento.
-    asi_eve_fecha_hora  TIMESTAMP NOT NULL, -- Fecha y hora en que el cliente asistió al evento.
-    fk_ven_bol_eve      INT NOT NULL, -- Clave foránea que referencia la venta del boleto del evento.
+    asi_eve_id          SERIAL NOT NULL COMMENT 'Identificador único de la asistencia al evento.',
+    fk_evento           INT NOT NULL COMMENT 'Identificador del evento al que se asistió.',
+    fk_cliente          INT NOT NULL COMMENT 'Identificador del cliente que asistió al evento.',
+    asi_eve_fecha_hora  TIMESTAMP NOT NULL COMMENT 'Fecha y hora en que el cliente asistió al evento.',
+    fk_ven_bol_eve      INT NOT NULL COMMENT 'Identificador de la venta del boleto del evento.',
 
     PRIMARY KEY (asi_eve_id, fk_evento, fk_cliente, fk_ven_bol_eve), -- Clave primaria compuesta por el ID de asistencia, evento y cliente.
 
@@ -1252,9 +1253,9 @@ CREATE TABLE ASISTENCIA_EVENTO
 -- Tabla: EVE_PRO
 CREATE TABLE EVE_PRO 
 (
-    eve_pro_id      SERIAL, -- identificador único de EVE_PRO.
-    fk_evento       INT NOT NULL, -- Clave foránea que referencia el evento asociado a EVE_PRO.
-    fk_proveedor    INT NOT NULL, -- Clave foránea que referencia el proveedor asociado a EVE_PRO.
+    eve_pro_id      SERIAL COMMENT 'Identificador único de EVE_PRO.',
+    fk_evento       INT NOT NULL COMMENT 'Identificador del evento asociado a EVE_PRO.',
+    fk_proveedor    INT NOT NULL COMMENT 'Identificador del proveedor asociado a EVE_PRO.',
     
     PRIMARY KEY (eve_pro_id, fk_evento, fk_proveedor), -- Clave primaria compuesta por eve_pro_id, fk_evento y fk_proveedor.
 
@@ -1273,12 +1274,12 @@ CREATE TABLE EVE_PRO
 
 CREATE TABLE SOLICITUD_REPOSICION
 (
-    sol_rep_id SERIAL PRIMARY KEY,
-    sol_rep_fecha_hora TIMESTAMP NOT NULL,
-    sol_rep_descripcion VARCHAR(255) NOT NULL,
-    fk_usuario INT NOT NULL,
-    fk_inv INT NOT NULL,
-    fk_pre_alm INT NOT NULL,
+    sol_rep_id SERIAL PRIMARY KEY COMMENT 'Identificador único de la solicitud de reposición.',
+    sol_rep_fecha_hora TIMESTAMP NOT NULL COMMENT 'Fecha y hora de la solicitud de reposición.',
+    sol_rep_descripcion VARCHAR(255) NOT NULL COMMENT 'Descripción de la solicitud de reposición.',
+    fk_usuario INT NOT NULL COMMENT 'Identificador del usuario que realizó la solicitud de reposición.',
+    fk_inv INT NOT NULL COMMENT 'Identificador del inventario.',
+    fk_pre_alm INT NOT NULL COMMENT 'Identificador de la presentación en el almacén.',
 
     CONSTRAINT fk_usuario
         FOREIGN KEY (fk_usuario) REFERENCES USUARIO (usu_id)
@@ -1298,12 +1299,12 @@ CREATE TABLE SOLICITUD_REPOSICION
 
 CREATE TABLE SOLICITUD_COMPRA
 (
-    sol_com_id SERIAL PRIMARY KEY,
-    sol_com_fecha TIMESTAMP NOT NULL,
-    sol_com_total DECIMAL(10, 2) NOT NULL,
-    fk_usuario INT NOT NULL,
-    fk_proveedor INT NOT NULL,
-    fk_pre_alm INT NOT NULL,
+    sol_com_id SERIAL PRIMARY KEY COMMENT 'Identificador único de la solicitud de compra.',
+    sol_com_fecha TIMESTAMP NOT NULL COMMENT 'Fecha de la solicitud de compra.',
+    sol_com_total DECIMAL(10, 2) NOT NULL COMMENT 'Total de la solicitud de compra.',
+    fk_usuario INT NOT NULL COMMENT 'Identificador del usuario que realizó la solicitud de compra.',
+    fk_proveedor INT NOT NULL COMMENT 'Identificador del proveedor.',
+    fk_pre_alm INT NOT NULL COMMENT 'Identificador de la presentación en el almacén.',
 
     CONSTRAINT fk_usuario
         FOREIGN KEY (fk_usuario) REFERENCES USUARIO (usu_id)
@@ -1323,11 +1324,11 @@ CREATE TABLE SOLICITUD_COMPRA
 
 CREATE TABLE DETALLE_COMPRA 
 (
-    det_com_id SERIAL PRIMARY KEY,
-    det_com_cantidad INT NOT NULL,
-    det_com_precio_unitario DECIMAL(10, 2) NOT NULL,
-    fk_sol_com INT NOT NULL,
-    fk_presentacion INT NOT NULL,
+    det_com_id SERIAL PRIMARY KEY COMMENT 'Identificador único del detalle de la compra.',
+    det_com_cantidad INT NOT NULL COMMENT 'Cantidad de la compra.',
+    det_com_precio_unitario DECIMAL(10, 2) NOT NULL COMMENT 'Precio unitario de la compra.',
+    fk_sol_com INT NOT NULL COMMENT 'Identificador de la solicitud de compra.',
+    fk_presentacion INT NOT NULL COMMENT 'Identificador de la presentación.',
 
     PRIMARY KEY (det_com_id, fk_sol_com, fk_presentacion),
 
@@ -1352,10 +1353,10 @@ CREATE TABLE DETALLE_COMPRA
 -- Tabla: CUENTA_PUNTO
 CREATE TABLE CUENTA_PUNTO
 (
-    cue_pun_id          SERIAL PRIMARY KEY,
-    cue_pun_cantidad    DECIMAL(12, 2) NOT NULL DEFAULT 0.00,
-    fk_cliente          INT NOT NULL,
-    fk_venta_fisica     INT NOT NULL,
+    cue_pun_id          SERIAL PRIMARY KEY COMMENT 'Identificador único de la cuenta de punto.',
+    cue_pun_cantidad    DECIMAL(12, 2) NOT NULL DEFAULT 0.00 COMMENT 'Cantidad de la cuenta de punto.',
+    fk_cliente          INT NOT NULL COMMENT 'Identificador del cliente.',
+    fk_venta_fisica     INT NOT NULL COMMENT 'Identificador de la venta física.',
 
     CONSTRAINT fk_cliente
         FOREIGN KEY (fk_cliente) REFERENCES CLIENTE (cli_id)
@@ -1368,9 +1369,9 @@ CREATE TABLE CUENTA_PUNTO
 -- Tabla: HISTORICO_PRECIO_PUNTO
 CREATE TABLE HISTORICO_PRECIO_PUNTO
 (
-    his_pre_pun_id          SERIAL PRIMARY KEY,
-    his_pre_pun_fecha_hora  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    his_pre_pun_valor       INT NOT NULL,
+    his_pre_pun_id          SERIAL PRIMARY KEY COMMENT 'Identificador único del historico de precio de punto.',
+    his_pre_pun_fecha_hora  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha y hora del historico de precio de punto.',
+    his_pre_pun_valor       INT NOT NULL COMMENT 'Valor del historico de precio de punto.',
 
     CONSTRAINT ck_his_pre_pun_fecha
         CHECK (his_pre_pun_fecha <= CURRENT_TIMESTAMP AND his_pre_pun_fecha >= '1900-01-01 00:00:00')
@@ -1379,16 +1380,16 @@ CREATE TABLE HISTORICO_PRECIO_PUNTO
 -- Tabla: METODO_PAGO
 CREATE TABLE METODO_PAGO
 (
-    met_pag_id          SERIAL PRIMARY KEY,
-    efe_denominacion    INT,
-    che_num_cheque      INT,
-    tar_deb_numero      INT,
-    tar_deb_vencimiento DATE,
-    tar_deb_banco       VARCHAR(50),
-    tar_cre_numero      INT,
-    tar_cre_vencimiento DATE,
-    met_pag_tipo_pago   VARCHAR(50) NOT NULL,
-    fk_his_pre_pun      INT,
+    met_pag_id          SERIAL PRIMARY KEY COMMENT 'Identificador único del metodo de pago.',
+    efe_denominacion    INT COMMENT 'Denominacion del metodo de pago.',
+    che_num_cheque      INT COMMENT 'Numero de cheque del metodo de pago.',
+    tar_deb_numero      INT COMMENT 'Numero de tarjeta de debito del metodo de pago.',
+    tar_deb_vencimiento DATE COMMENT 'Vencimiento de la tarjeta de debito.',
+    tar_deb_banco       VARCHAR(50) COMMENT 'Banco de la tarjeta de debito.',
+    tar_cre_numero      INT COMMENT 'Numero de tarjeta de credito.',
+    tar_cre_vencimiento DATE COMMENT 'Vencimiento de la tarjeta de credito.',
+    met_pag_tipo_pago   VARCHAR(50) NOT NULL COMMENT 'Tipo de pago.',
+    fk_his_pre_pun      INT COMMENT 'Identificador del historico de precio de punto.',
 
     CONSTRAINT fk_his_pre_pun
         FOREIGN KEY (fk_his_pre_pun) REFERENCES HISTORICO_PRECIO_PUNTO (his_pre_pun_id)
@@ -1400,8 +1401,8 @@ CREATE TABLE METODO_PAGO
 
 CREATE TABLE MONEDA
 (
-    mon_id              SERIAL PRIMARY KEY,
-    mon_tipo            VARCHAR(50) NOT NULL UNIQUE,
+    mon_id              SERIAL PRIMARY KEY COMMENT 'Identificador único de la moneda.',
+    mon_tipo            VARCHAR(50) NOT NULL UNIQUE COMMENT 'Tipo de moneda.',
 
     CONSTRAINT ck_mon_tipo
         CHECK (UPPER(mon_tipo) IN ('BOLIVAR', 'DOLAR', 'EURO', 'YEN', 'LIBRA') OR
@@ -1411,15 +1412,15 @@ CREATE TABLE MONEDA
 -- Tabla: PAGO
 CREATE TABLE PAGO
 (
-    pag_id              SERIAL PRIMARY KEY,
-    pag_monto           DECIMAL(12, 2) NOT NULL,
-    pag_fecha           TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    fk_metodo_pago      INT NOT NULL,
-    fk_venta_fisica     INT NULL,
-    fk_venta_online     INT NULL,
-    fk_afiliacion       INT NULL,
-    fk_venta_evento     INT NULL,
-    fk_moneda           INT NOT NULL,
+    pag_id              SERIAL PRIMARY KEY COMMENT 'Identificador único del pago.',
+    pag_monto           DECIMAL(12, 2) NOT NULL COMMENT 'Monto del pago.',
+    pag_fecha           TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha del pago.',
+    fk_metodo_pago      INT NOT NULL COMMENT 'Identificador del metodo de pago.',
+    fk_venta_fisica     INT NULL COMMENT 'Identificador de la venta física.',
+    fk_venta_online     INT NULL COMMENT 'Identificador de la venta online.',
+    fk_afiliacion       INT NULL COMMENT 'Identificador de la afiliación.',
+    fk_venta_evento     INT NULL COMMENT 'Identificador de la venta del evento.',
+    fk_moneda           INT NOT NULL COMMENT 'Identificador de la moneda.',
 
     -- --- Restricciones de Clave Foránea ---
     CONSTRAINT fk_pago_a_venta_fisica
@@ -1454,10 +1455,10 @@ CREATE TABLE PAGO
 
 CREATE TABLE HISTORICO_MONEDA
 (
-    his_mon_id          SERIAL PRIMARY KEY,
-    his_mon_fecha_hora  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    his_valor_cambio    DECIMAL(12, 2) NOT NULL,
-    fk_moneda           INT NOT NULL,
+    his_mon_id          SERIAL PRIMARY KEY COMMENT 'Identificador único del historico de moneda.',
+    his_mon_fecha_hora  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha y hora del historico de moneda.',
+    his_valor_cambio    DECIMAL(12, 2) NOT NULL COMMENT 'Valor de cambio de la moneda.',
+    fk_moneda           INT NOT NULL COMMENT 'Identificador de la moneda.',
 
     CONSTRAINT fk_moneda
         FOREIGN KEY (fk_moneda) REFERENCES MONEDA (mon_id)
@@ -1472,11 +1473,11 @@ CREATE TABLE HISTORICO_MONEDA
 
 CREATE TABLE PAGO_EFECTIVO
 (
-    pag_efe_id SERIAL PRIMARY KEY,
-    pag_efe_monto DECIMAL(10, 2) NOT NULL,
-    pag_efe_fecha TIMESTAMP NOT NULL,
-    fk_sol_com INT NOT NULL,
-    fk_metodo_pago INT NOT NULL,
+    pag_efe_id SERIAL PRIMARY KEY COMMENT 'Identificador único del pago efectivo.',
+    pag_efe_monto DECIMAL(10, 2) NOT NULL COMMENT 'Monto del pago efectivo.',
+    pag_efe_fecha TIMESTAMP NOT NULL COMMENT 'Fecha del pago efectivo.',
+    fk_sol_com INT NOT NULL COMMENT 'Identificador de la solicitud de compra.',
+    fk_metodo_pago INT NOT NULL COMMENT 'Identificador del metodo de pago.',
 
     CONSTRAINT fk_metodo_pago
         FOREIGN KEY (fk_metodo_pago) REFERENCES METODO_PAGO (met_pag_id)
@@ -1492,9 +1493,9 @@ CREATE TABLE PAGO_EFECTIVO
 
 CREATE TABLE ESTATUS
 (
-    est_id              SERIAL PRIMARY KEY,
-    est_tipo_estatus    VARCHAR(50) NOT NULL UNIQUE,
-    est_descripcion     VARCHAR(255) NOT NULL,
+    est_id              SERIAL PRIMARY KEY COMMENT 'Identificador único del estatus.',
+    est_tipo_estatus    VARCHAR(50) NOT NULL UNIQUE COMMENT 'Tipo de estatus.',
+    est_descripcion     VARCHAR(255) NOT NULL COMMENT 'Descripción del estatus.',
 
     CONSTRAINT ck_est_tipo_estatus
         CHECK (UPPER(est_tipo_estatus) IN ('PENDIENTE', 'APROBADO', 'RECHAZADO', 'EN_PROCESO', 'FINALIZADO') OR
@@ -1506,11 +1507,11 @@ CREATE TABLE ESTATUS
 
 CREATE TABLE VEN_ONL_EST
 (
-    ven_onl_est_id              SERIAL PRIMARY KEY,
-    ven_onl_est_fecha_inicio    DATE NOT NULL DEFAULT CURRENT_DATE,
-    ven_onl_est_fecha_fin       DATE,
-    fk_venta_online             INT NOT NULL,
-    fk_estatus                  INT NOT NULL,
+    ven_onl_est_id              SERIAL PRIMARY KEY COMMENT 'Identificador único del estatus de la venta online.',
+    ven_onl_est_fecha_inicio    DATE NOT NULL DEFAULT CURRENT_DATE COMMENT 'Fecha de inicio del estatus de la venta online.',
+    ven_onl_est_fecha_fin       DATE COMMENT 'Fecha de fin del estatus de la venta online.',
+    fk_venta_online             INT NOT NULL COMMENT 'Identificador de la venta online.',
+    fk_estatus                  INT NOT NULL COMMENT 'Identificador del estatus.',
 
     CONSTRAINT fk_venta_online
         FOREIGN KEY (fk_venta_online) REFERENCES VENTA_ONLINE (ven_onl_id)
@@ -1529,11 +1530,11 @@ CREATE TABLE VEN_ONL_EST
 
 CREATE TABLE AFI_EST
 (
-    afi_est_id              SERIAL NOT NULL,
-    afi_est_fecha_inicio    DATE NOT NULL DEFAULT CURRENT_DATE,
-    afi_est_fecha_fin       DATE,
-    fk_afiliacion           INT NOT NULL,
-    fk_estatus              INT NOT NULL,
+    afi_est_id              SERIAL NOT NULL COMMENT 'Identificador único del estatus de la afiliación.',
+    afi_est_fecha_inicio    DATE NOT NULL DEFAULT CURRENT_DATE COMMENT 'Fecha de inicio del estatus de la afiliación.',
+    afi_est_fecha_fin       DATE COMMENT 'Fecha de fin del estatus de la afiliación.',
+    fk_afiliacion           INT NOT NULL COMMENT 'Identificador de la afiliación.',
+    fk_estatus              INT NOT NULL COMMENT 'Identificador del estatus.',
 
     PRIMARY KEY (afi_est_id, fk_afiliacion, fk_estatus), -- Clave primaria compuesta por afi_est_id, fk_afiliacion y fk_estatus.
 
@@ -1554,11 +1555,11 @@ CREATE TABLE AFI_EST
 
 CREATE TABLE SOL_REP_EST
 (
-    sol_rep_est_id SERIAL PRIMARY KEY,
-    sol_rep_est_fecha_inicio DATE NOT NULL DEFAULT CURRENT_DATE,
-    sol_rep_est_fecha_fin DATE,
-    fk_sol_rep INT NOT NULL,
-    fk_estatus INT NOT NULL,
+    sol_rep_est_id SERIAL PRIMARY KEY COMMENT 'Identificador único del estatus de la solicitud de reposición.',
+    sol_rep_est_fecha_inicio DATE NOT NULL DEFAULT CURRENT_DATE COMMENT 'Fecha de inicio del estatus de la solicitud de reposición.',
+    sol_rep_est_fecha_fin DATE COMMENT 'Fecha de fin del estatus de la solicitud de reposición.',
+    fk_sol_rep INT NOT NULL COMMENT 'Identificador de la solicitud de reposición.',
+    fk_estatus INT NOT NULL COMMENT 'Identificador del estatus.',
 
     PRIMARY KEY (sol_rep_est_id, fk_sol_rep, fk_estatus),
 
@@ -1576,11 +1577,11 @@ CREATE TABLE SOL_REP_EST
 
 CREATE TABLE SOL_COM_EST
 (
-    sol_com_est_id SERIAL PRIMARY KEY,
-    sol_com_est_fecha_inicio DATE NOT NULL DEFAULT CURRENT_DATE,
-    sol_com_est_fecha_fin DATE,
-    fk_sol_com INT NOT NULL,
-    fk_estatus INT NOT NULL,
+    sol_com_est_id SERIAL PRIMARY KEY COMMENT 'Identificador único del estatus de la solicitud de compra.',
+    sol_com_est_fecha_inicio DATE NOT NULL DEFAULT CURRENT_DATE COMMENT 'Fecha de inicio del estatus de la solicitud de compra.',
+    sol_com_est_fecha_fin DATE COMMENT 'Fecha de fin del estatus de la solicitud de compra.',
+    fk_sol_com INT NOT NULL COMMENT 'Identificador de la solicitud de compra.',
+    fk_estatus INT NOT NULL COMMENT 'Identificador del estatus.',
 
     PRIMARY KEY (sol_com_est_id, fk_sol_com, fk_estatus),
 
