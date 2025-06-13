@@ -46,6 +46,62 @@ CREATE TABLE TIENDA
 
 );
 
+CREATE TABLE LUGAR_TIENDA
+(
+    lug_tie_id SERIAL PRIMARY KEY,
+    lug_tie_nombre VARCHAR(255) NOT NULL,
+    lug_tie_tipo VARCHAR(255) NOT NULL,
+    fk_tienda INT NOT NULL,
+    fk_lugar_tienda INT,
+
+    CONSTRAINT fk_tienda
+        FOREIGN KEY (fk_tienda) REFERENCES TIENDA (tie_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_lugar_tienda
+        FOREIGN KEY (fk_lugar_tienda) REFERENCES LUGAR (lug_id)
+            ON DELETE CASCADE,
+
+);
+
+CREATE INDEX idx_lug_tie_fk_lugar_tienda
+    ON LUGAR_TIENDA (fk_lugar_tienda);
+
+CREATE TABLE ANAQUEL
+(
+    ana_id SERIAL PRIMARY KEY,
+    ana_numero INT NOT NULL,
+    fk_lugar_tienda INT NOT NULL,
+
+    CONSTRAINT fk_lugar_tienda
+        FOREIGN KEY (fk_lugar_tienda) REFERENCES LUGAR_TIENDA (lug_tie_id)
+            ON DELETE CASCADE,
+
+);
+
+CREATE TABLE INVENTARIO
+(
+    inv_id SERIAL PRIMARY KEY,
+    inv_cantidad INT NOT NULL,
+    fk_anaquel INT NOT NULL,
+    fk_presentacion INT NOT NULL,
+    fk_oferta INT,
+
+    PRIMARY KEY (inv_id, fk_anaquel, fk_presentacion),
+
+    CONSTRAINT fk_anaquel
+        FOREIGN KEY (fk_anaquel) REFERENCES ANAQUEL (ana_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_presentacion
+        FOREIGN KEY (fk_presentacion) REFERENCES PRESENTACION (pre_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_oferta
+        FOREIGN KEY (fk_oferta) REFERENCES OFERTA (ofe_id)
+            ON DELETE CASCADE,
+
+);
 --------------------------------------------------------------------------------
 -- . CERVEZA
 --------------------------------------------------------------------------------
@@ -902,6 +958,28 @@ CREATE TABLE VENTA_FISICA
         CHECK (ven_fis_total > 0)
 );
 
+CREATE TABLE DETALLE_VENTA_FISICA
+(
+    det_ven_fis_id SERIAL PRIMARY KEY,
+    det_ven_fis_cantidad INT NOT NULL,
+    det_ven_fis_precio_unitario DECIMAL(10, 2) NOT NULL,
+    fk_venta_fisica INT NOT NULL,
+    fk_presentacion INT NOT NULL,
+
+    PRIMARY KEY (det_ven_fis_id, fk_venta_fisica, fk_presentacion),
+    
+    CONSTRAINT fk_venta_fisica
+        FOREIGN KEY (fk_venta_fisica) REFERENCES VENTA_FISICA (ven_fis_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_presentacion
+        FOREIGN KEY (fk_presentacion) REFERENCES PRESENTACION (pre_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT ck_det_ven_fis_cantidad
+        CHECK (det_ven_fis_cantidad > 0), -- Restricción para asegurar que la cantidad sea mayor a 0.
+);
+
 -- Venta Online
 CREATE TABLE VENTA_ONLINE
 (
@@ -983,6 +1061,8 @@ CREATE TABLE DETALLE_VENTA_ONLINE
     fk_venta_online INT NOT NULL,
     fk_presentacion INT NOT NULL,
 
+    PRIMARY KEY (det_ven_onl_id, fk_venta_online, fk_presentacion),
+
     CONSTRAINT fk_venta_online
         FOREIGN KEY (fk_venta_online) REFERENCES VENTA_ONLINE (ven_onl_id)
             ON DELETE CASCADE,
@@ -994,9 +1074,8 @@ CREATE TABLE DETALLE_VENTA_ONLINE
     CONSTRAINT ck_det_ven_onl_cantidad
         CHECK (det_ven_onl_cantidad > 0), -- Restricción para asegurar que la cantidad sea mayor a 0.
 );
-(
 
-);
+
 --------------------------------------------------------------------------------
 -- . EVENTO
 --------------------------------------------------------------------------------
@@ -1085,6 +1164,51 @@ CREATE TABLE VENTA_EVENTO
         CHECK (ven_eve_descripcion ~ '^[A-Za-z0-9\s,.-]+$')
 );
 
+CREATE TABLE EXISTENCIA_EVENTO
+(
+    exi_eve_id SERIAL PRIMARY KEY,
+    exi_eve_cantidad INT NOT NULL,
+    fk_eve_pro INT NOT NULL,
+    fk_presentacion INT NOT NULL,
+
+    PRIMARY KEY (exi_eve_id, fk_eve_pro, fk_presentacion),
+
+    CONSTRAINT fk_eve_pro
+        FOREIGN KEY (fk_eve_pro) REFERENCES EVE_PRO (eve_pro_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_presentacion
+        FOREIGN KEY (fk_presentacion) REFERENCES PRESENTACION (pre_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT ck_exi_eve_cantidad
+        CHECK (exi_eve_cantidad > 0)
+);
+
+CREATE TABLE DETALLE_VENTA_EVENTO
+(
+    det_ven_eve_id SERIAL PRIMARY KEY,
+    det_ven_eve_cantidad INT NOT NULL,
+    det_ven_eve_precio_unitario DECIMAL(10, 2) NOT NULL,
+    fk_venta_evento INT NOT NULL,
+    fk_exi_eve INT NOT NULL,
+
+    PRIMARY KEY (det_ven_eve_id, fk_venta_evento, fk_exi_eve),
+
+    CONSTRAINT fk_venta_evento
+        FOREIGN KEY (fk_venta_evento) REFERENCES VENTA_EVENTO (ven_eve_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_exi_eve
+        FOREIGN KEY (fk_exi_eve) REFERENCES EXISTENCIA_EVENTO (exi_eve_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT ck_det_ven_eve_cantidad
+        CHECK (det_ven_eve_cantidad > 0), -- Restricción para asegurar que la cantidad sea mayor a 0.
+
+
+);
+
 -- Tabla: VENTA_BOLETO_EVENTO
 CREATE TABLE VENTA_BOLETO_EVENTO 
 (
@@ -1143,6 +1267,84 @@ CREATE TABLE EVE_PRO
         FOREIGN KEY (fk_proveedor) REFERENCES PROVEEDOR (pro_id)
             ON DELETE CASCADE
 );
+
+--------------------------------------------------------------------------------
+-- . solicitudes
+--------------------------------------------------------------------------------
+
+CREATE TABLE SOLICITUD_REPOSICION
+(
+    sol_rep_id SERIAL PRIMARY KEY,
+    sol_rep_fecha_hora TIMESTAMP NOT NULL,
+    sol_rep_descripcion VARCHAR(255) NOT NULL,
+    fk_usuario INT NOT NULL,
+    fk_inv INT NOT NULL,
+    fk_pre_alm INT NOT NULL,
+
+    CONSTRAINT fk_usuario
+        FOREIGN KEY (fk_usuario) REFERENCES USUARIO (usu_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_inv
+        FOREIGN KEY (fk_inv) REFERENCES INVENTARIO (inv_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_pre_alm
+        FOREIGN KEY (fk_pre_alm) REFERENCES PRE_ALM (pre_alm_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT ck_sol_rep_fecha_hora
+        CHECK (sol_rep_fecha_hora >= CURRENT_DATE AND sol_rep_fecha_hora <= '2100-12-31 23:59:59')
+);
+
+CREATE TABLE SOLICITUD_COMPRA
+(
+    sol_com_id SERIAL PRIMARY KEY,
+    sol_com_fecha TIMESTAMP NOT NULL,
+    sol_com_total DECIMAL(10, 2) NOT NULL,
+    fk_usuario INT NOT NULL,
+    fk_proveedor INT NOT NULL,
+    fk_pre_alm INT NOT NULL,
+
+    CONSTRAINT fk_usuario
+        FOREIGN KEY (fk_usuario) REFERENCES USUARIO (usu_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_proveedor
+        FOREIGN KEY (fk_proveedor) REFERENCES PROVEEDOR (pro_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_pre_alm
+        FOREIGN KEY (fk_pre_alm) REFERENCES PRE_ALM (pre_alm_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT ck_sol_com_fecha
+        CHECK (sol_com_fecha >= CURRENT_DATE AND sol_com_fecha <= '2100-12-31 23:59:59')
+);
+
+CREATE TABLE DETALLE_COMPRA 
+(
+    det_com_id SERIAL PRIMARY KEY,
+    det_com_cantidad INT NOT NULL,
+    det_com_precio_unitario DECIMAL(10, 2) NOT NULL,
+    fk_sol_com INT NOT NULL,
+    fk_presentacion INT NOT NULL,
+
+    PRIMARY KEY (det_com_id, fk_sol_com, fk_presentacion),
+
+    CONSTRAINT fk_sol_com
+        FOREIGN KEY (fk_sol_com) REFERENCES SOLICITUD_COMPRA (sol_com_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_presentacion
+        FOREIGN KEY (fk_presentacion) REFERENCES PRESENTACION (pre_id)
+            ON DELETE CASCADE,
+
+
+    CONSTRAINT ck_det_com_precio_unitario
+        CHECK (det_com_precio_unitario > 0)
+);
+
 
 --------------------------------------------------------------------------------
 -- . PAGO
@@ -1269,6 +1471,21 @@ CREATE TABLE HISTORICO_MONEDA
         CHECK (his_valor_cambio > 0)
 );
 
+CREATE TABLE PAGO_EFECTIVO
+(
+    pag_efe_id SERIAL PRIMARY KEY,
+    pag_efe_monto DECIMAL(10, 2) NOT NULL,
+    pag_efe_fecha TIMESTAMP NOT NULL,
+    fk_sol_com INT NOT NULL,
+    fk_metodo_pago INT NOT NULL,
+
+    CONSTRAINT fk_metodo_pago
+        FOREIGN KEY (fk_metodo_pago) REFERENCES METODO_PAGO (met_pag_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT ck_pag_efe_fecha
+        CHECK (pag_efe_fecha >= CURRENT_DATE AND pag_efe_fecha <= '2100-12-31 23:59:59')
+);
 
 --------------------------------------------------------------------------------
 -- . ESTATUS
@@ -1334,6 +1551,50 @@ CREATE TABLE AFI_EST
 
     CONSTRAINT ck_afi_est_fecha_fin
         CHECK (afi_est_fecha_fin IS NULL OR afi_est_fecha_fin >= afi_est_fecha_inicio)
+);
+
+CREATE TABLE SOL_REP_EST
+(
+    sol_rep_est_id SERIAL PRIMARY KEY,
+    sol_rep_est_fecha_inicio DATE NOT NULL DEFAULT CURRENT_DATE,
+    sol_rep_est_fecha_fin DATE,
+    fk_sol_rep INT NOT NULL,
+    fk_estatus INT NOT NULL,
+
+    PRIMARY KEY (sol_rep_est_id, fk_sol_rep, fk_estatus),
+
+    CONSTRAINT fk_sol_rep
+        FOREIGN KEY (fk_sol_rep) REFERENCES SOLICITUD_REPOSICION (sol_rep_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_estatus
+        FOREIGN KEY (fk_estatus) REFERENCES ESTATUS (est_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT ck_sol_rep_est_fecha_inicio
+        CHECK (sol_rep_est_fecha_inicio <= CURRENT_DATE AND sol_rep_est_fecha_inicio >= '1900-01-01'),
+);
+
+CREATE TABLE SOL_COM_EST
+(
+    sol_com_est_id SERIAL PRIMARY KEY,
+    sol_com_est_fecha_inicio DATE NOT NULL DEFAULT CURRENT_DATE,
+    sol_com_est_fecha_fin DATE,
+    fk_sol_com INT NOT NULL,
+    fk_estatus INT NOT NULL,
+
+    PRIMARY KEY (sol_com_est_id, fk_sol_com, fk_estatus),
+
+    CONSTRAINT fk_sol_com
+        FOREIGN KEY (fk_sol_com) REFERENCES SOLICITUD_COMPRA (sol_com_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_estatus
+        FOREIGN KEY (fk_estatus) REFERENCES ESTATUS (est_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT ck_sol_com_est_fecha_inicio
+        CHECK (sol_com_est_fecha_inicio <= CURRENT_DATE AND sol_com_est_fecha_inicio >= '1900-01-01'),
 );
 
 --DROP A TODA LAS TABLAS 
