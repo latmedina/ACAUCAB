@@ -311,23 +311,23 @@ CREATE TABLE CAR_TIP_CER
 
 CREATE TABLE CLIENTE
 (
-    cli_id                  SERIAL PRIMARY KEY,
-    cli_rif                 VARCHAR(12)  NOT NULL UNIQUE,
-    cli_direccion_fisica    VARCHAR(255) NOT NULL,
-    cli_tipo_cliente        VARCHAR(10)  NOT NULL,
-    cli_nat_ci              VARCHAR(12)  UNIQUE,
-    cli_nat_pnombre         VARCHAR(50),
-    cli_nat_snombre         VARCHAR(50),
-    cli_nat_papellido       VARCHAR(50),
-    cli_nat_sapellido       VARCHAR(50),
-    cli_nat_sexo            CHAR(1),
-    cli_jur_denom_comercial VARCHAR(70),
-    cli_jur_razon_social    VARCHAR(70),
-    cli_jur_url_web         VARCHAR(255),
-    cli_jur_capital         INT,
-    cli_jur_dir_fiscal      VARCHAR(255),
-    fk_lugar                INT          NOT NULL,
-    cli_cantidad_puntos     INT          DEFAULT 0,
+    cli_id                  SERIAL PRIMARY KEY COMMENT 'Identificador único del cliente.',
+    cli_rif                 VARCHAR(12)  NOT NULL UNIQUE COMMENT 'RIF del cliente.',
+    cli_direccion_fisica    VARCHAR(255) NOT NULL COMMENT 'Dirección física del cliente.',
+    cli_tipo_cliente        VARCHAR(10)  NOT NULL COMMENT 'Tipo de cliente.',
+    cli_nat_ci              VARCHAR(12)  UNIQUE COMMENT 'Cédula de identidad del cliente.',
+    cli_nat_pnombre         VARCHAR(50) COMMENT 'Primer nombre del cliente.',
+    cli_nat_snombre         VARCHAR(50) COMMENT 'Segundo nombre del cliente.',
+    cli_nat_papellido       VARCHAR(50) COMMENT 'Primer apellido del cliente.',
+    cli_nat_sapellido       VARCHAR(50) COMMENT 'Segundo apellido del cliente.',
+    cli_nat_sexo            CHAR(1) COMMENT 'Sexo del cliente.',
+    cli_jur_denom_comercial VARCHAR(70) COMMENT 'Denominación comercial del cliente.',
+    cli_jur_razon_social    VARCHAR(70) COMMENT 'Razón social del cliente.',
+    cli_jur_url_web         VARCHAR(255) COMMENT 'URL web del cliente.',
+    cli_jur_capital         INT COMMENT 'Capital del cliente.',
+    cli_jur_dir_fiscal      VARCHAR(255) COMMENT 'Dirección fiscal del cliente.',
+    fk_lugar                INT          NOT NULL COMMENT 'Identificador del lugar.',
+    cli_cantidad_puntos     INT          DEFAULT 0 COMMENT 'Cantidad de puntos del cliente.',
 
     CONSTRAINT fk_lugar
         FOREIGN KEY (fk_lugar) REFERENCES LUGAR (lug_id),
@@ -378,10 +378,10 @@ CREATE TABLE CLIENTE
 
 CREATE TABLE CONTACTO_CLIENTE
 (
-    con_cli_id          SERIAL PRIMARY KEY,
-    con_cli_nombre     VARCHAR(50) NOT NULL,
-    con_cli_apellido   VARCHAR(50) NOT NULL,
-    fk_cliente          INT NOT NULL,
+    con_cli_id          SERIAL PRIMARY KEY COMMENT 'Identificador único del contacto del cliente.',
+    con_cli_nombre     VARCHAR(50) NOT NULL COMMENT 'Nombre del contacto del cliente.',
+    con_cli_apellido   VARCHAR(50) NOT NULL COMMENT 'Apellido del contacto del cliente.',
+    fk_cliente          INT NOT NULL COMMENT 'Identificador del cliente.',
 
     CONSTRAINT fk_contacto_cliente
         FOREIGN KEY (fk_cliente) REFERENCES CLIENTE (cli_id)
@@ -400,13 +400,13 @@ CREATE TABLE CONTACTO_CLIENTE
 
 CREATE TABLE PROVEEDOR
 (
-    pro_id                      SERIAL PRIMARY KEY,
-    pro_rif                     VARCHAR(12)  NOT NULL UNIQUE,
-    pro_denominacion_comercial  VARCHAR(70),
-    pro_razon_social            VARCHAR(70),
-    pro_url_web                 VARCHAR(255),
-    pro_direccion_fiscal        VARCHAR(255),
-    fk_lugar                    INT          NOT NULL,
+    pro_id                      SERIAL PRIMARY KEY COMMENT 'Identificador único del proveedor.',
+    pro_rif                     VARCHAR(12)  NOT NULL UNIQUE COMMENT 'RIF del proveedor.',
+    pro_denominacion_comercial  VARCHAR(70) COMMENT 'Denominación comercial del proveedor.',
+    pro_razon_social            VARCHAR(70) COMMENT 'Razón social del proveedor.',
+    pro_url_web                 VARCHAR(255) COMMENT 'URL web del proveedor.',
+    pro_direccion_fiscal        VARCHAR(255) COMMENT 'Dirección fiscal del proveedor.',
+    fk_lugar                    INT          NOT NULL COMMENT 'Identificador del lugar.',
     
     CONSTRAINT fk_lugar
         FOREIGN KEY (fk_lugar) REFERENCES LUGAR (lug_id),
@@ -429,10 +429,10 @@ CREATE TABLE PROVEEDOR
 
 CREATE TABLE CONTACTO_PROVEEDOR
 (
-    con_pro_id          SERIAL PRIMARY KEY,
-    con_pro_nombre     VARCHAR(50) NOT NULL,
-    con_pro_apellido   VARCHAR(50) NOT NULL,
-    fk_proveedor       INT NOT NULL,
+    con_pro_id          SERIAL PRIMARY KEY COMMENT 'Identificador único del contacto del proveedor.',
+    con_pro_nombre     VARCHAR(50) NOT NULL COMMENT 'Nombre del contacto del proveedor.',
+    con_pro_apellido   VARCHAR(50) NOT NULL COMMENT 'Apellido del contacto del proveedor.',
+    fk_proveedor       INT NOT NULL COMMENT 'Identificador del proveedor.',
 
     CONSTRAINT fk_contacto_proveedor
         FOREIGN KEY (fk_proveedor) REFERENCES PROVEEDOR (pro_id)
@@ -447,11 +447,11 @@ CREATE TABLE CONTACTO_PROVEEDOR
 
 CREATE TABLE AFILIACION
 (
-    afi_id         SERIAL PRIMARY KEY,
-    afi_nombre     VARCHAR(50) NOT NULL,
-    afi_monto      INT NOT NULL,
-    fk_proveedor   INT NOT NULL,
-    fk_tienda      INT NOT NULL,
+    afi_id         SERIAL PRIMARY KEY COMMENT 'Identificador único de la afiliación.',
+    afi_nombre     VARCHAR(50) NOT NULL COMMENT 'Nombre de la afiliación.',
+    afi_monto      INT NOT NULL COMMENT 'Monto de la afiliación.',
+    fk_proveedor   INT NOT NULL COMMENT 'Identificador del proveedor.',
+    fk_tienda      INT NOT NULL COMMENT 'Identificador de la tienda.',
 
     CONSTRAINT fk_proveedor
         FOREIGN KEY (fk_proveedor) REFERENCES PROVEEDOR (pro_id)
@@ -932,84 +932,6 @@ CREATE TABLE INVENTARIO
 
 );
 
--- Venta Física
-CREATE TABLE VENTA_FISICA
-(
-    ven_fis_id          SERIAL PRIMARY KEY COMMENT 'Identificador único de la venta física.',
-    ven_fis_fecha       DATE NOT NULL DEFAULT CURRENT_DATE COMMENT 'Fecha de la venta física.',
-    ven_fis_total       INT NOT NULL COMMENT 'Total de la venta física.',
-    fk_tienda           INT NOT NULL COMMENT 'Identificador de la tienda.',
-    fk_cliente          INT NOT NULL COMMENT 'Identificador del cliente.',
-    fk_oferta           INT COMMENT 'Identificador de la oferta.',
-
-    CONSTRAINT fk_tienda
-        FOREIGN KEY (fk_tienda) REFERENCES TIENDA (tie_id),
-
-    CONSTRAINT fk_cliente
-        FOREIGN KEY (fk_cliente) REFERENCES CLIENTE (cli_id)
-            ON DELETE CASCADE,
-
-    CONSTRAINT fk_oferta
-        FOREIGN KEY (fk_oferta) REFERENCES OFERTA (ofe_id)
-            ON DELETE CASCADE,
-
-    CONSTRAINT ck_ven_fis_fecha
-        CHECK (ven_fis_fecha <= CURRENT_DATE AND ven_fis_fecha >= '1900-01-01'),
-
-    CONSTRAINT ck_ven_fis_total
-        CHECK (ven_fis_total > 0)
-);
-
-CREATE TABLE DETALLE_VENTA_FISICA
-(
-    det_ven_fis_id SERIAL PRIMARY KEY COMMENT 'Identificador único del detalle de la venta física.',
-    det_ven_fis_cantidad INT NOT NULL COMMENT 'Cantidad de la venta física.',
-    det_ven_fis_precio_unitario DECIMAL(10, 2) NOT NULL COMMENT 'Precio unitario de la venta física.',
-    fk_venta_fisica INT NOT NULL COMMENT 'Identificador de la venta física.',
-    fk_presentacion INT NOT NULL COMMENT 'Identificador de la presentación.',
-
-    PRIMARY KEY (det_ven_fis_id, fk_venta_fisica, fk_presentacion),
-    
-    CONSTRAINT fk_venta_fisica
-        FOREIGN KEY (fk_venta_fisica) REFERENCES VENTA_FISICA (ven_fis_id)
-            ON DELETE CASCADE,
-
-    CONSTRAINT fk_presentacion
-        FOREIGN KEY (fk_presentacion) REFERENCES PRESENTACION (pre_id)
-            ON DELETE CASCADE,
-
-    CONSTRAINT ck_det_ven_fis_cantidad
-        CHECK (det_ven_fis_cantidad > 0), -- Restricción para asegurar que la cantidad sea mayor a 0.
-);
-
--- Venta Online
-CREATE TABLE VENTA_ONLINE
-(
-    ven_onl_id          SERIAL PRIMARY KEY COMMENT 'Identificador único de la venta online.',
-    ven_onl_fecha       DATE NOT NULL DEFAULT CURRENT_DATE COMMENT 'Fecha de la venta online.',
-    ven_onl_total       INT NOT NULL COMMENT 'Total de la venta online.',
-    fk_usuario          INT NOT NULL COMMENT 'Identificador del usuario.',
-    fk_oferta           INT COMMENT 'Identificador de la oferta.',
-    fk_tienda           INT NOT NULL COMMENT 'Identificador de la tienda.',
-
-    CONSTRAINT fk_tienda
-        FOREIGN KEY (fk_tienda) REFERENCES TIENDA (tie_id),
-
-    CONSTRAINT fk_usuario
-        FOREIGN KEY (fk_usuario) REFERENCES USUARIO (usu_id)
-            ON DELETE CASCADE,
-
-    CONSTRAINT fk_oferta
-        FOREIGN KEY (fk_oferta) REFERENCES OFERTA (ofe_id)
-            ON DELETE CASCADE,
-
-    CONSTRAINT ck_ven_onl_fecha
-        CHECK (ven_onl_fecha <= CURRENT_DATE AND ven_onl_fecha >= '1900-01-01'),
-
-    CONSTRAINT ck_ven_onl_total
-        CHECK (ven_onl_total > 0)
-);
-
 CREATE TABLE ALMACEN
 (
     alm_id              SERIAL PRIMARY KEY COMMENT 'Identificador único del almacén.',
@@ -1052,6 +974,84 @@ CREATE TABLE PRE_ALM
     CONSTRAINT ck_pre_alm_precio
         CHECK (pre_alm_precio > 0), -- Restricción para asegurar que el precio sea mayor a 0.
 );  
+-- Venta Física
+CREATE TABLE VENTA_FISICA
+(
+    ven_fis_id          SERIAL PRIMARY KEY COMMENT 'Identificador único de la venta física.',
+    ven_fis_fecha       DATE NOT NULL DEFAULT CURRENT_DATE COMMENT 'Fecha de la venta física.',
+    ven_fis_total       INT NOT NULL COMMENT 'Total de la venta física.',
+    fk_tienda           INT NOT NULL COMMENT 'Identificador de la tienda.',
+    fk_cliente          INT NOT NULL COMMENT 'Identificador del cliente.',
+    fk_oferta           INT COMMENT 'Identificador de la oferta.',
+
+    CONSTRAINT fk_tienda
+        FOREIGN KEY (fk_tienda) REFERENCES TIENDA (tie_id),
+
+    CONSTRAINT fk_cliente
+        FOREIGN KEY (fk_cliente) REFERENCES CLIENTE (cli_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_oferta
+        FOREIGN KEY (fk_oferta) REFERENCES OFERTA (ofe_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT ck_ven_fis_fecha
+        CHECK (ven_fis_fecha <= CURRENT_DATE AND ven_fis_fecha >= '1900-01-01'),
+
+    CONSTRAINT ck_ven_fis_total
+        CHECK (ven_fis_total > 0)
+);
+
+CREATE TABLE DETALLE_VENTA_FISICA
+(
+    det_ven_fis_id SERIAL PRIMARY KEY COMMENT 'Identificador único del detalle de la venta física.',
+    det_ven_fis_cantidad INT NOT NULL COMMENT 'Cantidad de la venta física.',
+    det_ven_fis_precio_unitario DECIMAL(10, 2) NOT NULL COMMENT 'Precio unitario de la venta física.',
+    fk_venta_fisica INT NOT NULL COMMENT 'Identificador de la venta física.',
+    fk_inventario INT NOT NULL COMMENT 'Identificador de la presentación.',
+
+    PRIMARY KEY (det_ven_fis_id, fk_venta_fisica, fk_inventario),
+    
+    CONSTRAINT fk_venta_fisica
+        FOREIGN KEY (fk_venta_fisica) REFERENCES VENTA_FISICA (ven_fis_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_inventario
+        FOREIGN KEY (fk_inventario) REFERENCES INVENTARIO (inv_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT ck_det_ven_fis_cantidad
+        CHECK (det_ven_fis_cantidad > 0), -- Restricción para asegurar que la cantidad sea mayor a 0.
+);
+
+-- Venta Online
+CREATE TABLE VENTA_ONLINE
+(
+    ven_onl_id          SERIAL PRIMARY KEY COMMENT 'Identificador único de la venta online.',
+    ven_onl_fecha       DATE NOT NULL DEFAULT CURRENT_DATE COMMENT 'Fecha de la venta online.',
+    ven_onl_total       INT NOT NULL COMMENT 'Total de la venta online.',
+    fk_usuario          INT NOT NULL COMMENT 'Identificador del usuario.',
+    fk_oferta           INT COMMENT 'Identificador de la oferta.',
+    fk_tienda           INT NOT NULL COMMENT 'Identificador de la tienda.',
+
+    CONSTRAINT fk_tienda
+        FOREIGN KEY (fk_tienda) REFERENCES TIENDA (tie_id),
+
+    CONSTRAINT fk_usuario
+        FOREIGN KEY (fk_usuario) REFERENCES USUARIO (usu_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_oferta
+        FOREIGN KEY (fk_oferta) REFERENCES OFERTA (ofe_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT ck_ven_onl_fecha
+        CHECK (ven_onl_fecha <= CURRENT_DATE AND ven_onl_fecha >= '1900-01-01'),
+
+    CONSTRAINT ck_ven_onl_total
+        CHECK (ven_onl_total > 0)
+);
+
 
 
 CREATE TABLE DETALLE_VENTA_ONLINE
@@ -1059,17 +1059,16 @@ CREATE TABLE DETALLE_VENTA_ONLINE
     det_ven_onl_cantidad INT NOT NULL COMMENT 'Cantidad de la venta online.',
     det_ven_onl_precio DECIMAL(10, 2) NOT NULL COMMENT 'Precio de la venta online.',
     fk_venta_online INT NOT NULL COMMENT 'Identificador de la venta online.',
-    fk_presentacion INT NOT NULL COMMENT 'Identificador de la presentación.',
-    fk_almacen INT NOT NULL,
+    fk_pre_alm INT NOT NULL COMMENT 'Identificador de la presentación en el almacén.',
 
-    PRIMARY KEY (fk_venta_online, fk_presentacion, fk_almacen),
+    PRIMARY KEY (fk_venta_online, fk_pre_alm),
 
     CONSTRAINT fk_venta_online
         FOREIGN KEY (fk_venta_online) REFERENCES VENTA_ONLINE (ven_onl_id)
             ON DELETE CASCADE,
 
     CONSTRAINT fk_pre_alm
-        FOREIGN KEY (fk_presentacion, fk_almacen) REFERENCES PRE_ALM (fk_presentacion, fk_almacen)
+        FOREIGN KEY (fk_pre_alm) REFERENCES PRE_ALM (pre_alm_id)
             ON DELETE CASCADE,
 
     CONSTRAINT ck_det_ven_onl_cantidad

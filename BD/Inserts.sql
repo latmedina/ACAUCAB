@@ -1932,3 +1932,992 @@ INSERT INTO LUGAR ( FK_Lugar,Lug_Nombre,Lug_Tipo) VALUES
 
 -- FIN DE LOS INSERT DE LUGAR
 
+-- INICIO DE LOS INSERT DE TIENDA
+
+-- Inserts para Tiendas (10 registros necesarios para las afiliaciones)
+INSERT INTO TIENDA (tie_nombre, tie_direccion, tie_tipo, fk_lugar) VALUES
+('Cerveceria Central Caracas', 'Av. Francisco de Miranda 500, Caracas', 'FISICA', 360),
+('Beer Store Valencia', 'Centro Comercial Sambil, Valencia', 'FISICA', 115),
+('Maracaibo Beer House', 'Av. Bella Vista 123, Maracaibo', 'FISICA', 352),
+('Cerveza Online Venezuela', 'Plataforma Digital Nacional', 'ONLINE', 360),
+('Barquisimeto Brewery Shop', 'Av. Venezuela 456, Barquisimeto', 'FISICA', 171),
+('Puerto La Cruz Beer Center', 'Paseo Colon 789, Puerto La Cruz', 'FISICA', 43),
+('Andean Beer Store', 'Av. Los Proceres 321, Merida', 'FISICA', 189),
+('Craft Beer Boutique', 'Torre Financiera, Piso 5, Caracas', 'FISICA', 360),
+('Digital Beer Market', 'E-commerce Platform', 'ONLINE', 360),
+('Regional Beer Distribution', 'Zona Industrial Sur, Ciudad Bolivar', 'FISICA', 95);
+
+-- FIN DE LOS INSERT DE TIENDA
+-- INICIO DE LOS INSERT DE LUGAR_TIENDA
+
+-- Inserts para Lugar_Tienda (10 registros - uno por cada tienda)
+INSERT INTO LUGAR_TIENDA (lug_tie_nombre, lug_tie_tipo, fk_tienda, fk_lugar_tienda) VALUES
+('Sala Principal Caracas', 'Salon de Ventas', 1, 360), -- Cerveceria Central Caracas
+('Area Comercial Valencia', 'Centro Comercial', 2, 115), -- Beer Store Valencia
+('Showroom Maracaibo', 'Sala de Exhibicion', 3, 352), -- Maracaibo Beer House
+('Plataforma Digital Nacional', 'Centro de Operaciones', 4, 360), -- Cerveza Online Venezuela
+('Local Comercial Barquisimeto', 'Punto de Venta', 5, 171), -- Barquisimeto Brewery Shop
+('Area de Ventas Puerto La Cruz', 'Salon Comercial', 6, 43), -- Puerto La Cruz Beer Center
+('Tienda Andina Merida', 'Local Especializado', 7, 189), -- Andean Beer Store
+('Boutique Cervecera Caracas', 'Tienda Premium', 8, 360), -- Craft Beer Boutique
+('Centro Digital Caracas', 'Hub Tecnologico', 9, 360), -- Digital Beer Market
+('Almacen Ciudad Bolivar', 'Centro de Distribucion', 10, 95); -- Regional Beer Distribution
+
+-- FIN DE LOS INSERT DE LUGAR_TIENDA
+
+-- INICIO DE LOS INSERT DE ANAQUEL
+
+-- Inserts para Anaquel (10 registros - uno por cada lugar_tienda)
+INSERT INTO ANAQUEL (ana_numero, fk_lugar_tienda) VALUES
+(101, 1), -- Anaquel 101 en Sala Principal Caracas
+(201, 2), -- Anaquel 201 en Area Comercial Valencia
+(301, 3), -- Anaquel 301 en Showroom Maracaibo
+(401, 4), -- Anaquel 401 en Plataforma Digital Nacional
+(501, 5), -- Anaquel 501 en Local Comercial Barquisimeto
+(601, 6), -- Anaquel 601 en Area de Ventas Puerto La Cruz
+(701, 7), -- Anaquel 701 en Tienda Andina Merida
+(801, 8), -- Anaquel 801 en Boutique Cervecera Caracas
+(901, 9), -- Anaquel 901 en Centro Digital Caracas
+(1001, 10); -- Anaquel 1001 en Almacen Ciudad Bolivar
+
+-- FIN DE LOS INSERT DE ANAQUEL
+
+-- INICIO DE LOS INSERT DE CLIENTE
+
+-- Inserts para Clientes Naturales (20 registros)
+INSERT INTO CLIENTE (cli_rif, cli_direccion_fisica, cli_tipo_cliente, cli_nat_ci, cli_nat_pnombre, cli_nat_snombre, cli_nat_papellido, cli_nat_sapellido, cli_nat_sexo, fk_lugar, cli_cantidad_puntos) VALUES
+('J123456789', 'Av. Libertador 123, Caracas', 'NATURAL', 'V12345678', 'Carlos', 'Alberto', 'Rodriguez', 'Perez', 'M', 360, 150),
+('J123456790', 'Calle Real 456, Maracay', 'NATURAL', 'V23456789', 'Maria', 'Elena', 'Gonzalez', 'Martinez', 'F', 61, 200),
+('J123456791', 'Av. Universidad 789, Valencia', 'NATURAL', 'V34567890', 'Jose', 'Luis', 'Fernandez', 'Lopez', 'M', 115, 75),
+('J123456792', 'Calle Bolivar 321, Barquisimeto', 'NATURAL', 'V45678901', 'Ana', 'Maria', 'Sanchez', 'Garcia', 'F', 171, 300),
+('J123456793', 'Av. 5 de Julio 654, Maracaibo', 'NATURAL', 'V56789012', 'Luis', 'Fernando', 'Ramirez', 'Morales', 'M', 352, 120),
+('J123456794', 'Calle Miranda 987, Puerto La Cruz', 'NATURAL', 'V67890123', 'Carmen', 'Rosa', 'Herrera', 'Vargas', 'F', 43, 180),
+('J123456795', 'Av. Las Americas 147, San Cristobal', 'NATURAL', 'V78901234', 'Pedro', 'Antonio', 'Castillo', 'Romero', 'M', 297, 90),
+('J123456796', 'Calle Sucre 258, Cumana', 'NATURAL', 'V89012345', 'Rosa', 'Isabel', 'Mendoza', 'Silva', 'F', 273, 250),
+('J123456797', 'Av. Intercomunal 369, Barinas', 'NATURAL', 'V90123456', 'Miguel', 'Angel', 'Torres', 'Jimenez', 'M', 83, 160),
+('J123456798', 'Calle Paez 741, Merida', 'NATURAL', 'V01234567', 'Luisa', 'Fernanda', 'Moreno', 'Ruiz', 'F', 189, 210),
+('J123456799', 'Av. Principal 852, Ciudad Bolivar', 'NATURAL', 'V12345679', 'Roberto', 'Carlos', 'Gutierrez', 'Diaz', 'M', 95, 110),
+('J123456800', 'Calle Comercio 963, Punto Fijo', 'NATURAL', 'V23456780', 'Elena', 'Victoria', 'Navarro', 'Cruz', 'F', 133, 175),
+('J123456801', 'Av. Fuerzas Armadas 159, Los Teques', 'NATURAL', 'V34567891', 'Jorge', 'Eduardo', 'Ramos', 'Ortega', 'M', 210, 135),
+('J123456802', 'Calle Ayacucho 357, Guarenas', 'NATURAL', 'V45678902', 'Patricia', 'Alejandra', 'Vega', 'Molina', 'F', 217, 195),
+('J123456803', 'Av. Romulo Gallegos 468, Maturin', 'NATURAL', 'V56789013', 'Fernando', 'Jose', 'Delgado', 'Paredes', 'M', 229, 85),
+('J123456804', 'Calle Urdaneta 579, Porlamar', 'NATURAL', 'V67890124', 'Gabriela', 'Antonieta', 'Campos', 'Rivero', 'F', 241, 220),
+('J123456805', 'Av. Rotaria 680, Acarigua', 'NATURAL', 'V78901235', 'Andres', 'Manuel', 'Suarez', 'Acosta', 'M', 247, 140),
+('J123456806', 'Calle Carabobo 791, Carora', 'NATURAL', 'V89012346', 'Beatriz', 'Esperanza', 'Flores', 'Vera', 'F', 176, 265),
+('J123456807', 'Av. Los Proceres 802, Valera', 'NATURAL', 'V90123457', 'Ricardo', 'Enrique', 'Medina', 'Aguilar', 'M', 323, 100),
+('J123456808', 'Calle Democracia 913, Catia La Mar', 'NATURAL', 'V01234568', 'Maritza', 'del Carmen', 'Ponce', 'Guerrero', 'F', 324, 230),
+
+-- Inserts para Clientes Juridicos (20 registros)
+('J234567890', 'Torre Empresarial, Piso 15, Caracas', 'JURIDICO', NULL, NULL, NULL, NULL, NULL, NULL, 'Distribuidora Andina', 'Distribuidora Andina C.A.', 'https://www.distribuidoraandina.com', 5000000, 'Av. Francisco de Miranda, Caracas', 360, 500),
+('J234567891', 'Centro Comercial El Recreo, Local 25, Caracas', 'JURIDICO', NULL, NULL, NULL, NULL, NULL, NULL, 'Cerveceria Nacional', 'Cerveceria Nacional S.A.', 'https://www.cerveceranacional.com', 8000000, 'Zona Industrial Los Ruices, Caracas', 360, 1200),
+('J234567892', 'Complejo Industrial Zona Norte, Valencia', 'JURIDICO', NULL, NULL, NULL, NULL, NULL, NULL, 'Malteria Central', 'Malteria Central C.A.', 'https://www.malteriacentral.com', 3500000, 'Av. Universidad Norte, Valencia', 115, 850),
+('J234567893', 'Edificio Comercial Plaza Mayor, Maracaibo', 'JURIDICO', NULL, NULL, NULL, NULL, NULL, NULL, 'Grupo Cervecero Zulia', 'Grupo Cervecero Zulia S.A.', 'https://www.grupocervecerozulia.com', 6200000, 'Av. Bella Vista, Maracaibo', 352, 950),
+('J234567894', 'Parque Industrial La Victoria, Aragua', 'JURIDICO', NULL, NULL, NULL, NULL, NULL, NULL, 'Bebidas Premium', 'Bebidas Premium C.A.', 'https://www.bebidaspremium.com', 4100000, 'Zona Industrial La Victoria, Aragua', 61, 750),
+('J234567895', 'Centro de Distribución Regional, Barquisimeto', 'JURIDICO', NULL, NULL, NULL, NULL, NULL, NULL, 'Comercial Lara', 'Comercial Lara S.R.L.', 'https://www.comerciallara.com', 2800000, 'Av. Venezuela, Barquisimeto', 171, 620),
+('J234567896', 'Plaza Comercial Oriente, Puerto La Cruz', 'JURIDICO', NULL, NULL, NULL, NULL, NULL, NULL, 'Distribuciones Oriente', 'Distribuciones Oriente C.A.', 'https://www.distribucionesoriente.com', 3200000, 'Complejo Jose, Puerto La Cruz', 43, 710),
+('J234567897', 'Zona Industrial San Tome, Anzoategui', 'JURIDICO', NULL, NULL, NULL, NULL, NULL, NULL, 'Petroleo y Bebidas', 'Petroleo y Bebidas S.A.', 'https://www.petroleoybebidas.com', 7500000, 'Av. Principal San Tome, Anzoategui', 33, 1100),
+('J234567898', 'Centro Empresarial Los Llanos, Barinas', 'JURIDICO', NULL, NULL, NULL, NULL, NULL, NULL, 'Agroindustrial Barinas', 'Agroindustrial Barinas C.A.', 'https://www.agroindustrialbarinas.com', 1900000, 'Sector Industrial, Barinas', 83, 480),
+('J234567899', 'Complejo Comercial Andino, Merida', 'JURIDICO', NULL, NULL, NULL, NULL, NULL, NULL, 'Montana Brewery', 'Montana Brewery C.A.', 'https://www.montanabrewery.com', 2500000, 'Zona Industrial Ejido, Merida', 189, 680),
+('J234567900', 'Parque Tecnologico Guayana, Ciudad Bolivar', 'JURIDICO', NULL, NULL, NULL, NULL, NULL, NULL, 'Minera Cervecera', 'Minera Cervecera S.A.', 'https://www.mineracervecera.com', 9200000, 'Sector Puerto Ordaz, Ciudad Bolivar', 95, 1350),
+('J234567901', 'Centro Logistico Falcon, Punto Fijo', 'JURIDICO', NULL, NULL, NULL, NULL, NULL, NULL, 'Costa Dorada Beverages', 'Costa Dorada Beverages C.A.', 'https://www.costadorada.com', 1800000, 'Refineria El Palito, Punto Fijo', 133, 420),
+('J234567902', 'Plaza Miranda Business Center, Los Teques', 'JURIDICO', NULL, NULL, NULL, NULL, NULL, NULL, 'Valles del Tuy Distribuidora', 'Valles del Tuy Distribuidora C.A.', 'https://www.vallesdeltuy.com', 1400000, 'Av. Intercomunal, Los Teques', 210, 380),
+('J234567903', 'Centro Industrial Guarenas, Miranda', 'JURIDICO', NULL, NULL, NULL, NULL, NULL, NULL, 'Nueva Era Bebidas', 'Nueva Era Bebidas S.A.', 'https://www.nuevaerabebidas.com', 3800000, 'Zona Industrial Guarenas, Miranda', 217, 820),
+('J234567904', 'Complejo Petrochemico Monagas, Maturin', 'JURIDICO', NULL, NULL, NULL, NULL, NULL, NULL, 'Oriente Brewery Group', 'Oriente Brewery Group C.A.', 'https://www.orientebrewery.com', 6800000, 'Jose Industrial Complex, Maturin', 229, 1050),
+('J234567905', 'Marina Plaza Commercial, Porlamar', 'JURIDICO', NULL, NULL, NULL, NULL, NULL, NULL, 'Isla Margarita Beverages', 'Isla Margarita Beverages C.A.', 'https://www.islamargarita.com', 2200000, 'Sector Pampatar, Porlamar', 241, 580),
+('J234567906', 'Parque Agroindustrial Portuguesa, Acarigua', 'JURIDICO', NULL, NULL, NULL, NULL, NULL, NULL, 'Llanos Brewery', 'Llanos Brewery C.A.', 'https://www.llanosbrewery.com', 1600000, 'Zona Agricola Norte, Acarigua', 247, 440),
+('J234567907', 'Centro Comercial Carora Mall, Carora', 'JURIDICO', NULL, NULL, NULL, NULL, NULL, NULL, 'Tradicion Cervecera Lara', 'Tradicion Cervecera Lara S.A.', 'https://www.tradicioncervecera.com', 2100000, 'Av. Lara, Carora', 176, 550),
+('J234567908', 'Zona Industrial Trujillo, Valera', 'JURIDICO', NULL, NULL, NULL, NULL, NULL, NULL, 'Andes Mountain Brewery', 'Andes Mountain Brewery C.A.', 'https://www.andesmountain.com', 2700000, 'Sector Industrial Valera, Trujillo', 323, 650),
+('J234567909', 'Puerto Internacional La Guaira, Vargas', 'JURIDICO', NULL, NULL, NULL, NULL, NULL, NULL, 'Puerto Cervecero Internacional', 'Puerto Cervecero Internacional S.A.', 'https://www.puertocervecero.com', 4500000, 'Zona Portuaria La Guaira, Vargas', 324, 890);
+
+-- INICIO DE LOS INSERT DE CONTACTO_CLIENTE
+
+-- Inserts para Contactos de Cliente (10 registros - solo para clientes jurídicos)
+INSERT INTO CONTACTO_CLIENTE (con_cli_nombre, con_cli_apellido, fk_cliente) VALUES
+('Rafael', 'Montenegro', 21), -- Distribuidora Andina
+('Alejandra', 'Villarroel', 22), -- Cerveceria Nacional
+('Francisco', 'Delgado', 23), -- Malteria Central
+('Isabella', 'Contreras', 24), -- Grupo Cervecero Zulia
+('Mauricio', 'Espinoza', 25), -- Bebidas Premium
+('Daniela', 'Quintero', 26), -- Comercial Lara
+('Sebastian', 'Morales', 27), -- Distribuciones Oriente
+('Valentina', 'Rojas', 28), -- Petroleo y Bebidas
+('Alejandro', 'Gutierrez', 29), -- Agroindustrial Barinas
+('Camila', 'Hernandez', 30); -- Montana Brewery
+
+-- FIN DE LOS INSERT DE CONTACTO_CLIENTE
+
+
+
+-- INICIO DE LOS INSERT DE PROVEEDOR
+
+-- Inserts para Proveedores (20 registros)
+INSERT INTO PROVEEDOR (pro_rif, pro_denominacion_comercial, pro_razon_social, pro_url_web, pro_direccion_fiscal, fk_lugar) VALUES
+('J345678901', 'Maltas Venezolanas', 'Maltas Venezolanas C.A.', 'https://www.maltasvenezolanas.com', 'Zona Industrial Los Cortijos, Caracas', 360),
+('J345678902', 'Lupulos del Caribe', 'Lupulos del Caribe S.A.', 'https://www.lupulosdelcaribe.com', 'Complejo Agroindustrial Valencia, Carabobo', 115),
+('J345678903', 'Levaduras Tropicales', 'Levaduras Tropicales C.A.', 'https://www.levadurastropicales.com', 'Parque Industrial Maracaibo, Zulia', 352),
+('J345678904', 'Envases Cerveceros Unidos', 'Envases Cerveceros Unidos S.A.', 'https://www.envasescerveceros.com', 'Zona Industrial La Victoria, Aragua', 61),
+('J345678905', 'Ingredientes Premium', 'Ingredientes Premium C.A.', 'https://www.ingredientespremium.com', 'Sector Industrial Barquisimeto, Lara', 171),
+('J345678906', 'Tecnologia Cervecera', 'Tecnologia Cervecera S.R.L.', 'https://www.tecnologiacervecera.com', 'Av. Principal Puerto La Cruz, Anzoategui', 43),
+('J345678907', 'Distribuidora Andina Supplies', 'Distribuidora Andina Supplies C.A.', 'https://www.andinasupplies.com', 'Zona Franca Merida, Merida', 189),
+('J345678908', 'Equipos Industriales del Sur', 'Equipos Industriales del Sur S.A.', 'https://www.equipossur.com', 'Parque Industrial Ciudad Bolivar, Bolivar', 95),
+('J345678909', 'Materias Primas Centrales', 'Materias Primas Centrales C.A.', 'https://www.materiasprimas.com', 'Centro Industrial Los Teques, Miranda', 210),
+('J345678910', 'Suministros Cerveceros Falcon', 'Suministros Cerveceros Falcon S.A.', 'https://www.suministrosfalcon.com', 'Zona Petrolera Punto Fijo, Falcon', 133),
+('J345678911', 'Insumos Especializados', 'Insumos Especializados C.A.', 'https://www.insumosespecializados.com', 'Complejo Industrial Guarenas, Miranda', 217),
+('J345678912', 'Maquinaria Cervecera Nacional', 'Maquinaria Cervecera Nacional S.A.', 'https://www.maquinarianacional.com', 'Sector Industrial Maturin, Monagas', 229),
+('J345678913', 'Productos Organicos del Llano', 'Productos Organicos del Llano C.A.', 'https://www.organicosllano.com', 'Zona Agricola Acarigua, Portuguesa', 247),
+('J345678914', 'Conservantes y Aditivos', 'Conservantes y Aditivos S.R.L.', 'https://www.conservantesaditivos.com', 'Parque Industrial Carora, Lara', 176),
+('J345678915', 'Sistemas de Filtrado', 'Sistemas de Filtrado C.A.', 'https://www.sistemasfiltrado.com', 'Zona Industrial Valera, Trujillo', 323),
+('J345678916', 'Embalajes Especiales', 'Embalajes Especiales S.A.', 'https://www.embalajesespeciales.com', 'Puerto La Guaira, Vargas', 324),
+('J345678917', 'Laboratorios de Control', 'Laboratorios de Control C.A.', 'https://www.laboratorioscontrol.com', 'Ciudad Universitaria, Caracas', 360),
+('J345678918', 'Refrigeracion Industrial', 'Refrigeracion Industrial S.A.', 'https://www.refrigeracionindustrial.com', 'Zona Industrial San Felix, Bolivar', 95),
+('J345678919', 'Automatizacion Cervecera', 'Automatizacion Cervecera C.A.', 'https://www.automatizacioncervecera.com', 'Parque Tecnologico Valencia, Carabobo', 115),
+('J345678920', 'Servicios Integrales Cerveceros', 'Servicios Integrales Cerveceros S.A.', 'https://www.serviciosintegrales.com', 'Complejo Petroquimico Jose, Anzoategui', 33);
+
+-- FIN DE LOS INSERT DE PROVEEDOR
+
+-- INICIO DE LOS INSERT DE CONTACTO_PROVEEDOR
+
+-- Inserts para Contactos de Proveedor (10 registros)
+INSERT INTO CONTACTO_PROVEEDOR (con_pro_nombre, con_pro_apellido, fk_proveedor) VALUES
+('Miguel', 'Guerrero', 1), -- Maltas Venezolanas
+('Sofia', 'Castillo', 2), -- Lupulos del Caribe
+('Roberto', 'Mendez', 3), -- Levaduras Tropicales
+('Adriana', 'Paredes', 4), -- Envases Cerveceros Unidos
+('Eduardo', 'Silva', 5), -- Ingredientes Premium
+('Natalia', 'Moreno', 6), -- Tecnologia Cervecera
+('Fernando', 'Rojas', 7), -- Distribuidora Andina Supplies
+('Carolina', 'Vega', 8), -- Equipos Industriales del Sur
+('Alejandro', 'Torres', 9), -- Materias Primas Centrales
+('Mariana', 'Jimenez', 10); -- Suministros Cerveceros Falcon
+
+-- FIN DE LOS INSERT DE CONTACTO_PROVEEDOR
+
+-- INICIO DE LOS INSERT DE AFILIACION
+
+-- Inserts para Afiliaciones (10 registros)
+INSERT INTO AFILIACION (afi_nombre, afi_monto, fk_proveedor, fk_tienda) VALUES
+('Contrato Suministro Maltas', 250000, 1, 1), -- Maltas Venezolanas - Cerveceria Central Caracas
+('Acuerdo Lupulos Premium', 180000, 2, 2), -- Lupulos del Caribe - Beer Store Valencia
+('Contrato Levaduras Especiales', 95000, 3, 3), -- Levaduras Tropicales - Maracaibo Beer House
+('Suministro Envases Anuales', 320000, 4, 4), -- Envases Cerveceros Unidos - Cerveza Online Venezuela
+('Ingredientes Artesanales', 140000, 5, 5), -- Ingredientes Premium - Barquisimeto Brewery Shop
+('Tecnologia y Equipos', 280000, 6, 6), -- Tecnologia Cervecera - Puerto La Cruz Beer Center
+('Distribucion Regional Andina', 200000, 7, 7), -- Distribuidora Andina Supplies - Andean Beer Store
+('Equipamiento Industrial', 450000, 8, 8), -- Equipos Industriales del Sur - Craft Beer Boutique
+('Materias Primas Integrales', 350000, 9, 9), -- Materias Primas Centrales - Digital Beer Market
+('Suministros Especializados', 160000, 10, 10); -- Suministros Cerveceros Falcon - Regional Beer Distribution
+
+-- FIN DE LOS INSERT DE AFILIACION
+
+-- INICIO DE LOS INSERT DE CARGO
+
+-- Inserts para Cargo (10 registros)
+INSERT INTO CARGO (car_nombre, car_descripcion, car_salario) VALUES
+('Gerente General', 'Responsable de la dirección general de la tienda y supervisión de todas las operaciones', 2500000),
+('Supervisor de Ventas', 'Encargado de supervisar el equipo de ventas y garantizar el cumplimiento de objetivos', 1800000),
+('Vendedor Senior', 'Vendedor con experiencia en productos cerveceros y atención al cliente especializada', 1200000),
+('Vendedor Junior', 'Personal de ventas de nivel inicial con conocimientos básicos de productos', 900000),
+('Almacenista', 'Responsable del manejo de inventario, recepción y despacho de mercancía', 1000000),
+('Cajero', 'Encargado del manejo de caja, cobros y atención directa al cliente en el punto de venta', 850000),
+('Especialista en Cervezas', 'Experto en productos cerveceros, degustaciones y asesoría técnica a clientes', 1500000),
+('Coordinador de Logistica', 'Responsable de la coordinación de envíos, distribución y logística de productos', 1400000),
+('Asistente Administrativo', 'Apoyo en tareas administrativas, documentación y gestión de archivos', 950000),
+('Analista de Marketing', 'Responsable de estrategias de marketing, promociones y análisis de mercado', 1600000);
+
+-- FIN DE LOS INSERT DE CARGO
+
+-- INICIO DE LOS INSERT DE DEPARTAMENTO
+
+-- Inserts para Departamento (10 registros)
+INSERT INTO DEPARTAMENTO (dep_nombre, dep_descripcion) VALUES
+('Ventas', 'Departamento encargado de la comercialización y venta directa de productos cerveceros'),
+('Administracion', 'Área administrativa responsable de la gestión financiera, contable y de recursos humanos'),
+('Almacen', 'Departamento de gestión de inventario, almacenamiento y control de stock'),
+('Marketing', 'Área de mercadeo, promociones, publicidad y estrategias comerciales'),
+('Logistica', 'Departamento de distribución, transporte y cadena de suministro'),
+('Atencion al Cliente', 'Servicio especializado en atención, soporte y satisfacción del cliente'),
+('Compras', 'Área de adquisiciones, negociación con proveedores y gestión de contratos'),
+('Control de Calidad', 'Departamento de verificación de calidad de productos y procesos'),
+('Tecnologia', 'Área de sistemas, tecnología de la información y comercio electrónico'),
+('Recursos Humanos', 'Gestión del talento humano, capacitación y desarrollo del personal');
+
+-- FIN DE LOS INSERT DE DEPARTAMENTO
+
+-- INICIO DE LOS INSERT DE DEP_TIE
+
+-- Inserts para Dep_Tie (10 registros - un departamento por tienda)
+INSERT INTO DEP_TIE (fk_departamento, fk_tienda, dep_tie_fecha_inicio) VALUES
+(1, 1, '2023-01-15'), -- Ventas - Cerveceria Central Caracas
+(2, 2, '2023-02-01'), -- Administracion - Beer Store Valencia
+(3, 3, '2023-01-20'), -- Almacen - Maracaibo Beer House
+(4, 4, '2023-03-01'), -- Marketing - Cerveza Online Venezuela
+(5, 5, '2023-01-10'), -- Logistica - Barquisimeto Brewery Shop
+(6, 6, '2023-02-15'), -- Atencion al Cliente - Puerto La Cruz Beer Center
+(7, 7, '2023-01-25'), -- Compras - Andean Beer Store
+(8, 8, '2023-02-20'), -- Control de Calidad - Craft Beer Boutique
+(9, 9, '2023-03-10'), -- Tecnologia - Digital Beer Market
+(10, 10, '2023-01-30'); -- Recursos Humanos - Regional Beer Distribution
+
+-- FIN DE LOS INSERT DE DEP_TIE
+
+-- INICIO DE LOS INSERT DE EMPLEADO
+
+-- Inserts para Empleado (10 registros)
+INSERT INTO EMPLEADO (emp_ci, emp_pnombre, emp_snombre, emp_papellido, emp_sapellido, emp_direccion, emp_fecha_nacimiento, emp_sexo, fk_lugar) VALUES
+('V18456789', 'Carlos', 'Eduardo', 'Ramirez', 'Silva', 'Av. Principal 123, Caracas', '1985-03-15', 'M', 360),
+('V19567890', 'Maria', 'Isabel', 'Gonzalez', 'Martinez', 'Calle Real 456, Valencia', '1990-07-22', 'F', 115),
+('V20678901', 'Jose', 'Antonio', 'Rodriguez', 'Lopez', 'Av. Bella Vista 789, Maracaibo', '1988-11-10', 'M', 352),
+('V21789012', 'Ana', 'Lucia', 'Fernandez', 'Garcia', 'Urbanización Norte 321, Caracas', '1992-05-18', 'F', 360),
+('V22890123', 'Luis', 'Miguel', 'Torres', 'Moreno', 'Av. Venezuela 654, Barquisimeto', '1987-09-03', 'M', 171),
+('V23901234', 'Carmen', 'Rosa', 'Herrera', 'Castillo', 'Paseo Colon 987, Puerto La Cruz', '1991-12-08', 'F', 43),
+('V24012345', 'Ricardo', 'Enrique', 'Mendoza', 'Vargas', 'Av. Los Proceres 147, Merida', '1989-04-25', 'M', 189),
+('V25123456', 'Patricia', 'Alejandra', 'Suarez', 'Romero', 'Torre Empresarial 258, Caracas', '1993-08-14', 'F', 360),
+('V26234567', 'Fernando', 'Jose', 'Delgado', 'Jimenez', 'Centro Comercial 369, Caracas', '1986-01-30', 'M', 360),
+('V27345678', 'Gabriela', 'Antonieta', 'Vega', 'Paredes', 'Zona Industrial 741, Ciudad Bolivar', '1994-06-12', 'F', 95);
+
+-- FIN DE LOS INSERT DE EMPLEADO
+
+-- INICIO DE LOS INSERT DE EMP_CAR
+
+-- Inserts para Emp_Car (10 registros)
+INSERT INTO EMP_CAR (fk_empleado, fk_cargo, fk_departamento, fk_tienda, emp_car_fecha_inicio) VALUES
+(1, 1, 1, 1, '2023-01-15'), -- Carlos - Gerente General - Ventas - Cerveceria Central Caracas
+(2, 2, 2, 2, '2023-02-01'), -- Maria - Supervisor de Ventas - Administracion - Beer Store Valencia
+(3, 5, 3, 3, '2023-01-20'), -- Jose - Almacenista - Almacen - Maracaibo Beer House
+(4, 10, 4, 4, '2023-03-01'), -- Ana - Analista de Marketing - Marketing - Cerveza Online Venezuela
+(5, 8, 5, 5, '2023-01-10'), -- Luis - Coordinador de Logistica - Logistica - Barquisimeto Brewery Shop
+(6, 3, 6, 6, '2023-02-15'), -- Carmen - Vendedor Senior - Atencion al Cliente - Puerto La Cruz Beer Center
+(7, 4, 7, 7, '2023-01-25'), -- Ricardo - Vendedor Junior - Compras - Andean Beer Store
+(8, 7, 8, 8, '2023-02-20'), -- Patricia - Especialista en Cervezas - Control de Calidad - Craft Beer Boutique
+(9, 9, 9, 9, '2023-03-10'), -- Fernando - Asistente Administrativo - Tecnologia - Digital Beer Market
+(10, 6, 10, 10, '2023-01-30'); -- Gabriela - Cajero - Recursos Humanos - Regional Beer Distribution
+
+-- FIN DE LOS INSERT DE EMP_CAR
+
+-- INICIO DE LOS INSERT DE HORARIO
+
+-- Inserts para Horario (10 registros)
+INSERT INTO HORARIO (hor_dia, hor_hora_inicio, hor_hora_fin) VALUES
+('Lunes', '08:00:00', '17:00:00'),
+('Martes', '08:00:00', '17:00:00'),
+('Miércoles', '08:00:00', '17:00:00'),
+('Jueves', '08:00:00', '17:00:00'),
+('Viernes', '08:00:00', '17:00:00'),
+('Sábado', '09:00:00', '18:00:00'),
+('Domingo', '10:00:00', '16:00:00'),
+('Lunes', '14:00:00', '22:00:00'),
+('Sábado', '08:00:00', '14:00:00'),
+('Domingo', '12:00:00', '20:00:00');
+
+-- FIN DE LOS INSERT DE HORARIO
+
+-- INICIO DE LOS INSERT DE EMP_CAR_HOR
+
+-- Inserts para Emp_Car_Hor (10 registros)
+INSERT INTO EMP_CAR_HOR (fk_empleado, fk_cargo, fk_departamento, fk_tienda, fk_horario) VALUES
+(1, 1, 1, 1, 1), -- Carlos - Lunes mañana
+(2, 2, 2, 2, 2), -- Maria - Martes mañana
+(3, 5, 3, 3, 3), -- Jose - Miércoles mañana
+(4, 10, 4, 4, 4), -- Ana - Jueves mañana
+(5, 8, 5, 5, 5), -- Luis - Viernes mañana
+(6, 3, 6, 6, 6), -- Carmen - Sábado mañana-tarde
+(7, 4, 7, 7, 7), -- Ricardo - Domingo tarde
+(8, 7, 8, 8, 8), -- Patricia - Lunes tarde
+(9, 9, 9, 9, 9), -- Fernando - Sábado mañana
+(10, 6, 10, 10, 10); -- Gabriela - Domingo tarde
+
+-- FIN DE LOS INSERT DE EMP_CAR_HOR
+
+-- INICIO DE LOS INSERT DE ASISTENCIA
+
+-- Inserts para Asistencia (10 registros)
+INSERT INTO ASISTENCIA (asi_fecha_hora_inico, asi_fecha_hora_fin, fk_empleado) VALUES
+('2024-01-15 08:00:00', '2024-01-15 17:00:00', 1), -- Carlos
+('2024-01-16 08:00:00', '2024-01-16 17:00:00', 2), -- Maria
+('2024-01-17 08:00:00', '2024-01-17 17:00:00', 3), -- Jose
+('2024-01-18 08:00:00', '2024-01-18 17:00:00', 4), -- Ana
+('2024-01-19 08:00:00', '2024-01-19 17:00:00', 5), -- Luis
+('2024-01-20 09:00:00', '2024-01-20 18:00:00', 6), -- Carmen
+('2024-01-21 10:00:00', '2024-01-21 16:00:00', 7), -- Ricardo
+('2024-01-22 14:00:00', '2024-01-22 22:00:00', 8), -- Patricia
+('2024-01-23 08:00:00', '2024-01-23 14:00:00', 9), -- Fernando
+('2024-01-24 12:00:00', '2024-01-24 20:00:00', 10); -- Gabriela
+
+-- FIN DE LOS INSERT DE ASISTENCIA
+
+-- INICIO DE LOS INSERT DE TIPO_BENEFICIO
+
+-- Inserts para Tipo_Beneficio (10 registros)
+INSERT INTO TIPO_BENEFICIO (tip_ben_nombre, tip_ben_descripcion) VALUES
+('Bono de Productividad', 'Incentivo económico por cumplimiento de metas de ventas y productividad'),
+('Seguro Médico', 'Cobertura médica integral para el empleado y grupo familiar'),
+('Bono Vacacional', 'Compensación adicional durante el período de vacaciones anuales'),
+('Comisiones por Ventas', 'Porcentaje adicional por ventas realizadas que superen la meta establecida'),
+('Capacitación Especializada', 'Cursos y entrenamientos en productos cerveceros y atención al cliente'),
+('Transporte', 'Subsidio o reembolso para gastos de transporte al lugar de trabajo'),
+('Alimentación', 'Ticket o subsidio para comidas durante la jornada laboral'),
+('Bono de Antigüedad', 'Compensación por años de servicio y permanencia en la empresa'),
+('Seguro de Vida', 'Póliza de seguro de vida para protección del empleado y beneficiarios'),
+('Prima por Responsabilidad', 'Compensación adicional por cargos de supervisión y responsabilidades especiales');
+
+-- FIN DE LOS INSERT DE TIPO_BENEFICIO
+
+-- INICIO DE LOS INSERT DE EMP_TIP_BEN
+
+-- Inserts para Emp_Tip_Ben (10 registros)
+INSERT INTO EMP_TIP_BEN (fk_empleado, fk_tipo_beneficio, emp_tip_ben_monto) VALUES
+(1, 1, 300000), -- Carlos - Bono de Productividad
+(2, 2, 250000), -- Maria - Seguro Médico
+(3, 3, 150000), -- Jose - Bono Vacacional
+(4, 4, 200000), -- Ana - Comisiones por Ventas
+(5, 5, 180000), -- Luis - Capacitación Especializada
+(6, 6, 120000), -- Carmen - Transporte
+(7, 7, 100000), -- Ricardo - Alimentación
+(8, 8, 220000), -- Patricia - Bono de Antigüedad
+(9, 9, 160000), -- Fernando - Seguro de Vida
+(10, 10, 280000); -- Gabriela - Prima por Responsabilidad
+
+-- FIN DE LOS INSERT DE EMP_TIP_BEN
+
+-- INICIO DE LOS INSERT DE VACACION
+
+-- Inserts para Vacacion (10 registros)
+INSERT INTO VACACION (vac_fecha_inicio, vac_fecha_fin, fk_empleado) VALUES
+('2024-07-01', '2024-07-15', 1), -- Carlos - 15 días
+('2024-08-01', '2024-08-14', 2), -- Maria - 14 días
+('2024-06-15', '2024-06-29', 3), -- Jose - 15 días
+('2024-09-01', '2024-09-10', 4), -- Ana - 10 días
+('2024-07-15', '2024-07-29', 5), -- Luis - 15 días
+('2024-08-15', '2024-08-28', 6), -- Carmen - 14 días
+('2024-06-01', '2024-06-14', 7), -- Ricardo - 14 días
+('2024-09-15', '2024-09-29', 8), -- Patricia - 15 días
+('2024-07-01', '2024-07-10', 9), -- Fernando - 10 días
+('2024-08-01', '2024-08-15', 10); -- Gabriela - 15 días
+
+-- FIN DE LOS INSERT DE VACACION
+
+-- INICIO DE LOS INSERT DE CERVEZA
+
+-- Inserts para TIPO_CERVEZA
+INSERT INTO TIPO_CERVEZA (tip_cer_familia) VALUES
+('Ale'),      -- ID 1
+('Lager'),    -- ID 2
+('Wheat Beer'); -- ID 3
+
+-- Inserts para ESTILO_CERVEZA
+INSERT INTO ESTILO_CERVEZA (est_cer_nombre, est_cer_descripcion) VALUES
+('American Amber Ale', 'Cerveza artesana americana, moderadamente fuerte con un sabor a malta de caramelo. El amargor y el carácter lupulizado no deben chocar con el perfil de la malta caramelo.'),
+('American IPA', 'Menos maltosa y más lupulizada que la IPA tradicional, con lúpulos americanos y a menudo con dry hopping. Aroma y sabor a lúpulo con caracteres cítricos o resinosos.'),
+('American Pale Ale', 'Adaptación americana de las Pale Ales inglesas, empleando ingredientes nativos. Generalmente más claras, limpias y con menos sabores a caramelo que sus contrapartes inglesas.'),
+('Belgian Dubbel', 'Ale belga de color rojizo profundo, moderadamente fuerte, maltosa y compleja con aromas a chocolate, caramelo y frutas como ciruelas y pasas.'),
+('Belgian Golden Strong Ale', 'Ale belga dorada, compleja, efervescente y fuerte. Con aromas a ésteres frutados, especias y un carácter floral del lúpulo.'),
+('Belgian Specialty Ale', 'Categoría amplia para cervezas belgas artesanales únicas que no encajan en otros estilos, a menudo experimentales o clones de cervezas específicas.'),
+('Blonde Ale', 'De color dorado, posee un sabor ligero y cuerpo liviano, con aroma que recuerda a las frutas tropicales. Carbonatación media, sin asperezas.'),
+('Bohemian Pilsener', 'Estilo clásico de Pilsner originario de Bohemia, conocido por su rico sabor a malta y amargor pronunciado del lúpulo Saaz.'),
+('Bock', 'Lager muy rica en maltas tostadas de color oscuro. Suele tener más de 7% de alcohol, con predominio del sabor a malta y algo de dulzor.'),
+('Dry Stout', 'Stout más ligera y seca, con un característico sabor a café tostado y un final amargo y seco.'),
+('Düsseldorf Altbier', 'Cerveza alemana de color cobre a marrón, limpia y suavemente afrutada, con un amargor de lúpulo asertivo.'),
+('English Pale Ale', 'Versión inglesa de la Pale Ale, con un balance entre la malta y el lúpulo, a menudo con notas terrosas o florales de los lúpulos ingleses.'),
+('Imperial IPA', 'Una IPA más fuerte y lupulada que la versión estándar, con altos niveles de alcohol y amargor.'),
+('Imperial Stout', 'Stout muy intensa y compleja, con sabores a malta tostada, chocolate, café y frutas oscuras, y un alto contenido alcohólico.'),
+('India Pale Ale (IPA)', 'Originalmente una Pale Ale muy alcohólica y rica en lúpulo para aguantar largas travesías. Caracterizada por su fuerte amargor.'),
+('Irish Red Ale', 'Fácil de beber, con un sabor a malta de caramelo y un final seco tostado.'),
+('Munich Helles', 'Lager alemana pálida, con un sutil dulzor de malta y un amargor de lúpulo bajo, muy limpia y refrescante.'),
+('Oktoberfest-Marzen', 'Lager alemana de color ámbar con un sabor a malta limpio, rico, a pan y tostado, con un amargor restringido.'),
+('Porter', 'Cerveza oscura con sabores a malta tostada, chocolate y caramelo. Menos intensa y oscura que una Stout.'),
+('Saison', 'Ale belga de granja, refrescante, afrutada y especiada, con una alta carbonatación y un final muy seco.'),
+('Schwarzbier', 'Lager alemana negra. Ligera en cuerpo con sabores a malta tostada, a menudo con notas de chocolate o café, pero sin el amargor de una Stout.'),
+('Stout', 'Cerveza muy oscura hecha con malta tostada, con sabores a café, chocolate y caramelo, y textura espesa y cremosa.'),
+('Sweet Stout', 'Una Stout con mayor dulzor residual, a menudo por la adición de lactosa (Milk Stout).'),
+('Weizen-Weissbier', 'Cerveza de trigo alemana, pálida y refrescante, con notas distintivas de banana y clavo de la levadura.'),
+('Witbier', 'Cerveza de trigo belga, a menudo aderezada con cilantro y cáscara de naranja, de aspecto pálido y turbio.');
+
+-- Inserts para TIPO_ESTILO_CERVEZA
+INSERT INTO TIPO_ESTILO_CERVEZA (tip_est_cer_nombre, tip_est_cer_descripcion, fk_estilo_cerveza, fk_tipo_cerveza) VALUES
+('American Amber Ale', 'Estilo American Amber Ale de la familia Ale.', 1, 1),
+('American IPA', 'Estilo American IPA de la familia Ale.', 2, 1),
+('American Pale Ale', 'Estilo American Pale Ale de la familia Ale.', 3, 1),
+('Belgian Dubbel', 'Estilo Belgian Dubbel de la familia Ale.', 4, 1),
+('Belgian Golden Strong Ale', 'Estilo Belgian Golden Strong Ale de la familia Ale.', 5, 1),
+('Belgian Specialty Ale', 'Estilo Belgian Specialty Ale de la familia Ale.', 6, 1),
+('Blonde Ale', 'Estilo Blonde Ale de la familia Ale.', 7, 1),
+('Bohemian Pilsener Lager', 'Estilo Bohemian Pilsener de la familia Lager.', 8, 2),
+('Bock Lager', 'Estilo Bock de la familia Lager.', 9, 2),
+('Dry Stout Ale', 'Estilo Dry Stout de la familia Ale.', 10, 1),
+('Düsseldorf Altbier', 'Estilo Düsseldorf Altbier de la familia Ale.', 11, 1),
+('English Pale Ale', 'Estilo English Pale Ale de la familia Ale.', 12, 1),
+('Imperial IPA', 'Estilo Imperial IPA de la familia Ale.', 13, 1),
+('Imperial Stout', 'Estilo Imperial Stout de la familia Ale.', 14, 1),
+('India Pale Ale (IPA)', 'Estilo India Pale Ale (IPA) de la familia Ale.', 15, 1),
+('Irish Red Ale', 'Estilo Irish Red Ale de la familia Ale.', 16, 1),
+('Munich Helles Lager', 'Estilo Munich Helles de la familia Lager.', 17, 2),
+('Oktoberfest-Marzen Lager', 'Estilo Oktoberfest-Marzen de la familia Lager.', 18, 2),
+('Porter Ale', 'Estilo Porter Ale de la familia Ale.', 19, 1),
+('Saison Ale', 'Estilo Saison Ale de la familia Ale.', 20, 1),
+('Schwarzbier Lager', 'Estilo Schwarzbier de la familia Lager.', 21, 2),
+('Stout Ale', 'Estilo Stout de la familia Ale.', 22, 1),
+('Sweet Stout Ale', 'Estilo Sweet Stout de la familia Ale.', 23, 1),
+('Weizen-Weissbier', 'Estilo Weizen-Weissbier de la familia de Cervezas de Trigo.', 24, 3),
+('Witbier', 'Estilo Witbier de la familia de Cervezas de Trigo.', 25, 3);
+
+-- Inserts para CARACTERISTICA
+INSERT INTO CARACTERISTICA (car_nombre, car_descripcion) VALUES
+('Aroma', 'Descripción de los olores que emite la cerveza.'),
+('Apariencia', 'Descripción del color, espuma y claridad de la cerveza.'),
+('Sabor', 'Descripción de los sabores presentes en la cerveza.'),
+('Sensacion en Boca', 'Descripción de la textura, cuerpo y carbonatación.'),
+('Impresion General', 'Resumen de las características y balance de la cerveza.'),
+('IBU', 'International Bitterness Units, medida del amargor del lúpulo.'),
+('SRM', 'Standard Reference Method, medida del color de la cerveza.'),
+('Densidad Inicial', 'Densidad del mosto antes de la fermentación.'),
+('Densidad Final', 'Densidad de la cerveza después de la fermentación.'),
+('Grado Alcoholico', 'Porcentaje de alcohol por volumen.'),
+('Comentarios', 'Notas adicionales sobre el estilo o la cerveza.'),
+('Historia', 'Origen e historia del estilo de la cerveza.');
+
+-- Inserts para CAR_TIP_CER (Características para American Amber Ale)
+INSERT INTO CAR_TIP_CER (fk_caracteristica, fk_tipo_cerveza, carac_tip_cer_valor) VALUES
+(1, 1, 'Lúpulo entre bajo y moderado, con notas cítricas. Carácter maltoso moderado, a menudo con notas caramelizadas.'),
+(2, 1, 'Color entre ámbar y marrón cobrizo. Espuma amplia y blanca con buena retención. Clara, aunque con dry-hopping puede ser más turbia.'),
+(3, 1, 'Lúpulo de moderado a alto. Malta de moderada a fuerte, con dulzura inicial y sabor a caramelo. Ésteres frutados moderados o inexistentes.'),
+(4, 1, 'Cuerpo de medio a alto. Carbonatación de media a alta. Acabado suave sin astringencia.'),
+(6, 1, '25 - 40'),
+(7, 1, '10 - 17'),
+(8, 1, '1.045 – 1.060'),
+(9, 1, '1.010 – 1.015'),
+(10, 1, '4.5 – 6.2%'),
+(12, 1, 'Nació a finales del siglo XX en el Norte de California y Noroeste del Pacífico. También denominadas "Red Ales".');
+
+
+-- Inserts para RECETA (American Amber Ale)
+INSERT INTO RECETA (rec_nombre, rec_descripcion) VALUES
+('Receta American Amber Ale', 'Receta para elaborar una cerveza estilo American Amber Ale, tipo Todo Grano, basada en la descripción del texto.');
+
+-- Inserts para INGREDIENTE
+INSERT INTO INGREDIENTE (ing_nombre, ing_descripcion) VALUES
+('Malta Best Malz Pale Ale', 'Malta base para cervezas tipo Ale.'),
+('Malta Best Malz Aromatic', 'Malta que aporta un intenso aroma y sabor a malta.'),
+('Malta Best Malz Caramel Light', 'Malta caramelo que aporta color y dulzor.'),
+('Lúpulo Columbus', 'Lúpulo americano con alto contenido de alfa ácidos, ideal para amargor.'),
+('Lúpulo Cascade', 'Lúpulo americano con aroma floral y cítrico.'),
+('Levadura Danstar Bry-97', 'Levadura Ale americana que produce perfiles limpios y resalta el lúpulo.');
+
+-- Inserts para REC_ING (cantidades en gramos)
+INSERT INTO REC_ING (fk_receta, fk_ingrediente, rec_ing_cantidad) VALUES
+(1, 1, 5000), -- 5kg
+(1, 2, 500),  -- 0.5kg
+(1, 3, 400),  -- 0.4kg
+(1, 4, 7),    -- 7g
+(1, 5, 7),    -- 7g
+(1, 4, 10),   -- 10g (Columbus Flameout)
+(1, 5, 30);   -- 30g (Cascade Flameout)
+
+-- Inserts para INSTRUCCION
+INSERT INTO INSTRUCCION (ins_descripcion) VALUES
+('Macerar toda la malta durante 1 hora a 66 grados Celsius.'),
+('Realizar el sparging (lavado del grano) a 76 grados Celsius.'),
+('Hervir el mosto durante una hora.'),
+('A los 60 minutos restantes de hervor, añadir 7g de lúpulo Columbus.'),
+('A los 20 minutos restantes de hervor, añadir 7g de lúpulo Cascade.'),
+('Al apagar el fuego (flameout), añadir 10g de lúpulo Columbus y 30g de lúpulo Cascade.'),
+('Enfriar el mosto y fermentar a una temperatura entre 18 y 20 grados Celsius.'),
+('Madurar en botella o en barril durante 4 semanas.');
+
+-- Inserts para REC_INS
+INSERT INTO REC_INS (fk_receta, fk_instruccion) VALUES
+(1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8);
+
+-- Inserts para CERVEZA (Cervezas Venezolanas)
+INSERT INTO CERVEZA (cer_nombre, cer_descripcion, cer_grado_alcohol, fk_tipo_estilo_cerveza) VALUES
+('Destilo', 'Primera cerveza genuina ultra Premium tipo Ale hecha en Venezuela. Elaborada según la Ley de Baviera de 1516.', 5.5, 1), -- American Amber Ale
+('Dos Leones Latin American Pale Ale', 'Cerveza suavemente lupulada con tonos cítricos. Ya no se fabrica.', 6.0, 2), -- American IPA
+('Benitz Pale Ale', 'Cerveza Pale Ale de producción 100% artesanal, con balance entre el dulce de las maltas y el suave amargor de los lúpulos.', 5.8, 3), -- American Pale Ale
+('Mito Brewhouse Candileja de Abadia', 'Inspirada en procesos de monasterios trapenses. Cuerpo denso, color ámbar, aroma a caramelo, durazno y ciruela.', 6.8, 4), -- Belgian Dubbel
+('Cerveceria Lago Angel o Demonio', 'Cerveza de un dorado intenso y espuma blanca y fina, indicando su intensidad de aromas y sabores.', 8.5, 5), -- Belgian Golden Strong Ale
+('Barricas Saison Belga', 'Cerveza de temporada, afrutada con reminiscencias a especies. Característica del estilo Saison.', 6.5, 20), -- Saison
+('Aldarra Mantuana', 'Mezcla de cereales, maltas y lúpulos americanos. Color dorado, sabor ligero y cuerpo liviano. Aroma a frutas tropicales.', 4.8, 7); -- Blonde Ale
+
+-- Inserts para CERV_CAR (Características de Cervezas Venezolanas)
+INSERT INTO CERV_CAR (fk_cerveza, fk_caracteristica, carac_cer_valor) VALUES
+(1, 11, 'Se posiciona como una cerveza ultra premium.'),
+(2, 3, 'Suavemente lupulada con tonos cítricos.'),
+(3, 3, 'Balance entre el sabor dulce de las maltas y el suave amargor de los lúpulos.'),
+(3, 2, 'Totalmente sin filtrar, por lo que posee un turbio natural ("Naturtrübes").'),
+(4, 1, 'Aroma intenso a caramelo, con rasgos de durazno y ciruela.'),
+(4, 2, 'Cuerpo denso y resplandeciente color ámbar.'),
+(5, 2, 'Dorado intenso y una espuma blanca y fina.'),
+(5, 1, 'Intensidad de aromas y sabores.'),
+(6, 3, 'Afrutada con reminiscencias a especies.'),
+(7, 1, 'Aroma que recuerda las frutas tropicales.'),
+(7, 3, 'Sabor ligero y cuerpo liviano.');
+
+-- Inserts para PRESENTACION (una por cada cerveza)
+INSERT INTO PRESENTACION (prese_volumen, prese_recipiente, fk_cerveza, prese_imagen, prese_alto, prese_ancho) VALUES
+(330.00, 'Botella de Vidrio', 1, 'https://example.com/destilo.jpg', 22.0, 6.0),
+(330.00, 'Botella de Vidrio', 2, 'https://example.com/dosleones.jpg', 22.0, 6.0),
+(355.00, 'Botella de Vidrio', 3, 'https://example.com/benitz.jpg', 23.0, 6.2),
+(330.00, 'Botella de Vidrio', 4, 'https://example.com/mito_candileja.jpg', 24.0, 6.5),
+(330.00, 'Botella de Vidrio', 5, 'https://example.com/lago_angel_demonio.jpg', 22.5, 6.0),
+(750.00, 'Botella de Vidrio con Corcho', 6, 'https://example.com/barricas_saison.jpg', 29.0, 8.0),
+(355.00, 'Lata de Aluminio', 7, 'https://example.com/aldarra_mantuana.jpg', 12.2, 6.6);
+
+-- FIN DE LOS INSERT DE CERVEZA
+
+-- INICIO DE LOS INSERT DE ROL
+
+-- Inserts para Rol (10 registros)
+INSERT INTO ROL (rol_nombre, rol_descripcion) VALUES
+('ADMINISTRADOR', 'Rol con acceso completo al sistema y funciones administrativas.'),
+('EMPLEADO', 'Rol para empleados con acceso a funciones operativas básicas.'),
+('CLIENTE', 'Rol para clientes con acceso a compras y consultas de productos.'),
+('PROVEEDOR', 'Rol para proveedores con acceso a gestión de productos y pedidos.'),
+('GERENTE', 'Rol para gerentes con acceso a reportes y gestión de tienda.'),
+('VENDEDOR', 'Rol para vendedores con acceso a funciones de venta y atención al cliente.'),
+('ALMACENISTA', 'Rol para personal de almacén con acceso a gestión de inventario.'),
+('CAJERO', 'Rol para cajeros con acceso a funciones de cobro y facturación.'),
+('SUPERVISOR', 'Rol para supervisores con acceso a gestión de personal y operaciones.'),
+('INVITADO', 'Rol de acceso limitado para usuarios no registrados o temporales.');
+
+-- FIN DE LOS INSERT DE ROL
+
+-- INICIO DE LOS INSERT DE PRIVILEGIO
+
+-- Inserts para Privilegio (10 registros)
+INSERT INTO PRIVILEGIO (pri_accion, pri_vista) VALUES
+('READ', 'productos'),
+('create', 'productos'),
+('update', 'productos'),
+('delete', 'productos'),
+('read', 'clientes'),
+('create', 'clientes'),
+('update', 'inventario'),
+('read', 'reportes'),
+('create', 'ventas'),
+('delete', 'usuarios');
+
+-- FIN DE LOS INSERT DE PRIVILEGIO
+
+-- INICIO DE LOS INSERT DE PRI_ROL
+
+-- Inserts para Pri_Rol (10 registros)
+INSERT INTO PRI_ROL (fk_rol, fk_privilegio) VALUES
+(1, 1), -- ADMINISTRADOR - read productos
+(1, 2), -- ADMINISTRADOR - create productos
+(1, 3), -- ADMINISTRADOR - update productos
+(1, 4), -- ADMINISTRADOR - delete productos
+(2, 1), -- EMPLEADO - read productos
+(3, 1), -- CLIENTE - read productos
+(4, 1), -- PROVEEDOR - read productos
+(5, 8), -- GERENTE - read reportes
+(6, 9), -- VENDEDOR - create ventas
+(7, 7); -- ALMACENISTA - update inventario
+
+-- FIN DE LOS INSERT DE PRI_ROL
+
+-- INICIO DE LOS INSERT DE USUARIO
+
+-- Inserts para Usuario (10 registros)
+INSERT INTO USUARIO (usu_nombre_usuario, usu_contrasena, usu_email, fk_rol, fk_empleado, fk_cargo, fk_departamernto, fk_tienda) VALUES
+('admin001', 'admin123', 'admin@acaucab.com', 1, 1, 1, 1, 1), -- Administrador - Carlos
+('gerente_maria', 'maria456', 'maria.gonzalez@acaucab.com', 5, 2, 2, 2, 2), -- Gerente - Maria
+('almacen_jose', 'jose789', 'jose.rodriguez@acaucab.com', 7, 3, 5, 3, 3), -- Almacenista - Jose
+('marketing_ana', 'ana012', 'ana.fernandez@acaucab.com', 2, 4, 10, 4, 4), -- Empleado - Ana
+('logistica_luis', 'luis345', 'luis.torres@acaucab.com', 2, 5, 8, 5, 5), -- Empleado - Luis
+('ventas_carmen', 'carmen678', 'carmen.herrera@acaucab.com', 6, 6, 3, 6, 6), -- Vendedor - Carmen
+('vendedor_ricardo', 'ricardo901', 'ricardo.mendoza@acaucab.com', 6, 7, 4, 7, 7), -- Vendedor - Ricardo
+('cerveza_patricia', 'patricia234', 'patricia.suarez@acaucab.com', 2, 8, 7, 8, 8), -- Empleado - Patricia
+('admin_fernando', 'fernando567', 'fernando.delgado@acaucab.com', 9, 9, 9, 9, 9), -- Supervisor - Fernando
+('caja_gabriela', 'gabriela890', 'gabriela.vega@acaucab.com', 8, 10, 6, 10, 10); -- Cajero - Gabriela
+
+-- Inserts para Usuario (Clientes) - Primeros 5 clientes
+INSERT INTO USUARIO (usu_nombre_usuario, usu_contrasena, usu_email, fk_rol, fk_cliente) VALUES
+('cliente_carlos', 'carlos123', 'carlosrodriguez@email.com', 3, 1),
+('cliente_maria', 'maria456', 'mariagonzalez@email.com', 3, 2),
+('cliente_jose', 'jose789', 'josefernandez@email.com', 3, 3),
+('cliente_ana', 'ana012', 'anasanchez@email.com', 3, 4),
+('cliente_luis', 'luis345', 'luismartinez@email.com', 3, 5);
+
+-- Necesitamos crear usuarios para los clientes primero
+INSERT INTO USUARIO (usu_nombre_usuario, usu_contrasena, usu_email, fk_rol, fk_cliente) VALUES
+('cliente_carlos', 'pass123', 'carlos.rodriguez@email.com', 3, 1),
+('cliente_maria', 'pass123', 'maria.gonzalez@email.com', 3, 2),
+('cliente_jose', 'pass123', 'jose.fernandez@email.com', 3, 3),
+('cliente_ana', 'pass123', 'ana.sanchez@email.com', 3, 4),
+('cliente_luis', 'pass123', 'luis.ramirez@email.com', 3, 5),
+('cliente_carmen', 'pass123', 'carmen.herrera@email.com', 3, 6),
+('cliente_pedro', 'pass123', 'pedro.castillo@email.com', 3, 7),
+('cliente_rosa', 'pass123', 'rosa.mendoza@email.com', 3, 8),
+('cliente_miguel', 'pass123', 'miguel.torres@email.com', 3, 9),
+('cliente_luisa', 'pass123', 'luisa.moreno@email.com', 3, 10),
+('cliente_roberto', 'pass123', 'roberto.gutierrez@email.com', 3, 11),
+('cliente_elena', 'pass123', 'elena.navarro@email.com', 3, 12),
+('cliente_jorge', 'pass123', 'jorge.ramos@email.com', 3, 13),
+('cliente_patricia', 'pass123', 'patricia.vega@email.com', 3, 14),
+('cliente_fernando', 'pass123', 'fernando.delgado@email.com', 3, 15),
+('cliente_gabriela', 'pass123', 'gabriela.campos@email.com', 3, 16),
+('cliente_andres', 'pass123', 'andres.suarez@email.com', 3, 17),
+('cliente_beatriz', 'pass123', 'beatriz.flores@email.com', 3, 18),
+('cliente_ricardo', 'pass123', 'ricardo.medina@email.com', 3, 19),
+('cliente_maritza', 'pass123', 'maritza.ponce@email.com', 3, 20),
+('empresa_distribuidora', 'pass123', 'contacto@distribuidoraandina.com', 3, 21),
+('empresa_cerveceria', 'pass123', 'ventas@cerveceranacional.com', 3, 22),
+('empresa_malteria', 'pass123', 'pedidos@malteriacentral.com', 3, 23),
+('empresa_zulia', 'pass123', 'comercial@grupocervecerozulia.com', 3, 24),
+('empresa_premium', 'pass123', 'info@bebidaspremium.com', 3, 25),
+('empresa_lara', 'pass123', 'ventas@comerciallara.com', 3, 26),
+('empresa_oriente', 'pass123', 'pedidos@distribucionesoriente.com', 3, 27),
+('empresa_petroleo', 'pass123', 'comercial@petroleoybebidas.com', 3, 28),
+('empresa_barinas', 'pass123', 'info@agroindustrialbarinas.com', 3, 29),
+('empresa_montana', 'pass123', 'ventas@montanabrewery.com', 3, 30),
+('empresa_minera', 'pass123', 'comercial@mineracervecera.com', 3, 31),
+('empresa_costa', 'pass123', 'info@costadorada.com', 3, 32),
+('empresa_valles', 'pass123', 'pedidos@vallesdeltuy.com', 3, 33),
+('empresa_nueva', 'pass123', 'ventas@nuevaerabebidas.com', 3, 34),
+('empresa_oriente_group', 'pass123', 'comercial@orientebrewery.com', 3, 35),
+('empresa_margarita', 'pass123', 'info@islamargarita.com', 3, 36),
+('empresa_llanos', 'pass123', 'ventas@llanosbrewery.com', 3, 37),
+('empresa_tradicion', 'pass123', 'comercial@tradicioncervecera.com', 3, 38),
+('empresa_andes', 'pass123', 'info@andesmountain.com', 3, 39),
+('empresa_puerto', 'pass123', 'ventas@puertocervecero.com', 3, 40);
+-- Inserts para Usuario (Proveedores) - Primeros 5 proveedores
+INSERT INTO USUARIO (usu_nombre_usuario, usu_contrasena, usu_email, fk_rol, fk_proveedor) VALUES
+('prov_maltas', 'malta123', 'ventas@maltasandinas.com', 4, 1),
+('prov_lupulos', 'lupulo456', 'comercial@lupuloscaribe.com', 4, 2),
+('prov_levaduras', 'levadura789', 'info@levadurasgourmet.com', 4, 3),
+('prov_envases', 'envase012', 'pedidos@envasespremium.com', 4, 4),
+('prov_tecnologia', 'tech345', 'soporte@beertech.com', 4, 5);
+
+-- FIN DE LOS INSERT DE USUARIO
+
+-- INICIO DE LOS INSERT DE TELEFONO
+
+-- Inserts para Telefono (10 registros)
+INSERT INTO TELEFONO (tel_codigo_area, tel_numero, fk_empleado) VALUES
+('+58', 2124567890, 1), -- Carlos
+('+58', 2434567891, 2), -- Maria
+('+58', 2614567892, 3), -- Jose
+('+58', 2124567893, 4), -- Ana
+('+58', 2514567894, 5), -- Luis
+('+58', 2814567895, 6), -- Carmen
+('+58', 2744567896, 7), -- Ricardo
+('+58', 2124567897, 8), -- Patricia
+('+58', 2124567898, 9), -- Fernando
+('+58', 2864567899, 10); -- Gabriela
+
+-- Inserts adicionales para Clientes
+INSERT INTO TELEFONO (tel_codigo_area, tel_numero, fk_cliente) VALUES
+('+58', 4141234567, 1), -- Cliente Carlos
+('+58', 4242345678, 2), -- Cliente Maria
+('+58', 4143456789, 3), -- Cliente Jose
+('+58', 4244567890, 4), -- Cliente Ana
+('+58', 4145678901, 5); -- Cliente Luis
+
+-- Inserts adicionales para Proveedores
+INSERT INTO TELEFONO (tel_codigo_area, tel_numero, fk_proveedor) VALUES
+('+58', 2126789012, 1), -- Maltas Andinas
+('+58', 2617890123, 2), -- Lupulos del Caribe
+('+58', 2438901234, 3), -- Levaduras Gourmet
+('+58', 2149012345, 4), -- Envases Premium
+('+58', 2120123456, 5); -- Beer Tech Solutions
+
+-- FIN DE LOS INSERT DE TELEFONO
+
+-- INICIO DE LOS INSERT DE CORREO_ELECTRONICO
+
+-- Inserts para Correo_Electronico (10 registros para empleados)
+INSERT INTO CORREO_ELECTRONICO (cor_ele_direccion, fk_empleado) VALUES
+('carlos.ramirez@acaucab.com', 1),
+('maria.gonzalez@acaucab.com', 2),
+('jose.rodriguez@acaucab.com', 3),
+('ana.fernandez@acaucab.com', 4),
+('luis.torres@acaucab.com', 5),
+('carmen.herrera@acaucab.com', 6),
+('ricardo.mendoza@acaucab.com', 7),
+('patricia.suarez@acaucab.com', 8),
+('fernando.delgado@acaucab.com', 9),
+('gabriela.vega@acaucab.com', 10);
+
+-- Inserts adicionales para Clientes
+INSERT INTO CORREO_ELECTRONICO (cor_ele_direccion, fk_cliente) VALUES
+('carlos.rodriguez.personal@gmail.com', 1),
+('maria.gonzalez.cli@hotmail.com', 2),
+('jose.fernandez.cliente@yahoo.com', 3),
+('ana.sanchez.personal@gmail.com', 4),
+('luis.martinez.cli@outlook.com', 5);
+
+-- Inserts adicionales para Contactos de Cliente
+INSERT INTO CORREO_ELECTRONICO (cor_ele_direccion, fk_contacto_cliente) VALUES
+('contacto.empresa1@negocio.com', 1),
+('representante.corp2@empresa.com', 2),
+('gerente.comercial3@corporativo.com', 3),
+('director.ventas4@negocio.com', 4),
+('coordinador.compras5@empresa.com', 5);
+
+-- Inserts adicionales para Proveedores
+INSERT INTO CORREO_ELECTRONICO (cor_ele_direccion, fk_proveedor) VALUES
+('ventas@maltasandinas.com', 1),
+('comercial@lupuloscaribe.com', 2),
+('info@levadurasgourmet.com', 3),
+('pedidos@envasespremium.com', 4),
+('soporte@beertech.com', 5);
+
+-- Inserts adicionales para Contactos de Proveedor
+INSERT INTO CORREO_ELECTRONICO (cor_ele_direccion, fk_contacto_proveedor) VALUES
+('juan.perez@maltasandinas.com', 1),
+('maria.lopez@lupuloscaribe.com', 2),
+('carlos.silva@levadurasgourmet.com', 3),
+('ana.martinez@envasespremium.com', 4),
+('luis.garcia@beertech.com', 5);
+
+-- FIN DE LOS INSERT DE CORREO_ELECTRONICO
+
+-- INICIO DE LOS INSERT ADICIONALES DE PRESENTACION
+
+-- Inserts adicionales para Presentacion (25 registros más)
+INSERT INTO PRESENTACION (prese_volumen, prese_recipiente, fk_cerveza, prese_imagen, prese_alto, prese_ancho) VALUES
+-- Destilo - Presentaciones adicionales
+(500.00, 'Botella de Vidrio Grande', 1, 'https://example.com/destilo_500ml.jpg', 26.0, 7.5),
+(1000.00, 'Botella de Vidrio Litro', 1, 'https://example.com/destilo_1L.jpg', 33.0, 8.5),
+(473.00, 'Lata de Aluminio', 1, 'https://example.com/destilo_lata.jpg', 12.8, 6.6),
+-- Dos Leones - Presentaciones adicionales
+(500.00, 'Botella de Vidrio', 2, 'https://example.com/dosleones_500ml.jpg', 26.0, 7.5),
+(750.00, 'Botella de Vidrio Premium', 2, 'https://example.com/dosleones_750ml.jpg', 29.5, 8.0),
+-- Benitz - Presentaciones adicionales
+(500.00, 'Botella de Vidrio', 3, 'https://example.com/benitz_500ml.jpg', 26.0, 7.5),
+(473.00, 'Lata de Aluminio', 3, 'https://example.com/benitz_lata.jpg', 12.8, 6.6),
+(1000.00, 'Botella de Vidrio Litro', 3, 'https://example.com/benitz_1L.jpg', 33.0, 8.5),
+-- Mito Brewhouse - Presentaciones adicionales
+(500.00, 'Botella de Vidrio', 4, 'https://example.com/mito_500ml.jpg', 26.0, 7.5),
+(750.00, 'Botella de Vidrio Premium', 4, 'https://example.com/mito_750ml.jpg', 29.5, 8.0),
+(355.00, 'Lata de Aluminio', 4, 'https://example.com/mito_lata.jpg', 12.2, 6.6),
+-- Cervecería Lago - Presentaciones adicionales
+(500.00, 'Botella de Vidrio', 5, 'https://example.com/lago_500ml.jpg', 26.0, 7.5),
+(1000.00, 'Botella de Vidrio Especial', 5, 'https://example.com/lago_1L.jpg', 33.0, 8.5),
+(375.00, 'Lata de Aluminio Premium', 5, 'https://example.com/lago_lata.jpg', 12.5, 6.8),
+-- Barricas Saison - Presentaciones adicionales
+(375.00, 'Botella de Vidrio Pequeña', 6, 'https://example.com/barricas_375ml.jpg', 20.0, 6.0),
+(500.00, 'Botella de Vidrio', 6, 'https://example.com/barricas_500ml.jpg', 26.0, 7.5),
+-- Aldarra Mantuana - Presentaciones adicionales
+(500.00, 'Botella de Vidrio', 7, 'https://example.com/aldarra_500ml.jpg', 26.0, 7.5),
+(473.00, 'Lata de Aluminio', 7, 'https://example.com/aldarra_lata.jpg', 12.8, 6.6),
+(330.00, 'Botella de Vidrio Clásica', 7, 'https://example.com/aldarra_330ml.jpg', 22.0, 6.0),
+-- Presentaciones genéricas para variedad
+(250.00, 'Botella de Vidrio Pequeña', 1, 'https://example.com/destilo_250ml.jpg', 18.0, 5.5),
+(600.00, 'Botella de Vidrio Mediana', 2, 'https://example.com/dosleones_600ml.jpg', 27.0, 7.8),
+(440.00, 'Lata de Aluminio Grande', 3, 'https://example.com/benitz_440ml.jpg', 13.0, 6.8),
+(650.00, 'Botella de Vidrio Artesanal', 4, 'https://example.com/mito_650ml.jpg', 28.0, 8.2),
+(800.00, 'Botella de Vidrio Colección', 5, 'https://example.com/lago_800ml.jpg', 30.0, 8.5),
+(400.00, 'Botella de Vidrio Especial', 6, 'https://example.com/barricas_400ml.jpg', 22.5, 6.5);
+
+-- FIN DE LOS INSERT ADICIONALES DE PRESENTACION
+
+-- INICIO DE LOS INSERT DE OFERTA
+
+-- Inserts para Oferta (10 registros)
+INSERT INTO OFERTA (ofe_nombre, ofe_descripcion, ofe_fecha_inicio, ofe_fecha_fin, of_procentaje) VALUES
+('Black Friday 2024', 'Descuento especial por Black Friday en toda la tienda', '2024-11-25', '2024-11-30', 25),
+('Descuento Cerveza Artesanal', 'Promoción especial en cervezas artesanales venezolanas', '2024-01-15', '2024-02-15', 15),
+('Oferta de Temporada', 'Descuento por cambio de temporada en productos seleccionados', '2024-03-01', '2024-03-31', 20),
+('Combo Degustación', 'Descuento en pack de degustación de diferentes estilos', '2024-04-01', '2024-04-30', 30),
+('Promoción Fin de Semana', 'Oferta especial para compras de fin de semana', '2024-05-01', '2024-05-31', 10),
+('Descuento Cliente Frecuente', 'Beneficio para clientes con múltiples compras', '2024-06-01', '2024-06-30', 12),
+('Oferta Verano', 'Promoción especial de temporada de verano', '2024-07-01', '2024-08-31', 18),
+('Back to School', 'Descuento especial por regreso a clases', '2024-09-01', '2024-09-30', 8),
+('Aniversario ACAUCAB', 'Celebración del aniversario de la asociación', '2024-10-01', '2024-10-15', 35),
+('Navidad 2024', 'Oferta navideña en productos premium', '2024-12-01', '2024-12-31', 22);
+
+-- FIN DE LOS INSERT DE OFERTA
+
+-- INICIO DE LOS INSERT DE ALMACEN
+
+-- Inserts para Almacen (10 registros - uno por tienda)
+INSERT INTO ALMACEN (alm_nombre, alm_descripcion, fk_tienda) VALUES
+('Almacén Central Caracas', 'Almacén principal de la tienda Cervecería Central Caracas con capacidad para 5000 unidades.', 1),
+('Depósito Valencia', 'Almacén de distribución regional para el área metropolitana de Valencia.', 2),
+('Bodega Maracaibo', 'Centro de almacenamiento para la región occidental del país.', 3),
+('Centro Digital Nacional', 'Almacén virtual para gestión de inventario online y logística digital.', 4),
+('Almacén Barquisimeto', 'Depósito regional para atender la demanda del centro-oeste venezolano.', 5),
+('Bodega Puerto La Cruz', 'Almacén para distribución en la región oriental del país.', 6),
+('Depósito Andino Mérida', 'Centro de almacenamiento especializado para la región andina.', 7),
+('Almacén Boutique Premium', 'Depósito especializado para productos premium y de colección.', 8),
+('Centro Logístico Digital', 'Hub tecnológico para gestión automatizada de inventario online.', 9),
+('Almacén Regional Sur', 'Centro de distribución para atender la región sur del país.', 10);
+
+-- FIN DE LOS INSERT DE ALMACEN
+
+-- INICIO DE LOS INSERT DE PRE_ALM
+
+-- Inserts para Pre_Alm (10 registros)
+INSERT INTO PRE_ALM (pre_alm_precio, pre_alm_cantidad, fk_almacen, fk_presentacion, fk_oferta) VALUES
+(8.50, 150, 1, 1, 1),  -- Destilo 330ml en Almacén Caracas
+(12.00, 80, 1, 8, 2),  -- Benitz 500ml en Almacén Caracas
+(15.50, 60, 2, 11, 3), -- Mito 355ml en Almacén Valencia
+(22.00, 45, 3, 6, 4),  -- Barricas 750ml en Almacén Maracaibo
+(6.75, 200, 4, 7, 5),  -- Aldarra lata en Almacén Digital
+(10.25, 120, 5, 14, 6), -- Lago lata premium en Almacén Barquisimeto
+(18.75, 35, 6, 16, 7), -- Barricas 500ml en Almacén Puerto La Cruz
+(25.50, 25, 7, 13, 8), -- Lago 1L especial en Almacén Mérida
+(30.00, 20, 8, 24, 9), -- Colección especial en Almacén Boutique
+(14.80, 90, 9, 21, 10); -- Benitz 600ml en Centro Digital
+
+-- FIN DE LOS INSERT DE PRE_ALM
+
+-- INICIO DE LOS INSERT DE INVENTARIO
+
+-- Inserts para Inventario (10 registros)
+INSERT INTO INVENTARIO (inv_cantidad, fk_anaquel, fk_presentacion, fk_oferta) VALUES
+(50, 1, 1, 1),   -- Destilo 330ml en Anaquel 101
+(30, 2, 2, 2),   -- Dos Leones 330ml en Anaquel 201
+(40, 3, 3, 3),   -- Benitz 355ml en Anaquel 301
+(25, 4, 4, 4),   -- Mito 330ml en Anaquel 401
+(35, 5, 5, 5),   -- Lago 330ml en Anaquel 501
+(15, 6, 6, 6),   -- Barricas 750ml en Anaquel 601
+(45, 7, 7, 7),   -- Aldarra lata en Anaquel 701
+(20, 8, 8, 8),   -- Destilo 500ml en Anaquel 801
+(30, 9, 9, 9),   -- Destilo 1L en Anaquel 901
+(25, 10, 10, 10); -- Destilo lata en Anaquel 1001
+
+-- FIN DE LOS INSERT DE INVENTARIO
+
+-- INICIO DE LOS INSERT DE VENTA_FISICA
+
+-- Inserts para Venta_Fisica (40 registros - uno por cada cliente)
+INSERT INTO VENTA_FISICA (ven_fis_fecha, ven_fis_total, fk_tienda, fk_cliente, fk_oferta) VALUES
+-- Clientes Naturales (1-20)
+('2024-01-15', 125000, 1, 1, 1), ('2024-01-18', 156000, 2, 2, 1), ('2024-01-22', 78500, 3, 3, 2), ('2024-02-01', 234000, 4, 4, 1),
+('2024-02-05', 98700, 5, 5, 2), ('2024-02-10', 156800, 6, 6, 1), ('2024-02-15', 201500, 7, 7, 2), ('2024-02-18', 87600, 8, 8, 3),
+('2024-02-22', 167500, 9, 9, 4), ('2024-02-25', 134800, 10, 10, 5), ('2024-03-01', 189200, 1, 11, 3), ('2024-03-05', 145600, 2, 12, 4),
+('2024-03-08', 198700, 3, 13, 1), ('2024-03-12', 123400, 4, 14, 5), ('2024-03-15', 167800, 5, 15, 2), ('2024-03-18', 189600, 6, 16, 3),
+('2024-03-22', 145300, 7, 17, 4), ('2024-03-25', 178900, 8, 18, 1), ('2024-03-28', 156900, 9, 19, 5), ('2024-04-01', 134500, 10, 20, 2),
+-- Clientes Jurídicos (21-40)
+('2024-04-05', 456000, 1, 21, 1), ('2024-04-08', 678000, 2, 22, 2), ('2024-04-12', 345000, 3, 23, 3), ('2024-04-15', 789000, 4, 24, 1),
+('2024-04-18', 234000, 5, 25, 4), ('2024-04-22', 567000, 6, 26, 2), ('2024-04-25', 432000, 7, 27, 5), ('2024-04-28', 654000, 8, 28, 3),
+('2024-05-01', 298000, 9, 29, 1), ('2024-05-05', 543000, 10, 30, 4), ('2024-05-08', 376000, 1, 31, 2), ('2024-05-12', 687000, 2, 32, 5),
+('2024-05-15', 234000, 3, 33, 3), ('2024-05-18', 456000, 4, 34, 1), ('2024-05-22', 567000, 5, 35, 4), ('2024-05-25', 345000, 6, 36, 2),
+('2024-05-28', 432000, 7, 37, 5), ('2024-06-01', 654000, 8, 38, 3), ('2024-06-05', 376000, 9, 39, 1), ('2024-06-08', 543000, 10, 40, 4);
+
+-- FIN DE LOS INSERT DE VENTA_FISICA
+
+-- INICIO DE LOS INSERT DE DETALLE_VENTA_FISICA
+
+-- Detalles para ventas físicas (10 productos por venta, usando fk_inventario)
+INSERT INTO DETALLE_VENTA_FISICA (det_ven_fis_cantidad, det_ven_fis_precio_unitario, fk_venta_fisica, fk_inventario) VALUES
+-- Ventas 1-10 (Clientes 1-10)
+(2,8.5,1,1),(3,12.0,1,2),(1,15.5,1,3),(2,22.0,1,4),(1,25.5,1,5),(2,18.75,1,6),(3,6.75,1,7),(1,30.0,1,8),(2,14.8,1,9),(1,33.0,1,10),
+(1,8.5,2,1),(2,12.0,2,2),(2,15.5,2,3),(1,22.0,2,4),(3,6.75,2,7),(1,18.75,2,6),(2,25.5,2,5),(1,14.8,2,9),(2,30.0,2,8),(1,26.0,2,1),
+(3,8.5,3,1),(2,12.0,3,2),(2,15.5,3,3),(2,22.0,3,4),(1,25.5,3,5),(1,18.75,3,6),(4,6.75,3,7),(1,30.0,3,8),(2,14.8,3,9),(2,33.0,3,10),
+(2,8.5,4,1),(3,12.0,4,2),(1,15.5,4,3),(3,22.0,4,4),(2,25.5,4,5),(2,18.75,4,6),(2,6.75,4,7),(2,30.0,4,8),(1,14.8,4,9),(2,33.0,4,10),
+(2,8.5,5,1),(1,12.0,5,2),(3,15.5,5,3),(1,22.0,5,4),(1,25.5,5,5),(2,18.75,5,6),(3,6.75,5,7),(1,30.0,5,8),(2,14.8,5,9),(1,26.0,5,1),
+(3,8.5,6,1),(2,12.0,6,2),(2,15.5,6,3),(2,22.0,6,4),(2,25.5,6,5),(1,18.75,6,6),(2,6.75,6,7),(2,30.0,6,8),(2,14.8,6,9),(2,33.0,6,10),
+(4,8.5,7,1),(3,12.0,7,2),(2,15.5,7,3),(3,22.0,7,4),(2,25.5,7,5),(2,18.75,7,6),(3,6.75,7,7),(2,30.0,7,8),(2,14.8,7,9),(3,33.0,7,10),
+(2,8.5,8,1),(2,12.0,8,2),(3,15.5,8,3),(2,22.0,8,4),(1,25.5,8,5),(2,18.75,8,6),(2,6.75,8,7),(1,30.0,8,8),(3,14.8,8,9),(2,26.0,8,1),
+(1,8.5,9,1),(3,12.0,9,2),(2,15.5,9,3),(1,22.0,9,4),(2,25.5,9,5),(2,18.75,9,6),(2,6.75,9,7),(1,30.0,9,8),(2,14.8,9,9),(1,33.0,9,10),
+(3,8.5,10,1),(2,12.0,10,2),(3,15.5,10,3),(2,22.0,10,4),(2,25.5,10,5),(1,18.75,10,6),(3,6.75,10,7),(2,30.0,10,8),(2,14.8,10,9),(2,33.0,10,10),
+-- Ventas 11-20 (Clientes 11-20)
+(2,8.5,11,1),(1,12.0,11,2),(2,15.5,11,3),(3,22.0,11,4),(1,25.5,11,5),(2,18.75,11,6),(2,6.75,11,7),(1,30.0,11,8),(3,14.8,11,9),(1,33.0,11,10),
+(1,8.5,12,1),(2,12.0,12,2),(1,15.5,12,3),(2,22.0,12,4),(3,25.5,12,5),(1,18.75,12,6),(2,6.75,12,7),(2,30.0,12,8),(1,14.8,12,9),(2,33.0,12,10),
+(3,8.5,13,1),(2,12.0,13,2),(1,15.5,13,3),(2,22.0,13,4),(1,6.75,13,5),(3,10.25,13,6),(2,18.75,13,7),(1,25.5,13,8),(2,30.0,13,9),(1,14.8,13,10),
+(1,8.5,14,1),(3,12.0,14,2),(2,15.5,14,3),(1,22.0,14,4),(2,6.75,14,5),(1,10.25,14,6),(2,18.75,14,7),(3,25.5,14,8),(1,30.0,14,9),(2,14.8,14,10),
+(2,8.5,15,1),(1,12.0,15,2),(3,15.5,15,3),(2,22.0,15,4),(1,6.75,15,5),(2,10.25,15,6),(1,18.75,15,7),(1,25.5,15,8),(3,30.0,15,9),(2,14.8,15,10),
+(3,8.5,16,1),(2,12.0,16,2),(1,15.5,16,3),(3,22.0,16,4),(2,6.75,16,5),(1,10.25,16,6),(2,18.75,16,7),(2,25.5,16,8),(1,30.0,16,9),(2,14.8,16,10),
+(1,8.5,17,1),(2,12.0,17,2),(2,15.5,17,3),(1,22.0,17,4),(3,6.75,17,5),(1,10.25,17,6),(3,18.75,17,7),(1,25.5,17,8),(2,30.0,17,9),(2,14.8,17,10),
+(2,8.5,18,1),(3,12.0,18,2),(1,15.5,18,3),(2,22.0,18,4),(1,6.75,18,5),(2,10.25,18,6),(1,18.75,18,7),(3,25.5,18,8),(2,30.0,18,9),(1,14.8,18,10),
+(3,8.5,19,1),(1,12.0,19,2),(2,15.5,19,3),(3,22.0,19,4),(2,6.75,19,5),(1,10.25,19,6),(2,18.75,19,7),(1,25.5,19,8),(1,30.0,19,9),(3,14.8,19,10),
+(1,8.5,20,1),(2,12.0,20,2),(3,15.5,20,3),(1,22.0,20,4),(2,6.75,20,5),(3,10.25,20,6),(1,18.75,20,7),(2,25.5,20,8),(2,30.0,20,9),(1,14.8,20,10),
+-- Ventas 21-30 (Clientes Jurídicos 21-30)
+(5,8.5,21,1),(4,12.0,21,2),(3,15.5,21,3),(5,22.0,21,4),(3,25.5,21,5),(4,18.75,21,6),(5,6.75,21,7),(3,30.0,21,8),(4,14.8,21,9),(5,33.0,21,10),
+(6,8.5,22,1),(5,12.0,22,2),(4,15.5,22,3),(6,22.0,22,4),(4,25.5,22,5),(5,18.75,22,6),(6,6.75,22,7),(4,30.0,22,8),(5,14.8,22,9),(6,33.0,22,10),
+(3,8.5,23,1),(4,12.0,23,2),(5,15.5,23,3),(3,22.0,23,4),(4,25.5,23,5),(3,18.75,23,6),(5,6.75,23,7),(4,30.0,23,8),(3,14.8,23,9),(4,33.0,23,10),
+(7,8.5,24,1),(6,12.0,24,2),(5,15.5,24,3),(7,22.0,24,4),(5,25.5,24,5),(6,18.75,24,6),(7,6.75,24,7),(5,30.0,24,8),(6,14.8,24,9),(7,33.0,24,10),
+(4,8.5,25,1),(3,12.0,25,2),(4,15.5,25,3),(3,22.0,25,4),(4,25.5,25,5),(3,18.75,25,6),(4,6.75,25,7),(3,30.0,25,8),(4,14.8,25,9),(3,33.0,25,10),
+(5,8.5,26,1),(6,12.0,26,2),(4,15.5,26,3),(5,22.0,26,4),(6,25.5,26,5),(4,18.75,26,6),(5,6.75,26,7),(6,30.0,26,8),(4,14.8,26,9),(5,33.0,26,10),
+(4,8.5,27,1),(5,12.0,27,2),(3,15.5,27,3),(4,22.0,27,4),(5,25.5,27,5),(3,18.75,27,6),(4,6.75,27,7),(5,30.0,27,8),(3,14.8,27,9),(4,33.0,27,10),
+(6,8.5,28,1),(5,12.0,28,2),(6,15.5,28,3),(5,22.0,28,4),(6,25.5,28,5),(5,18.75,28,6),(6,6.75,28,7),(5,30.0,28,8),(6,14.8,28,9),(5,33.0,28,10),
+(3,8.5,29,1),(4,12.0,29,2),(3,15.5,29,3),(4,22.0,29,4),(3,25.5,29,5),(4,18.75,29,6),(3,6.75,29,7),(4,30.0,29,8),(3,14.8,29,9),(4,33.0,29,10),
+(5,8.5,30,1),(4,12.0,30,2),(5,15.5,30,3),(4,22.0,30,4),(5,25.5,30,5),(4,18.75,30,6),(5,6.75,30,7),(4,30.0,30,8),(5,14.8,30,9),(4,33.0,30,10),
+-- Ventas 31-40 (Clientes Jurídicos 31-40)
+(4,8.5,31,1),(5,12.0,31,2),(4,15.5,31,3),(5,22.0,31,4),(4,25.5,31,5),(5,18.75,31,6),(4,6.75,31,7),(5,30.0,31,8),(4,14.8,31,9),(5,33.0,31,10),
+(6,8.5,32,1),(7,12.0,32,2),(5,15.5,32,3),(6,22.0,32,4),(7,25.5,32,5),(5,18.75,32,6),(6,6.75,32,7),(7,30.0,32,8),(5,14.8,32,9),(6,33.0,32,10),
+(3,8.5,33,1),(4,12.0,33,2),(3,15.5,33,3),(4,22.0,33,4),(3,25.5,33,5),(4,18.75,33,6),(3,6.75,33,7),(4,30.0,33,8),(3,14.8,33,9),(4,33.0,33,10),
+(5,8.5,34,1),(4,12.0,34,2),(5,15.5,34,3),(4,22.0,34,4),(5,25.5,34,5),(4,18.75,34,6),(5,6.75,34,7),(4,30.0,34,8),(5,14.8,34,9),(4,33.0,34,10),
+(6,8.5,35,1),(5,12.0,35,2),(6,15.5,35,3),(5,22.0,35,4),(6,25.5,35,5),(5,18.75,35,6),(6,6.75,35,7),(5,30.0,35,8),(6,14.8,35,9),(5,33.0,35,10),
+(4,8.5,36,1),(3,12.0,36,2),(4,15.5,36,3),(3,22.0,36,4),(4,25.5,36,5),(3,18.75,36,6),(4,6.75,36,7),(3,30.0,36,8),(4,14.8,36,9),(3,33.0,36,10),
+(5,8.5,37,1),(4,12.0,37,2),(3,15.5,37,3),(5,22.0,37,4),(4,25.5,37,5),(3,18.75,37,6),(5,6.75,37,7),(4,30.0,37,8),(3,14.8,37,9),(5,33.0,37,10),
+(6,8.5,38,1),(5,12.0,38,2),(6,15.5,38,3),(5,22.0,38,4),(6,25.5,38,5),(5,18.75,38,6),(6,6.75,38,7),(5,30.0,38,8),(6,14.8,38,9),(5,33.0,38,10),
+(4,8.5,39,1),(3,12.0,39,2),(4,15.5,39,3),(3,22.0,39,4),(4,25.5,39,5),(3,18.75,39,6),(4,6.75,39,7),(3,30.0,39,8),(4,14.8,39,9),(3,33.0,39,10),
+(5,8.5,40,1),(6,12.0,40,2),(4,15.5,40,3),(5,22.0,40,4),(6,25.5,40,5),(4,18.75,40,6),(5,6.75,40,7),(6,30.0,40,8),(4,14.8,40,9),(5,33.0,40,10);
+
+-- FIN DE LOS INSERT DE DETALLE_VENTA_FISICA
+
+-- INICIO DE LOS INSERT DE VENTA_ONLINE
+
+-- Inserts para Venta_Online (40 registros - requiere usuarios clientes)
+
+-- Ventas Online (40 registros - una por cliente usando tienda online ID 4)
+INSERT INTO VENTA_ONLINE (ven_onl_fecha, ven_onl_total, fk_usuario, fk_oferta, fk_tienda) VALUES
+('2024-01-20',145600,31,1,4),('2024-01-23',167800,32,2,4),('2024-01-26',198700,33,1,4),('2024-01-29',189200,34,3,4),
+('2024-02-02',167500,35,4,4),('2024-02-05',156800,36,1,4),('2024-02-08',201500,37,2,4),('2024-02-11',187600,38,3,4),
+('2024-02-14',177500,39,4,4),('2024-02-17',164800,40,5,4),('2024-02-20',189200,41,3,4),('2024-02-23',145600,42,4,4),
+('2024-02-26',198700,43,1,4),('2024-03-01',123400,44,5,4),('2024-03-04',167800,45,2,4),('2024-03-07',189600,46,3,4),
+('2024-03-10',145300,47,4,4),('2024-03-13',178900,48,1,4),('2024-03-16',156900,49,5,4),('2024-03-19',134500,50,2,4),
+('2024-03-22',556000,51,1,4),('2024-03-25',778000,52,2,4),('2024-03-28',445000,53,3,4),('2024-03-31',889000,54,1,4),
+('2024-04-03',334000,55,4,4),('2024-04-06',667000,56,2,4),('2024-04-09',532000,57,5,4),('2024-04-12',754000,58,3,4),
+('2024-04-15',398000,59,1,4),('2024-04-18',643000,60,4,4),('2024-04-21',476000,61,2,4),('2024-04-24',787000,62,5,4),
+('2024-04-27',334000,63,3,4),('2024-04-30',556000,64,1,4),('2024-05-03',667000,65,4,4),('2024-05-06',445000,66,2,4),
+('2024-05-09',532000,67,5,4),('2024-05-12',754000,68,3,4),('2024-05-15',476000,69,1,4),('2024-05-18',643000,70,4,4);
+
+-- FIN DE LOS INSERT DE VENTA_ONLINE
+
+-- INICIO DE LOS INSERT DE DETALLE_VENTA_ONLINE
+
+-- Detalles para ventas online (10 productos por venta, usando fk_pre_alm)
+INSERT INTO DETALLE_VENTA_ONLINE (det_ven_onl_cantidad, det_ven_onl_precio, fk_venta_online, fk_pre_alm) VALUES
+-- Ventas Online 1-10
+(2,8.5,1,1),(3,12.0,1,2),(1,15.5,1,3),(2,22.0,1,4),(1,6.75,1,5),(2,10.25,1,6),(1,18.75,1,7),(2,25.5,1,8),(1,30.0,1,9),(2,14.8,1,10),
+(3,8.5,2,1),(2,12.0,2,2),(2,15.5,2,3),(1,22.0,2,4),(3,6.75,2,5),(1,10.25,2,6),(2,18.75,2,7),(1,25.5,2,8),(2,30.0,2,9),(1,14.8,2,10),
+(2,8.5,3,1),(2,12.0,3,2),(3,15.5,3,3),(2,22.0,3,4),(1,6.75,3,5),(2,10.25,3,6),(1,18.75,3,7),(2,25.5,3,8),(1,30.0,3,9),(3,14.8,3,10),
+(1,8.5,4,1),(3,12.0,4,2),(2,15.5,4,3),(2,22.0,4,4),(2,6.75,4,5),(1,10.25,4,6),(2,18.75,4,7),(1,25.5,4,8),(2,30.0,4,9),(2,14.8,4,10),
+(3,8.5,5,1),(2,12.0,5,2),(2,15.5,5,3),(3,22.0,5,4),(1,6.75,5,5),(2,10.25,5,6),(2,18.75,5,7),(2,25.5,5,8),(1,30.0,5,9),(2,14.8,5,10),
+(2,8.5,6,1),(2,12.0,6,2),(3,15.5,6,3),(1,22.0,6,4),(2,6.75,6,5),(2,10.25,6,6),(1,18.75,6,7),(3,25.5,6,8),(2,30.0,6,9),(1,14.8,6,10),
+(2,8.5,7,1),(3,12.0,7,2),(1,15.5,7,3),(2,22.0,7,4),(2,6.75,7,5),(1,10.25,7,6),(2,18.75,7,7),(2,25.5,7,8),(2,30.0,7,9),(3,14.8,7,10),
+(1,8.5,8,1),(2,12.0,8,2),(2,15.5,8,3),(3,22.0,8,4),(1,6.75,8,5),(3,10.25,8,6),(2,18.75,8,7),(1,25.5,8,8),(2,30.0,8,9),(2,14.8,8,10),
+(3,8.5,9,1),(1,12.0,9,2),(2,15.5,9,3),(2,22.0,9,4),(3,6.75,9,5),(2,10.25,9,6),(1,18.75,9,7),(2,25.5,9,8),(1,30.0,9,9),(2,14.8,9,10),
+(2,8.5,10,1),(2,12.0,10,2),(3,15.5,10,3),(2,22.0,10,4),(2,6.75,10,5),(2,10.25,10,6),(2,18.75,10,7),(2,25.5,10,8),(3,30.0,10,9),(1,14.8,10,10),
+-- Ventas Online 11-20
+(1,8.5,11,1),(2,12.0,11,2),(1,15.5,11,3),(3,22.0,11,4),(2,6.75,11,5),(1,10.25,11,6),(3,18.75,11,7),(1,25.5,11,8),(2,30.0,11,9),(2,14.8,11,10),
+(2,8.5,12,1),(1,12.0,12,2),(2,15.5,12,3),(1,22.0,12,4),(3,6.75,12,5),(2,10.25,12,6),(1,18.75,12,7),(2,25.5,12,8),(1,30.0,12,9),(3,14.8,12,10),
+(3,8.5,13,1),(2,12.0,13,2),(1,15.5,13,3),(2,22.0,13,4),(1,6.75,13,5),(3,10.25,13,6),(2,18.75,13,7),(1,25.5,13,8),(2,30.0,13,9),(1,14.8,13,10),
+(1,8.5,14,1),(3,12.0,14,2),(2,15.5,14,3),(1,22.0,14,4),(2,6.75,14,5),(1,10.25,14,6),(2,18.75,14,7),(3,25.5,14,8),(1,30.0,14,9),(2,14.8,14,10),
+(2,8.5,15,1),(1,12.0,15,2),(3,15.5,15,3),(2,22.0,15,4),(1,6.75,15,5),(2,10.25,15,6),(1,18.75,15,7),(1,25.5,15,8),(3,30.0,15,9),(2,14.8,15,10),
+(3,8.5,16,1),(2,12.0,16,2),(1,15.5,16,3),(3,22.0,16,4),(2,6.75,16,5),(1,10.25,16,6),(2,18.75,16,7),(2,25.5,16,8),(1,30.0,16,9),(2,14.8,16,10),
+(1,8.5,17,1),(2,12.0,17,2),(2,15.5,17,3),(1,22.0,17,4),(3,6.75,17,5),(1,10.25,17,6),(3,18.75,17,7),(1,25.5,17,8),(2,30.0,17,9),(2,14.8,17,10),
+(2,8.5,18,1),(3,12.0,18,2),(1,15.5,18,3),(2,22.0,18,4),(1,6.75,18,5),(2,10.25,18,6),(1,18.75,18,7),(3,25.5,18,8),(2,30.0,18,9),(1,14.8,18,10),
+(3,8.5,19,1),(1,12.0,19,2),(2,15.5,19,3),(3,22.0,19,4),(2,6.75,19,5),(1,10.25,19,6),(2,18.75,19,7),(1,25.5,19,8),(1,30.0,19,9),(3,14.8,19,10),
+(1,8.5,20,1),(2,12.0,20,2),(3,15.5,20,3),(1,22.0,20,4),(2,6.75,20,5),(3,10.25,20,6),(1,18.75,20,7),(2,25.5,20,8),(2,30.0,20,9),(1,14.8,20,10),
+-- Ventas Online 21-30 (Empresas)
+(5,8.5,21,1),(6,12.0,21,2),(4,15.5,21,3),(5,22.0,21,4),(6,6.75,21,5),(4,10.25,21,6),(5,18.75,21,7),(6,25.5,21,8),(4,30.0,21,9),(5,14.8,21,10),
+(7,8.5,22,1),(6,12.0,22,2),(5,15.5,22,3),(7,22.0,22,4),(6,6.75,22,5),(5,10.25,22,6),(7,18.75,22,7),(6,25.5,22,8),(5,30.0,22,9),(7,14.8,22,10),
+(4,8.5,23,1),(5,12.0,23,2),(4,15.5,23,3),(5,22.0,23,4),(4,6.75,23,5),(5,10.25,23,6),(4,18.75,23,7),(5,25.5,23,8),(4,30.0,23,9),(5,14.8,23,10),
+(8,8.5,24,1),(7,12.0,24,2),(6,15.5,24,3),(8,22.0,24,4),(7,6.75,24,5),(6,10.25,24,6),(8,18.75,24,7),(7,25.5,24,8),(6,30.0,24,9),(8,14.8,24,10),
+(5,8.5,25,1),(4,12.0,25,2),(5,15.5,25,3),(4,22.0,25,4),(5,6.75,25,5),(4,10.25,25,6),(5,18.75,25,7),(4,25.5,25,8),(5,30.0,25,9),(4,14.8,25,10),
+(6,8.5,26,1),(7,12.0,26,2),(5,15.5,26,3),(6,22.0,26,4),(7,6.75,26,5),(5,10.25,26,6),(6,18.75,26,7),(7,25.5,26,8),(5,30.0,26,9),(6,14.8,26,10),
+(5,8.5,27,1),(6,12.0,27,2),(4,15.5,27,3),(5,22.0,27,4),(6,6.75,27,5),(4,10.25,27,6),(5,18.75,27,7),(6,25.5,27,8),(4,30.0,27,9),(5,14.8,27,10),
+(7,8.5,28,1),(6,12.0,28,2),(7,15.5,28,3),(6,22.0,28,4),(7,6.75,28,5),(6,10.25,28,6),(7,18.75,28,7),(6,25.5,28,8),(7,30.0,28,9),(6,14.8,28,10),
+(4,8.5,29,1),(5,12.0,29,2),(4,15.5,29,3),(5,22.0,29,4),(4,6.75,29,5),(5,10.25,29,6),(4,18.75,29,7),(5,25.5,29,8),(4,30.0,29,9),(5,14.8,29,10),
+(6,8.5,30,1),(5,12.0,30,2),(6,15.5,30,3),(5,22.0,30,4),(6,6.75,30,5),(5,10.25,30,6),(6,18.75,30,7),(5,25.5,30,8),(6,30.0,30,9),(5,14.8,30,10),
+-- Ventas Online 31-40 (Empresas continuación)
+(5,8.5,31,1),(6,12.0,31,2),(5,15.5,31,3),(6,22.0,31,4),(5,6.75,31,5),(6,10.25,31,6),(5,18.75,31,7),(6,25.5,31,8),(5,30.0,31,9),(6,14.8,31,10),
+(7,8.5,32,1),(8,12.0,32,2),(6,15.5,32,3),(7,22.0,32,4),(8,6.75,32,5),(6,10.25,32,6),(7,18.75,32,7),(8,25.5,32,8),(6,30.0,32,9),(7,14.8,32,10),
+(4,8.5,33,1),(5,12.0,33,2),(4,15.5,33,3),(5,22.0,33,4),(4,6.75,33,5),(5,10.25,33,6),(4,18.75,33,7),(5,25.5,33,8),(4,30.0,33,9),(5,14.8,33,10),
+(6,8.5,34,1),(5,12.0,34,2),(6,15.5,34,3),(5,22.0,34,4),(6,6.75,34,5),(5,10.25,34,6),(6,18.75,34,7),(5,25.5,34,8),(6,30.0,34,9),(5,14.8,34,10),
+(7,8.5,35,1),(6,12.0,35,2),(7,15.5,35,3),(6,22.0,35,4),(7,6.75,35,5),(6,10.25,35,6),(7,18.75,35,7),(6,25.5,35,8),(7,30.0,35,9),(6,14.8,35,10),
+(5,8.5,36,1),(4,12.0,36,2),(5,15.5,36,3),(4,22.0,36,4),(5,6.75,36,5),(4,10.25,36,6),(5,18.75,36,7),(4,25.5,36,8),(5,30.0,36,9),(4,14.8,36,10),
+(6,8.5,37,1),(5,12.0,37,2),(4,15.5,37,3),(6,22.0,37,4),(5,6.75,37,5),(4,10.25,37,6),(6,18.75,37,7),(5,25.5,37,8),(4,30.0,37,9),(6,14.8,37,10),
+(7,8.5,38,1),(6,12.0,38,2),(7,15.5,38,3),(6,22.0,38,4),(7,6.75,38,5),(6,10.25,38,6),(7,18.75,38,7),(6,25.5,38,8),(7,30.0,38,9),(6,14.8,38,10),
+(5,8.5,39,1),(4,12.0,39,2),(5,15.5,39,3),(4,22.0,39,4),(5,6.75,39,5),(4,10.25,39,6),(5,18.75,39,7),(4,25.5,39,8),(5,30.0,39,9),(4,14.8,39,10),
+(6,8.5,40,1),(7,12.0,40,2),(5,15.5,40,3),(6,22.0,40,4),(7,6.75,40,5),(5,10.25,40,6),(6,18.75,40,7),(7,25.5,40,8),(5,30.0,40,9),(6,14.8,40,10);
+
+-- FIN DE LOS INSERT DE DETALLE_VENTA_ONLINE
+
+
+
