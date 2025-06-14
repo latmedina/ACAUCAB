@@ -952,12 +952,13 @@ CREATE TABLE ALMACEN
 
 CREATE TABLE PRE_ALM
 (
+    pre_alm_id SERIAL PRIMARY KEY COMMENT 'Identificador único de la presentación en el almacén.',
     pre_alm_precio DECIMAL(10, 2) NOT NULL COMMENT 'Precio de la presentación en el almacén.',
     pre_alm_cantidad INT NOT NULL COMMENT 'Cantidad de la presentación en el almacén.',
     fk_almacen INT NOT NULL COMMENT 'Identificador del almacén.',
     fk_presentacion INT NOT NULL COMMENT 'Identificador de la presentación.',
     fk_oferta INT COMMENT 'Identificador de la oferta.',
-    PRIMARY KEY (fk_almacen, fk_presentacion)
+    PRIMARY KEY (pre_alm_id, fk_almacen, fk_presentacion)
 
     CONSTRAINT fk_almacen
         FOREIGN KEY (fk_almacen) REFERENCES ALMACEN (alm_id)

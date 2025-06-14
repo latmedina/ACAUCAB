@@ -2921,3 +2921,494 @@ INSERT INTO DETALLE_VENTA_ONLINE (det_ven_onl_cantidad, det_ven_onl_precio, fk_v
 
 
 
+
+-- INICIO DE LOS INSERT DE SOLICITUD_REPOSICION
+
+-- Inserts para Solicitud_Reposicion (15 registros)
+INSERT INTO SOLICITUD_REPOSICION (sol_rep_fecha_hora, sol_rep_descripcion, fk_usuario, fk_inv, fk_pre_alm) VALUES
+('2024-12-01 08:30:00', 'Solicitud de reposición urgente para cerveza Destilo 330ml debido a alta demanda', 1, 1, 1),
+('2024-12-01 09:15:00', 'Reposición necesaria para Dos Leones 330ml por stock bajo en anaquel', 2, 2, 2),
+('2024-12-01 10:00:00', 'Solicitud de restock para Benitz 355ml - inventario crítico', 3, 3, 3),
+('2024-12-01 11:30:00', 'Reposición requerida para Mito 330ml por incremento en ventas', 4, 4, 4),
+('2024-12-01 14:00:00', 'Solicitud urgente de reposición para Lago 330ml - stock agotado', 5, 5, 5),
+('2024-12-01 15:45:00', 'Reposición necesaria para Barricas 750ml por demanda especial', 6, 6, 6),
+('2024-12-01 16:30:00', 'Solicitud de restock para Aldarra lata - inventario bajo', 7, 7, 7),
+('2024-12-02 08:00:00', 'Reposición requerida para Destilo 500ml por promoción activa', 8, 8, 8),
+('2024-12-02 09:30:00', 'Solicitud de reposición para Destilo 1L - alta rotación', 9, 9, 9),
+('2024-12-02 11:00:00', 'Restock necesario para Destilo lata por temporada alta', 10, 10, 10),
+('2024-12-02 13:15:00', 'Solicitud de reposición para productos premium en anaquel 1', 11, 1, 1),
+('2024-12-02 14:45:00', 'Reposición urgente para cerveza artesanal por evento especial', 12, 2, 2),
+('2024-12-02 16:00:00', 'Solicitud de restock para presentaciones de 355ml', 13, 3, 3),
+('2024-12-03 08:30:00', 'Reposición necesaria para cervezas de temporada', 14, 4, 4),
+('2024-12-03 10:15:00', 'Solicitud de reposición para inventario de fin de año', 15, 5, 5);
+
+-- FIN DE LOS INSERT DE SOLICITUD_REPOSICION
+
+-- INICIO DE LOS INSERT DE SOLICITUD_COMPRA
+
+-- Inserts para Solicitud_Compra (15 registros)
+INSERT INTO SOLICITUD_COMPRA (sol_com_fecha, sol_com_total, fk_usuario, fk_proveedor, fk_pre_alm) VALUES
+('2024-12-01 09:00:00', 12750.00, 1, 1, 1),  -- Compra a Cervecería Destilo
+('2024-12-01 10:30:00', 18600.00, 2, 2, 2),  -- Compra a Dos Leones Brewery
+('2024-12-01 12:00:00', 15500.00, 3, 3, 3),  -- Compra a Benitz Brewing
+('2024-12-01 14:15:00', 22000.00, 4, 4, 4),  -- Compra a Mito Brewhouse
+('2024-12-01 16:00:00', 20625.00, 5, 5, 5),  -- Compra a Cervecería Lago
+('2024-12-02 08:45:00', 28125.00, 6, 6, 6),  -- Compra a Barricas Saison
+('2024-12-02 10:30:00', 13500.00, 7, 7, 7),  -- Compra a Aldarra Mantuana
+('2024-12-02 13:00:00', 17000.00, 8, 1, 8),  -- Segunda compra a Destilo
+('2024-12-02 15:30:00', 25500.00, 9, 2, 9),  -- Segunda compra a Dos Leones
+('2024-12-03 09:15:00', 29600.00, 10, 3, 10), -- Segunda compra a Benitz
+('2024-12-03 11:00:00', 19250.00, 11, 4, 1),  -- Compra mixta a Mito
+('2024-12-03 13:45:00', 24750.00, 12, 5, 2),  -- Compra mixta a Lago
+('2024-12-03 15:30:00', 31875.00, 13, 6, 3),  -- Compra especial a Barricas
+('2024-12-04 08:00:00', 16200.00, 14, 7, 4),  -- Compra de temporada a Aldarra
+('2024-12-04 10:45:00', 27300.00, 15, 1, 5);  -- Compra de fin de año a Destilo
+
+-- FIN DE LOS INSERT DE SOLICITUD_COMPRA
+
+-- INICIO DE LOS INSERT DE DETALLE_COMPRA
+
+-- Inserts para Detalle_Compra (45 registros - 3 detalles por cada solicitud de compra)
+INSERT INTO DETALLE_COMPRA (det_com_cantidad, det_com_precio_unitario, fk_sol_com, fk_presentacion) VALUES
+-- Detalles para Solicitud de Compra 1
+(150, 8.50, 1, 1),   -- Destilo 330ml
+(100, 12.00, 1, 8),  -- Destilo 500ml
+(50, 15.50, 1, 9),   -- Destilo 1L
+
+-- Detalles para Solicitud de Compra 2
+(120, 12.00, 2, 2),  -- Dos Leones 330ml
+(80, 18.00, 2, 21),  -- Dos Leones 600ml
+(60, 22.00, 2, 6),   -- Dos Leones 750ml
+
+-- Detalles para Solicitud de Compra 3
+(100, 15.50, 3, 3),  -- Benitz 355ml
+(75, 20.00, 3, 22),  -- Benitz 440ml
+(50, 25.00, 3, 8),   -- Benitz 500ml
+
+-- Detalles para Solicitud de Compra 4
+(80, 22.00, 4, 4),   -- Mito 330ml
+(60, 28.00, 4, 23),  -- Mito 650ml
+(40, 35.00, 4, 11),  -- Mito 355ml
+
+-- Detalles para Solicitud de Compra 5
+(90, 25.50, 5, 5),   -- Lago 330ml
+(70, 30.00, 5, 24),  -- Lago 800ml
+(45, 33.00, 5, 13),  -- Lago 1L
+
+-- Detalles para Solicitud de Compra 6
+(60, 28.00, 6, 6),   -- Barricas 750ml
+(50, 22.50, 6, 25),  -- Barricas 400ml
+(40, 20.00, 6, 16),  -- Barricas 375ml
+
+-- Detalles para Solicitud de Compra 7
+(200, 6.75, 7, 7),   -- Aldarra lata
+(100, 22.00, 7, 19), -- Aldarra 330ml
+(80, 26.00, 7, 17),  -- Aldarra 500ml
+
+-- Detalles para Solicitud de Compra 8
+(100, 17.00, 8, 8),  -- Destilo 500ml
+(75, 18.00, 8, 20),  -- Destilo 250ml
+(60, 33.00, 8, 9),   -- Destilo 1L
+
+-- Detalles para Solicitud de Compra 9
+(85, 30.00, 9, 21),  -- Dos Leones 600ml
+(65, 27.00, 9, 2),   -- Dos Leones 330ml
+(50, 35.00, 9, 6),   -- Dos Leones 750ml
+
+-- Detalles para Solicitud de Compra 10
+(120, 24.67, 10, 22), -- Benitz 440ml
+(90, 28.00, 10, 8),   -- Benitz 500ml
+(70, 32.00, 10, 12),  -- Benitz 1L
+
+-- Detalles para Solicitud de Compra 11
+(70, 27.50, 11, 23),  -- Mito 650ml
+(55, 22.00, 11, 4),   -- Mito 330ml
+(45, 35.00, 11, 11),  -- Mito 355ml
+
+-- Detalles para Solicitud de Compra 12
+(65, 38.08, 12, 24),  -- Lago 800ml
+(50, 25.50, 12, 5),   -- Lago 330ml
+(40, 37.50, 12, 14),  -- Lago lata premium
+
+-- Detalles para Solicitud de Compra 13
+(45, 70.83, 13, 25),  -- Barricas 400ml especial
+(35, 28.00, 13, 6),   -- Barricas 750ml
+(30, 53.33, 13, 16),  -- Barricas 375ml
+
+-- Detalles para Solicitud de Compra 14
+(180, 9.00, 14, 7),   -- Aldarra lata
+(90, 24.00, 14, 19),  -- Aldarra 330ml
+(60, 27.00, 14, 18),  -- Aldarra 473ml
+
+-- Detalles para Solicitud de Compra 15
+(78, 35.00, 15, 1),   -- Destilo 330ml premium
+(65, 42.00, 15, 8),   -- Destilo 500ml premium
+(52, 52.50, 15, 9);   -- Destilo 1L premium
+
+-- FIN DE LOS INSERT DE DETALLE_COMPRA
+
+
+
+
+-- INICIO DE LOS INSERT DE CUENTA_PUNTO
+
+-- Inserts para Cuenta_Punto (15 registros - basados en ventas físicas existentes)
+INSERT INTO CUENTA_PUNTO (cue_pun_cantidad, fk_cliente, fk_venta_fisica) VALUES
+(125.00, 1, 1),   -- Cliente 1, Venta Física 1 - puntos por compra de 125000
+(156.00, 2, 2),   -- Cliente 2, Venta Física 2 - puntos por compra de 156000
+(78.50, 3, 3),    -- Cliente 3, Venta Física 3 - puntos por compra de 78500
+(234.00, 4, 4),   -- Cliente 4, Venta Física 4 - puntos por compra de 234000
+(98.70, 5, 5),    -- Cliente 5, Venta Física 5 - puntos por compra de 98700
+(156.80, 6, 6),   -- Cliente 6, Venta Física 6 - puntos por compra de 156800
+(201.50, 7, 7),   -- Cliente 7, Venta Física 7 - puntos por compra de 201500
+(87.60, 8, 8),    -- Cliente 8, Venta Física 8 - puntos por compra de 87600
+(167.50, 9, 9),   -- Cliente 9, Venta Física 9 - puntos por compra de 167500
+(134.80, 10, 10), -- Cliente 10, Venta Física 10 - puntos por compra de 134800
+(189.20, 11, 11), -- Cliente 11, Venta Física 11 - puntos por compra de 189200
+(145.60, 12, 12), -- Cliente 12, Venta Física 12 - puntos por compra de 145600
+(198.70, 13, 13), -- Cliente 13, Venta Física 13 - puntos por compra de 198700
+(123.40, 14, 14), -- Cliente 14, Venta Física 14 - puntos por compra de 123400
+(167.80, 15, 15); -- Cliente 15, Venta Física 15 - puntos por compra de 167800
+
+-- FIN DE LOS INSERT DE CUENTA_PUNTO
+
+-- INICIO DE LOS INSERT DE HISTORICO_PRECIO_PUNTO
+
+-- Inserts para Historico_Precio_Punto (12 registros - evolución del precio del punto)
+INSERT INTO HISTORICO_PRECIO_PUNTO (his_pre_pun_fecha_hora, his_pre_pun_valor) VALUES
+('2024-01-01 00:00:00+00', 1000),  -- 1 punto = 1000 bolívares
+('2024-02-01 00:00:00+00', 1050),  -- Ajuste inflacionario
+('2024-03-01 00:00:00+00', 1100),  -- Nuevo ajuste
+('2024-04-01 00:00:00+00', 1150),  -- Ajuste trimestral
+('2024-05-01 00:00:00+00', 1200),  -- Ajuste por inflación
+('2024-06-01 00:00:00+00', 1250),  -- Ajuste semestral
+('2024-07-01 00:00:00+00', 1300),  -- Ajuste de temporada
+('2024-08-01 00:00:00+00', 1350),  -- Ajuste mensual
+('2024-09-01 00:00:00+00', 1400),  -- Ajuste por demanda
+('2024-10-01 00:00:00+00', 1450),  -- Ajuste de octubre
+('2024-11-01 00:00:00+00', 1500),  -- Ajuste pre-navideño
+('2024-12-01 00:00:00+00', 1550);  -- Ajuste actual
+
+-- FIN DE LOS INSERT DE HISTORICO_PRECIO_PUNTO
+
+-- INICIO DE LOS INSERT DE MONEDA
+
+-- Inserts para Moneda (5 registros)
+INSERT INTO MONEDA (mon_tipo) VALUES
+('BOLIVAR'),
+('DOLAR'),
+('EURO'),
+('YEN'),
+('LIBRA');
+
+-- FIN DE LOS INSERT DE MONEDA
+
+-- INICIO DE LOS INSERT DE HISTORICO_MONEDA
+
+-- Inserts para Historico_Moneda (15 registros - 3 por moneda)
+INSERT INTO HISTORICO_MONEDA (his_mon_fecha_hora, his_valor_cambio, fk_moneda) VALUES
+-- Histórico Bolívar (base 1.00)
+('2024-01-01 00:00:00+00', 1.00, 1),
+('2024-06-01 00:00:00+00', 1.00, 1),
+('2024-12-01 00:00:00+00', 1.00, 1),
+-- Histórico Dólar
+('2024-01-01 00:00:00+00', 36.50, 2),
+('2024-06-01 00:00:00+00', 38.20, 2),
+('2024-12-01 00:00:00+00', 40.15, 2),
+-- Histórico Euro
+('2024-01-01 00:00:00+00', 39.80, 3),
+('2024-06-01 00:00:00+00', 41.50, 3),
+('2024-12-01 00:00:00+00', 43.25, 3),
+-- Histórico Yen
+('2024-01-01 00:00:00+00', 0.25, 4),
+('2024-06-01 00:00:00+00', 0.26, 4),
+('2024-12-01 00:00:00+00', 0.27, 4),
+-- Histórico Libra
+('2024-01-01 00:00:00+00', 46.20, 5),
+('2024-06-01 00:00:00+00', 48.10, 5),
+('2024-12-01 00:00:00+00', 50.25, 5);
+
+-- FIN DE LOS INSERT DE HISTORICO_MONEDA
+
+-- INICIO DE LOS INSERT DE METODO_PAGO
+
+-- Inserts para Metodo_Pago (15 registros - uno de cada tipo)
+INSERT INTO METODO_PAGO (efe_denominacion, che_num_cheque, tar_deb_numero, tar_deb_vencimiento, tar_deb_banco, tar_cre_numero, tar_cre_vencimiento, met_pag_tipo_pago, fk_his_pre_pun) VALUES
+-- Métodos de pago en efectivo
+(100, NULL, NULL, NULL, NULL, NULL, NULL, 'EFECTIVO', NULL),
+(50, NULL, NULL, NULL, NULL, NULL, NULL, 'EFECTIVO', NULL),
+(20, NULL, NULL, NULL, NULL, NULL, NULL, 'EFECTIVO', NULL),
+-- Métodos de pago con cheque
+(NULL, 1001234567, NULL, NULL, NULL, NULL, NULL, 'CHEQUE', NULL),
+(NULL, 1001234568, NULL, NULL, NULL, NULL, NULL, 'CHEQUE', NULL),
+(NULL, 1001234569, NULL, NULL, NULL, NULL, NULL, 'CHEQUE', NULL),
+-- Métodos de pago con tarjeta de débito
+(NULL, NULL, 1234567890123456, '2026-12-31', 'Banco de Venezuela', NULL, NULL, 'TARJETA_DEBITO', NULL),
+(NULL, NULL, 1234567890123457, '2027-06-30', 'Banesco', NULL, NULL, 'TARJETA_DEBITO', NULL),
+(NULL, NULL, 1234567890123458, '2026-09-30', 'Mercantil', NULL, NULL, 'TARJETA_DEBITO', NULL),
+-- Métodos de pago con tarjeta de crédito
+(NULL, NULL, NULL, NULL, NULL, 4567890123456789, '2026-12-31', 'TARJETA_CREDITO', NULL),
+(NULL, NULL, NULL, NULL, NULL, 4567890123456790, '2027-03-31', 'TARJETA_CREDITO', NULL),
+(NULL, NULL, NULL, NULL, NULL, 4567890123456791, '2026-08-31', 'TARJETA_CREDITO', NULL),
+-- Métodos de pago con puntos
+(NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'PUNTO', 1),
+(NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'PUNTO', 6),
+(NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'PUNTO', 12);
+
+-- FIN DE LOS INSERT DE METODO_PAGO
+
+-- INICIO DE LOS INSERT DE PAGO
+
+-- Inserts para Pago (20 registros - pagos para ventas físicas, online, afiliaciones)
+INSERT INTO PAGO (pag_monto, pag_fecha, fk_metodo_pago, fk_venta_fisica, fk_venta_online, fk_afiliacion, fk_venta_evento, fk_moneda) VALUES
+-- Pagos para ventas físicas (10 registros)
+(125000.00, '2024-01-15 10:30:00+00', 1, 1, NULL, NULL, NULL, 1),  -- Pago efectivo venta física 1
+(156000.00, '2024-01-18 11:45:00+00', 7, 2, NULL, NULL, NULL, 1),  -- Pago tarjeta débito venta física 2
+(78500.00, '2024-01-22 14:20:00+00', 10, 3, NULL, NULL, NULL, 1),   -- Pago tarjeta crédito venta física 3
+(234000.00, '2024-02-01 09:15:00+00', 4, 4, NULL, NULL, NULL, 1),   -- Pago cheque venta física 4
+(98700.00, '2024-02-05 16:30:00+00', 2, 5, NULL, NULL, NULL, 1),    -- Pago efectivo venta física 5
+(156800.00, '2024-02-10 12:00:00+00', 8, 6, NULL, NULL, NULL, 1),   -- Pago tarjeta débito venta física 6
+(201500.00, '2024-02-15 13:45:00+00', 11, 7, NULL, NULL, NULL, 1),  -- Pago tarjeta crédito venta física 7
+(87600.00, '2024-02-18 15:20:00+00', 5, 8, NULL, NULL, NULL, 1),    -- Pago cheque venta física 8
+(167500.00, '2024-02-22 10:10:00+00', 13, 9, NULL, NULL, NULL, 1),  -- Pago puntos venta física 9
+(134800.00, '2024-02-25 17:00:00+00', 9, 10, NULL, NULL, NULL, 1),  -- Pago tarjeta débito venta física 10
+
+-- Pagos para ventas online (5 registros)
+(145600.00, '2024-01-20 14:30:00+00', 10, NULL, 1, NULL, NULL, 1),  -- Pago tarjeta crédito venta online 1
+(167800.00, '2024-01-23 16:45:00+00', 11, NULL, 2, NULL, NULL, 1),  -- Pago tarjeta crédito venta online 2
+(198700.00, '2024-01-26 11:20:00+00', 7, NULL, 3, NULL, NULL, 1),   -- Pago tarjeta débito venta online 3
+(189200.00, '2024-01-29 13:15:00+00', 12, NULL, 4, NULL, NULL, 1),  -- Pago tarjeta crédito venta online 4
+(167500.00, '2024-02-02 15:30:00+00', 14, NULL, 5, NULL, NULL, 1),  -- Pago puntos venta online 5
+
+-- Pagos para afiliaciones (5 registros)
+(500000.00, '2024-01-10 09:00:00+00', 4, NULL, NULL, 1, NULL, 1),   -- Pago cheque afiliación 1
+(750000.00, '2024-01-15 10:30:00+00', 5, NULL, NULL, 2, NULL, 1),   -- Pago cheque afiliación 2
+(600000.00, '2024-01-20 14:00:00+00', 6, NULL, NULL, 3, NULL, 1),   -- Pago cheque afiliación 3
+(850000.00, '2024-01-25 11:15:00+00', 10, NULL, NULL, 4, NULL, 1),  -- Pago tarjeta crédito afiliación 4
+(450000.00, '2024-01-30 16:45:00+00', 11, NULL, NULL, 5, NULL, 1);  -- Pago tarjeta crédito afiliación 5
+
+-- FIN DE LOS INSERT DE PAGO
+
+-- INICIO DE LOS INSERT DE PAGO_EFECTIVO
+
+-- Inserts para Pago_Efectivo (15 registros - pagos a proveedores por solicitudes de compra)
+INSERT INTO PAGO_EFECTIVO (pag_efe_monto, pag_efe_fecha, fk_sol_com, fk_metodo_pago) VALUES
+(12750.00, '2024-12-01 10:00:00', 1, 1),   -- Pago efectivo solicitud compra 1
+(18600.00, '2024-12-01 11:30:00', 2, 2),   -- Pago efectivo solicitud compra 2
+(15500.00, '2024-12-01 13:00:00', 3, 3),   -- Pago efectivo solicitud compra 3
+(22000.00, '2024-12-01 15:15:00', 4, 1),   -- Pago efectivo solicitud compra 4
+(20625.00, '2024-12-01 17:00:00', 5, 2),   -- Pago efectivo solicitud compra 5
+(28125.00, '2024-12-02 09:45:00', 6, 3),   -- Pago efectivo solicitud compra 6
+(13500.00, '2024-12-02 11:30:00', 7, 1),   -- Pago efectivo solicitud compra 7
+(17000.00, '2024-12-02 14:00:00', 8, 2),   -- Pago efectivo solicitud compra 8
+(25500.00, '2024-12-02 16:30:00', 9, 3),   -- Pago efectivo solicitud compra 9
+(29600.00, '2024-12-03 10:15:00', 10, 1),  -- Pago efectivo solicitud compra 10
+(19250.00, '2024-12-03 12:00:00', 11, 2),  -- Pago efectivo solicitud compra 11
+(24750.00, '2024-12-03 14:45:00', 12, 3),  -- Pago efectivo solicitud compra 12
+(31875.00, '2024-12-03 16:30:00', 13, 1),  -- Pago efectivo solicitud compra 13
+(16200.00, '2024-12-04 09:00:00', 14, 2),  -- Pago efectivo solicitud compra 14
+(27300.00, '2024-12-04 11:45:00', 15, 3);  -- Pago efectivo solicitud compra 15
+
+-- FIN DE LOS INSERT DE PAGO_EFECTIVO
+
+-- INICIO DE LOS INSERT DE ESTATUS
+
+-- Inserts para Estatus (5 registros - tipos básicos de estatus)
+INSERT INTO ESTATUS (est_tipo_estatus, est_descripcion) VALUES
+('PENDIENTE', 'Estado inicial de cualquier proceso, esperando aprobacion o procesamiento.'),
+('APROBADO', 'Proceso aprobado y autorizado para continuar con la siguiente etapa.'),
+('RECHAZADO', 'Proceso rechazado por no cumplir con los requisitos establecidos.'),
+('EN_PROCESO', 'Proceso en ejecucion, siendo trabajado actualmente.'),
+('FINALIZADO', 'Proceso completado exitosamente y cerrado.');
+
+-- FIN DE LOS INSERT DE ESTATUS
+
+-- INICIO DE LOS INSERT DE VEN_ONL_EST
+
+-- Inserts para Ven_Onl_Est (40 registros - uno por cada venta online existente)
+INSERT INTO VEN_ONL_EST (ven_onl_est_fecha_inicio, ven_onl_est_fecha_fin, fk_venta_online, fk_estatus) VALUES
+-- Ventas Online 1-10 (Finalizadas)
+('2024-01-20', '2024-01-21', 1, 5),  -- Venta Online 1 - FINALIZADO
+('2024-01-23', '2024-01-24', 2, 5),  -- Venta Online 2 - FINALIZADO
+('2024-01-26', '2024-01-27', 3, 5),  -- Venta Online 3 - FINALIZADO
+('2024-01-29', '2024-01-30', 4, 5),  -- Venta Online 4 - FINALIZADO
+('2024-02-02', '2024-02-03', 5, 5),  -- Venta Online 5 - FINALIZADO
+('2024-02-05', '2024-02-06', 6, 5),  -- Venta Online 6 - FINALIZADO
+('2024-02-08', '2024-02-09', 7, 5),  -- Venta Online 7 - FINALIZADO
+('2024-02-11', '2024-02-12', 8, 5),  -- Venta Online 8 - FINALIZADO
+('2024-02-14', '2024-02-15', 9, 5),  -- Venta Online 9 - FINALIZADO
+('2024-02-17', '2024-02-18', 10, 5), -- Venta Online 10 - FINALIZADO
+
+-- Ventas Online 11-20 (En proceso y finalizadas)
+('2024-02-20', '2024-02-21', 11, 5), -- Venta Online 11 - FINALIZADO
+('2024-02-23', '2024-02-24', 12, 5), -- Venta Online 12 - FINALIZADO
+('2024-02-26', '2024-02-27', 13, 5), -- Venta Online 13 - FINALIZADO
+('2024-03-01', '2024-03-02', 14, 5), -- Venta Online 14 - FINALIZADO
+('2024-03-04', '2024-03-05', 15, 5), -- Venta Online 15 - FINALIZADO
+('2024-03-07', '2024-03-08', 16, 5), -- Venta Online 16 - FINALIZADO
+('2024-03-10', '2024-03-11', 17, 5), -- Venta Online 17 - FINALIZADO
+('2024-03-13', '2024-03-14', 18, 5), -- Venta Online 18 - FINALIZADO
+('2024-03-16', '2024-03-17', 19, 5), -- Venta Online 19 - FINALIZADO
+('2024-03-19', '2024-03-20', 20, 5), -- Venta Online 20 - FINALIZADO
+
+-- Ventas Online 21-30 (Empresas - Aprobadas y en proceso)
+('2024-03-22', '2024-03-23', 21, 5), -- Venta Online 21 - FINALIZADO
+('2024-03-25', '2024-03-26', 22, 5), -- Venta Online 22 - FINALIZADO
+('2024-03-28', '2024-03-29', 23, 5), -- Venta Online 23 - FINALIZADO
+('2024-03-31', '2024-04-01', 24, 5), -- Venta Online 24 - FINALIZADO
+('2024-04-03', '2024-04-04', 25, 5), -- Venta Online 25 - FINALIZADO
+('2024-04-06', '2024-04-07', 26, 5), -- Venta Online 26 - FINALIZADO
+('2024-04-09', '2024-04-10', 27, 5), -- Venta Online 27 - FINALIZADO
+('2024-04-12', '2024-04-13', 28, 5), -- Venta Online 28 - FINALIZADO
+('2024-04-15', '2024-04-16', 29, 5), -- Venta Online 29 - FINALIZADO
+('2024-04-18', '2024-04-19', 30, 5), -- Venta Online 30 - FINALIZADO
+
+-- Ventas Online 31-40 (Empresas - Estados mixtos)
+('2024-04-21', '2024-04-22', 31, 5), -- Venta Online 31 - FINALIZADO
+('2024-04-24', '2024-04-25', 32, 5), -- Venta Online 32 - FINALIZADO
+('2024-04-27', '2024-04-28', 33, 5), -- Venta Online 33 - FINALIZADO
+('2024-04-30', '2024-05-01', 34, 5), -- Venta Online 34 - FINALIZADO
+('2024-05-03', '2024-05-04', 35, 5), -- Venta Online 35 - FINALIZADO
+('2024-05-06', '2024-05-07', 36, 5), -- Venta Online 36 - FINALIZADO
+('2024-05-09', '2024-05-10', 37, 5), -- Venta Online 37 - FINALIZADO
+('2024-05-12', '2024-05-13', 38, 5), -- Venta Online 38 - FINALIZADO
+('2024-05-15', '2024-05-16', 39, 5), -- Venta Online 39 - FINALIZADO
+('2024-05-18', '2024-05-19', 40, 5); -- Venta Online 40 - FINALIZADO
+
+-- FIN DE LOS INSERT DE VEN_ONL_EST
+
+-- INICIO DE LOS INSERT DE AFI_EST
+
+-- Inserts para Afi_Est (15 registros - 3 por cada afiliación existente)
+INSERT INTO AFI_EST (afi_est_fecha_inicio, afi_est_fecha_fin, fk_afiliacion, fk_estatus) VALUES
+-- Afiliación 1 - Evolución completa
+(1, '2024-01-01', '2024-01-02', 1, 1),  -- PENDIENTE
+(2, '2024-01-02', '2024-01-03', 1, 2),  -- APROBADO
+(3, '2024-01-03', NULL, 1, 5),          -- FINALIZADO (activo)
+
+-- Afiliación 2 - Evolución completa
+(4, '2024-01-05', '2024-01-06', 2, 1),  -- PENDIENTE
+(5, '2024-01-06', '2024-01-07', 2, 2),  -- APROBADO
+(6, '2024-01-07', NULL, 2, 5),          -- FINALIZADO (activo)
+
+-- Afiliación 3 - Evolución completa
+(7, '2024-01-10', '2024-01-11', 3, 1),  -- PENDIENTE
+(8, '2024-01-11', '2024-01-12', 3, 2),  -- APROBADO
+(9, '2024-01-12', NULL, 3, 5),          -- FINALIZADO (activo)
+
+-- Afiliación 4 - Evolución completa
+(10, '2024-01-15', '2024-01-16', 4, 1), -- PENDIENTE
+(11, '2024-01-16', '2024-01-17', 4, 2), -- APROBADO
+(12, '2024-01-17', NULL, 4, 5),         -- FINALIZADO (activo)
+
+-- Afiliación 5 - Evolución completa
+(13, '2024-01-20', '2024-01-21', 5, 1), -- PENDIENTE
+(14, '2024-01-21', '2024-01-22', 5, 2), -- APROBADO
+(15, '2024-01-22', NULL, 5, 5);         -- FINALIZADO (activo)
+
+-- FIN DE LOS INSERT DE AFI_EST
+
+-- INICIO DE LOS INSERT DE SOL_REP_EST
+
+-- Inserts para Sol_Rep_Est (30 registros - 2 por cada solicitud de reposición)
+INSERT INTO SOL_REP_EST (sol_rep_est_fecha_inicio, sol_rep_est_fecha_fin, fk_sol_rep, fk_estatus) VALUES
+-- Solicitudes de Reposición 1-15 (2 estados por solicitud)
+(1, '2024-12-01', '2024-12-01', 1, 1),  -- Sol Rep 1 - PENDIENTE
+(2, '2024-12-01', NULL, 1, 2),          -- Sol Rep 1 - APROBADO (actual)
+
+(3, '2024-12-01', '2024-12-01', 2, 1),  -- Sol Rep 2 - PENDIENTE
+(4, '2024-12-01', NULL, 2, 4),          -- Sol Rep 2 - EN_PROCESO (actual)
+
+(5, '2024-12-01', '2024-12-01', 3, 1),  -- Sol Rep 3 - PENDIENTE
+(6, '2024-12-01', NULL, 3, 2),          -- Sol Rep 3 - APROBADO (actual)
+
+(7, '2024-12-01', '2024-12-01', 4, 1),  -- Sol Rep 4 - PENDIENTE
+(8, '2024-12-01', NULL, 4, 5),          -- Sol Rep 4 - FINALIZADO (actual)
+
+(9, '2024-12-01', '2024-12-01', 5, 1),  -- Sol Rep 5 - PENDIENTE
+(10, '2024-12-01', NULL, 5, 4),         -- Sol Rep 5 - EN_PROCESO (actual)
+
+(11, '2024-12-01', '2024-12-01', 6, 1), -- Sol Rep 6 - PENDIENTE
+(12, '2024-12-01', NULL, 6, 2),         -- Sol Rep 6 - APROBADO (actual)
+
+(13, '2024-12-01', '2024-12-01', 7, 1), -- Sol Rep 7 - PENDIENTE
+(14, '2024-12-01', NULL, 7, 4),         -- Sol Rep 7 - EN_PROCESO (actual)
+
+(15, '2024-12-02', '2024-12-02', 8, 1), -- Sol Rep 8 - PENDIENTE
+(16, '2024-12-02', NULL, 8, 5),         -- Sol Rep 8 - FINALIZADO (actual)
+
+(17, '2024-12-02', '2024-12-02', 9, 1), -- Sol Rep 9 - PENDIENTE
+(18, '2024-12-02', NULL, 9, 2),         -- Sol Rep 9 - APROBADO (actual)
+
+(19, '2024-12-02', '2024-12-02', 10, 1),-- Sol Rep 10 - PENDIENTE
+(20, '2024-12-02', NULL, 10, 4),        -- Sol Rep 10 - EN_PROCESO (actual)
+
+(21, '2024-12-02', '2024-12-02', 11, 1),-- Sol Rep 11 - PENDIENTE
+(22, '2024-12-02', NULL, 11, 5),        -- Sol Rep 11 - FINALIZADO (actual)
+
+(23, '2024-12-02', '2024-12-02', 12, 1),-- Sol Rep 12 - PENDIENTE
+(24, '2024-12-02', NULL, 12, 2),        -- Sol Rep 12 - APROBADO (actual)
+
+(25, '2024-12-02', '2024-12-02', 13, 1),-- Sol Rep 13 - PENDIENTE
+(26, '2024-12-02', NULL, 13, 4),        -- Sol Rep 13 - EN_PROCESO (actual)
+
+(27, '2024-12-03', '2024-12-03', 14, 1),-- Sol Rep 14 - PENDIENTE
+(28, '2024-12-03', NULL, 14, 2),        -- Sol Rep 14 - APROBADO (actual)
+
+(29, '2024-12-03', '2024-12-03', 15, 1),-- Sol Rep 15 - PENDIENTE
+(30, '2024-12-03', NULL, 15, 4);        -- Sol Rep 15 - EN_PROCESO (actual)
+
+-- FIN DE LOS INSERT DE SOL_REP_EST
+
+-- INICIO DE LOS INSERT DE SOL_COM_EST
+
+-- Inserts para Sol_Com_Est (30 registros - 2 por cada solicitud de compra)
+INSERT INTO SOL_COM_EST (sol_com_est_fecha_inicio, sol_com_est_fecha_fin, fk_sol_com, fk_estatus) VALUES
+-- Solicitudes de Compra 1-15 (2 estados por solicitud)
+(1, '2024-12-01', '2024-12-01', 1, 1),  -- Sol Com 1 - PENDIENTE
+(2, '2024-12-01', NULL, 1, 5),          -- Sol Com 1 - FINALIZADO (actual)
+
+(3, '2024-12-01', '2024-12-01', 2, 1),  -- Sol Com 2 - PENDIENTE
+(4, '2024-12-01', NULL, 2, 5),          -- Sol Com 2 - FINALIZADO (actual)
+
+(5, '2024-12-01', '2024-12-01', 3, 1),  -- Sol Com 3 - PENDIENTE
+(6, '2024-12-01', NULL, 3, 5),          -- Sol Com 3 - FINALIZADO (actual)
+
+(7, '2024-12-01', '2024-12-01', 4, 1),  -- Sol Com 4 - PENDIENTE
+(8, '2024-12-01', NULL, 4, 5),          -- Sol Com 4 - FINALIZADO (actual)
+
+(9, '2024-12-01', '2024-12-01', 5, 1),  -- Sol Com 5 - PENDIENTE
+(10, '2024-12-01', NULL, 5, 5),         -- Sol Com 5 - FINALIZADO (actual)
+
+(11, '2024-12-02', '2024-12-02', 6, 1), -- Sol Com 6 - PENDIENTE
+(12, '2024-12-02', NULL, 6, 5),         -- Sol Com 6 - FINALIZADO (actual)
+
+(13, '2024-12-02', '2024-12-02', 7, 1), -- Sol Com 7 - PENDIENTE
+(14, '2024-12-02', NULL, 7, 5),         -- Sol Com 7 - FINALIZADO (actual)
+
+(15, '2024-12-02', '2024-12-02', 8, 1), -- Sol Com 8 - PENDIENTE
+(16, '2024-12-02', NULL, 8, 5),         -- Sol Com 8 - FINALIZADO (actual)
+
+(17, '2024-12-02', '2024-12-02', 9, 1), -- Sol Com 9 - PENDIENTE
+(18, '2024-12-02', NULL, 9, 5),         -- Sol Com 9 - FINALIZADO (actual)
+
+(19, '2024-12-03', '2024-12-03', 10, 1),-- Sol Com 10 - PENDIENTE
+(20, '2024-12-03', NULL, 10, 5),        -- Sol Com 10 - FINALIZADO (actual)
+
+(21, '2024-12-03', '2024-12-03', 11, 1),-- Sol Com 11 - PENDIENTE
+(22, '2024-12-03', NULL, 11, 4),        -- Sol Com 11 - EN_PROCESO (actual)
+
+(23, '2024-12-03', '2024-12-03', 12, 1),-- Sol Com 12 - PENDIENTE
+(24, '2024-12-03', NULL, 12, 4),        -- Sol Com 12 - EN_PROCESO (actual)
+
+(25, '2024-12-03', '2024-12-03', 13, 1),-- Sol Com 13 - PENDIENTE
+(26, '2024-12-03', NULL, 13, 2),        -- Sol Com 13 - APROBADO (actual)
+
+(27, '2024-12-04', '2024-12-04', 14, 1),-- Sol Com 14 - PENDIENTE
+(28, '2024-12-04', NULL, 14, 2),        -- Sol Com 14 - APROBADO (actual)
+
+(29, '2024-12-04', '2024-12-04', 15, 1),-- Sol Com 15 - PENDIENTE
+(30, '2024-12-04', NULL, 15, 1);        -- Sol Com 15 - PENDIENTE (actual)
+
+-- FIN DE LOS INSERT DE SOL_COM_EST
+
