@@ -9,7 +9,7 @@ from .models import (
     Moneda, HistoricoMoneda, Almacen, Anaquel, Dimension, Ingrediente,
     Instruccion, Receta, RecIng, EstiloCerveza, HistoricoPrecioCerveza,
     HistoricoPrecioPunto, CuePun, PreAlm, PreDim, PagoEfectivo,
-    ExistenciaEvento, Asistencia, AsistenciaEvento, EmpSalCar
+    ExistenciaEvento, Asistencia, AsistenciaEvento, EmpSalCar, Presentacion
 )
 
 @admin.register(Lugar)
@@ -35,6 +35,17 @@ class CargoAdmin(admin.ModelAdmin):
 @admin.register(Empleado)
 class EmpleadoAdmin(admin.ModelAdmin):
     list_display = ('emp_id', 'emp_ci', 'emp_pnombre', 'emp_papellido', 'emp_sexo')
+
+
+@admin.register(Presentacion)
+class PresentacionAdmin(admin.ModelAdmin):
+    list_display = ('prese_id', 'prese_nombre', 'prese_recipiente')
+    search_fields = ('prese_nombre',)
+
+@admin.register(HistoricoPrecioCerveza)
+class HistoricoPrecioCervezaAdmin(admin.ModelAdmin):
+    list_display = ('presentacion', 'his_pre_cer_precio', 'his_pre_cer_fecha_inicio', 'his_pre_cer_fecha_fin')
+    list_filter = ('his_pre_cer_fecha_inicio',)
 
 
 # Registros básicos sin customización especial:
@@ -75,7 +86,6 @@ admin.site.register(Instruccion)
 admin.site.register(Receta)
 admin.site.register(RecIng)
 admin.site.register(EstiloCerveza)
-admin.site.register(HistoricoPrecioCerveza)
 admin.site.register(HistoricoPrecioPunto)
 admin.site.register(CuePun)
 admin.site.register(PreAlm)

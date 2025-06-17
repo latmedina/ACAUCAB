@@ -1,60 +1,50 @@
-var updateBtns = document.getElementsByClassName('update-cart')
+let updateBtns = document.getElementsByClassName('update-cart');
 
-for (i=0; i<updateBtns.length; i++){
-    updateBtns[i].addEventListener('click', function(){
-        var productId= this.dataset.product
-        var action = this.dataset.action
-        console.log('productId:', productId,'Action:', action)
+for (let i = 0; i < updateBtns.length; i++) {
+    updateBtns[i].addEventListener('click', function () {
+        let productId = this.dataset.product;
+        let action = this.dataset.action;
 
-        console.log('USER: ', user)
-        if (user == 'AnonymousUser'){
-            addCookieItem(productId, action)
-        }else{
-            UpdateUserOrder(productId, action)
-        }
-    })
-}
+        fetch('/update_cart/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: JSON.stringify({ productId: productId, action: action })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                // Actualiza el contador
+                let cartTotal = document.getElementById('cart-total');
+                if (cartTotal) {
+                    cartTotal.innerText = data.cartItems;
+                }
 
-function UpdateUserOrder(productId, action){
-    console.log('User is authenticated, sending data...')
-
-    var url= '/update_item/'
-    
-    fetch(url, {
-        method:'POST',
-        headers:{
-            'Content-Type':'application/json',
-            'X-CSRFToken':csrftoken,
-        },
-        body:JSON.stringify({'productId': productId, 'action':action})
-    })
-    .then((response) => {
-        return response.json();
-    })
-    .then((data) =>{
-        location.reload()
+                // Si estamos en /cart/, recargamos para ver cambios reflejados
+                if (window.location.pathname === '/cart/') {
+                    location.reload();
+                }
+            } else {
+                console.warn('Error al actualizar carrito:', data.message);
+            }
+        })
+        .catch(err => console.error('Error en fetch carrito:', err));
     });
 }
 
-function addCookieItem(productID, action){
-    console.log('User is not authenticated')
-
-        if (action == 'add'){
-            if(cart[productID] == undefined){
-                cart[productID] = {'quantity':1}
-        }else{
-            cart[productID]['quantity'] += 1
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
         }
     }
-
-    if (action == 'remove'){
-        cart[productId]['quantity'] -= 1
-        if (cart[productId]['quantity'] <= 0){
-            console.log('Item should be deleted')
-            delete cart[productId]
-        }
-    }
-    console.log('CART:', cart)
-    document.cookie = 'cart=' + JSON.stringify(cart) + ";domain=;path=/"
-    location.reload()
+    return cookieValue;
 }

@@ -19,10 +19,13 @@
                     <label for="password">Contraseña</label>
                     <input type="password" name="password" id="password" class="form-control" required>
                 </div>
-                <div class="d-grid">
+                <div class="d-grid mb-2">
                     <button type="submit" class="btn btn-primary">Entrar</button>
                 </div>
             </form>
+            <div class="d-grid">
+                <a href="{% url 'registro' %}" class="btn btn-secondary">Registrar</a>
+            </div>
         </div>
     </div>
 </div>

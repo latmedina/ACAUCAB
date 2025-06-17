@@ -1,55 +1,63 @@
 import json
 from .models import *
 
-def cookieCart(request):
-	try:
-		cart = json.loads(request.COOKIES['cart'])
-	except:
-		cart = {}
+def sessionCart(request):
+    cart = request.session.get('cart', {})
+    items = []
+    order = {'get_cart_total': 0, 'get_cart_items': 0}
+    cartItems = 0
 
-	items = []
-	order = {'get_cart_total': 0, 'get_cart_items': 0, 'shipping': False}
-	cartItems = order['get_cart_items']
+    for prese_id_str, quantity in cart.items():
+        try:
+            product = Presentacion.objects.get(prese_id=int(prese_id_str))
+            price = product.precio_actual or 0
+            subtotal = price * quantity
 
-	for i in cart:
-		try:
-			cartItems += cart[i]['quantity']
+            item = {
+                'product': product,
+                'quantity': quantity,
+                'get_total': subtotal
+            }
 
-			product = Product.objects.get(id=i)
-			total = (product.price * cart[i]['quantity'])
+            items.append(item)
+            cartItems += quantity
+            order['get_cart_total'] += subtotal
+            order['get_cart_items'] += quantity
+        except Presentacion.DoesNotExist:
+            continue
 
-			order['get_cart_total'] += total
-			order['get_cart_items'] += cart[i]['quantity']
-
-			item = {
-				'id': product.id,
-				'product': {
-					'id': product.id,
-					'name': product.name,
-					'price': product.price,
-					'imageURL': product.imageURL
-				},
-				'quantity': cart[i]['quantity'],
-				'digital': product.digital,
-				'get_total': total,
-			}
-			items.append(item)
-
-			if not product.digital:
-				order['shipping'] = True
-		except:
-			pass
-			
-	return {'cartItems': cartItems, 'order': order, 'items': items}
-
+    return {'cartItems': cartItems, 'order': order, 'items': items}
 
 def cartData(request):
-	if request.user.is_authenticated:
-		# Puedes extender esta lógica si conectas productos o carritos a usuarios
-		# Por ahora tratamos igual que visitantes
-		return cookieCart(request)
-	else:
-		return cookieCart(request)
+    cart = request.session.get('cart', {})
+    items = []
+    order = {'get_cart_total': 0, 'get_cart_items': 0}
+    cartItems = 0
+
+    for prese_id_str, quantity in cart.items():
+        if not prese_id_str.strip().isdigit():  # ← evita errores con claves vacías o inválidas
+            continue
+
+        try:
+            product = Presentacion.objects.get(prese_id=int(prese_id_str))
+            price = product.precio_actual or 0
+            subtotal = price * quantity
+
+            item = {
+                'product': product,
+                'quantity': quantity,
+                'get_total': subtotal
+            }
+
+            items.append(item)
+            cartItems += quantity
+            order['get_cart_total'] += subtotal
+            order['get_cart_items'] += quantity
+        except Presentacion.DoesNotExist:
+            continue
+
+    return {'cartItems': cartItems, 'order': order, 'items': items}
+
 
 
 def guestOrder(request, data):
