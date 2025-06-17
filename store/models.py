@@ -28,6 +28,30 @@ class Product(models.Model):
             url = ''
         return url
     
+    @property
+    def discounted_price(self):
+        from django.utils import timezone
+        promotions = self.promotion_set.filter(
+            status='activo',
+            start_date__lte=timezone.now(),
+            end_date__gte=timezone.now()
+        )
+        
+        if promotions.exists():
+            promotion = promotions.first()
+            return promotion.apply_discount(self.price)
+        return self.price
+    
+    @property
+    def has_discount(self):
+        return self.discounted_price < self.price
+    
+    @property
+    def discount_percentage(self):
+        if self.has_discount:
+            return round(((self.price - self.discounted_price) / self.price) * 100)
+        return 0
+    
 class Order(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null = True, blank= True)
     data_ordered = models.DateTimeField(auto_now_add=True)
@@ -66,7 +90,7 @@ class OrderItem(models.Model):
 
     @property
     def get_total(self):
-        total = self.product.price * self.quantity
+        total = self.product.discounted_price * self.quantity
         return total
 
 class ShippingAddress(models.Model):
@@ -80,5 +104,45 @@ class ShippingAddress(models.Model):
 
 	def __str__(self):
 		return self.address
+
+class Promotion(models.Model):
+    DISCOUNT_TYPES = (
+        ('porcentual', 'Porcentual'),
+        ('fijo', 'Fijo'),
+    )
+    
+    STATUS_CHOICES = (
+        ('activo', 'Activo'),
+        ('inactivo', 'Inactivo'),
+    )
+    
+    name = models.CharField(max_length=200)
+    discount_type = models.CharField(max_length=20, choices=DISCOUNT_TYPES, default='porcentual')
+    discount_amount = models.FloatField()
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='inactivo')
+    products = models.ManyToManyField(Product, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return self.name
+    
+    @property
+    def is_active(self):
+        from django.utils import timezone
+        now = timezone.now()
+        return (self.status == 'activo' and 
+                self.start_date <= now <= self.end_date)
+    
+    def apply_discount(self, price):
+        if not self.is_active:
+            return price
+        
+        if self.discount_type == 'porcentual':
+            return price * (1 - self.discount_amount / 100)
+        else:  # fijo
+            return max(0, price - self.discount_amount)
     
     
