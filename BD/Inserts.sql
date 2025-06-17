@@ -1952,16 +1952,28 @@ INSERT INTO TIENDA (tie_nombre, tie_direccion, tie_tipo, fk_lugar) VALUES
 
 -- Inserts para Lugar_Tienda (10 registros - uno por cada tienda)
 INSERT INTO LUGAR_TIENDA (lug_tie_nombre, lug_tie_tipo, fk_tienda, fk_lugar_tienda) VALUES
-('Sala Principal Caracas', 'Salon de Ventas', 1, 360), -- Cerveceria Central Caracas
-('Area Comercial Valencia', 'Centro Comercial', 2, 115), -- Beer Store Valencia
-('Showroom Maracaibo', 'Sala de Exhibicion', 3, 352), -- Maracaibo Beer House
-('Plataforma Digital Nacional', 'Centro de Operaciones', 4, 360), -- Cerveza Online Venezuela
-('Local Comercial Barquisimeto', 'Punto de Venta', 5, 171), -- Barquisimeto Brewery Shop
-('Area de Ventas Puerto La Cruz', 'Salon Comercial', 6, 43), -- Puerto La Cruz Beer Center
-('Tienda Andina Merida', 'Local Especializado', 7, 189), -- Andean Beer Store
-('Boutique Cervecera Caracas', 'Tienda Premium', 8, 360), -- Craft Beer Boutique
-('Centro Digital Caracas', 'Hub Tecnologico', 9, 360), -- Digital Beer Market
-('Almacen Ciudad Bolivar', 'Centro de Distribucion', 10, 95); -- Regional Beer Distribution
+('Cervezas Nacionales', 'ZONA', 1, NULL), --ZONA DE CERVEZAS NACIONALES DE Cerveceria Central Caracas
+('Cervezas Importadas', 'ZONA', 1, NULL), --ZONA DE CERVEZAS IMPORTADAS DE Cerveceria Central Caracas
+('Cervezas Nacionales', 'ZONA', 2, NULL), --ZONA DE CERVEZAS NACIONALES DE Beer Store Valencia
+('Cervezas Importadas', 'ZONA', 2, NULL), --ZONA DE CERVEZAS IMPORTADAS DE Beer Store Valencia
+('1', 'PASILLO', 1, 1), --PASILLO 1 ZONA NACIONALES DE Cerveceria Central Caracas
+('2', 'PASILLO', 1, 1), --PASILLO 2 ZONA NACIONALES DE Cerveceria Central Caracas
+('3', 'PASILLO', 1, 2), --PASILLO 3 ZONA IMPORTADAS DE Cerveceria Central Caracas
+('1', 'PASILLO', 2, 3), --PASILLO 1 ZONA NACIONALES DE Beer Store Valencia
+('2', 'PASILLO', 2, 3), --PASILLO 2 ZONA NACIONALES DE Beer Store Valencia
+('3', 'PASILLO', 2, 4), --PASILLO 3 ZONA IMPORTADAS DE Beer Store Valencia
+('1.1', 'ZONA-PASILLO', 1, 5), --ZONA 1.1 DE PASILLO 1 DE ZONA NACIONALES DE Cerveceria Central Caracas
+('1.2', 'ZONA-PASILLO', 1, 5), --ZONA 1.2 DE PASILLO 1 DE ZONA NACIONALES DE Cerveceria Central Caracas
+('2.1', 'ZONA-PASILLO', 1, 6), --ZONA 2.1 DE PASILLO 2 DE ZONA NACIONALES DE Cerveceria Central Caracas
+('2.2', 'ZONA-PASILLO', 1, 6), --ZONA 2.2 DE PASILLO 2 DE ZONA NACIONALES DE Cerveceria Central Caracas
+('3.1', 'ZONA-PASILLO', 1, 7), --ZONA 3.1 DE PASILLO 3 DE ZONA IMPORTADAS DE Cerveceria Central Caracas
+('3.1', 'ZONA-PASILLO', 1, 7), --ZONA 3.2 DE PASILLO 3 DE ZONA IMPORTADAS DE Cerveceria Central Caracas
+('1.1', 'ZONA-PASILLO', 2, 8), --ZONA 1.1 DE PASILLO 1 DE ZONA NACIONALES DE Beer Store Valencia
+('1.2', 'ZONA-PASILLO', 2, 8), --ZONA 1.2 DE PASILLO 1 DE ZONA NACIONALES DE Beer Store Valencia
+('2.1', 'ZONA-PASILLO', 2, 9), --ZONA 2.1 DE PASILLO 2 DE ZONA NACIONALES DE Beer Store Valencia
+('2.2', 'ZONA-PASILLO', 2, 9), --ZONA 2.2 DE PASILLO 2 DE ZONA NACIONALES DE Beer Store Valencia
+('3.1', 'ZONA-PASILLO', 2, 10), --ZONA 3.1 DE PASILLO 3 DE ZONA IMPORTADAS DE Beer Store Valencia
+('3.2', 'ZONA-PASILLO', 2, 10); --ZONA 3.2 DE PASILLO 3 DE ZONA IMPORTADAS DE Beer Store Valencia
 
 -- FIN DE LOS INSERT DE LUGAR_TIENDA
 
@@ -1969,43 +1981,55 @@ INSERT INTO LUGAR_TIENDA (lug_tie_nombre, lug_tie_tipo, fk_tienda, fk_lugar_tien
 
 -- Inserts para Anaquel (10 registros - uno por cada lugar_tienda)
 INSERT INTO ANAQUEL (ana_numero, fk_lugar_tienda) VALUES
-(101, 1), -- Anaquel 101 en Sala Principal Caracas
-(201, 2), -- Anaquel 201 en Area Comercial Valencia
-(301, 3), -- Anaquel 301 en Showroom Maracaibo
-(401, 4), -- Anaquel 401 en Plataforma Digital Nacional
-(501, 5), -- Anaquel 501 en Local Comercial Barquisimeto
-(601, 6), -- Anaquel 601 en Area de Ventas Puerto La Cruz
-(701, 7), -- Anaquel 701 en Tienda Andina Merida
-(801, 8), -- Anaquel 801 en Boutique Cervecera Caracas
-(901, 9), -- Anaquel 901 en Centro Digital Caracas
-(1001, 10); -- Anaquel 1001 en Almacen Ciudad Bolivar
+(101, 11), 
+(201, 11), 
+(301, 12), 
+(401, 12), 
+(501, 13), 
+(601, 13), 
+(701, 14), 
+(801, 14), 
+(901, 15), 
+(1001, 16), 
+(1101, 16),
+(101, 17),
+(201, 17),
+(301, 18),
+(401, 18),
+(501, 19),
+(601, 19),
+(701, 20),
+(801, 20),
+(901, 21),
+(1001, 22),
+(1101, 22);
 
 -- FIN DE LOS INSERT DE ANAQUEL
 
 -- INICIO DE LOS INSERT DE CLIENTE
 
 -- Inserts para Clientes Naturales (20 registros)
-INSERT INTO CLIENTE (cli_rif, cli_direccion_fisica, cli_tipo_cliente, cli_nat_ci, cli_nat_pnombre, cli_nat_snombre, cli_nat_papellido, cli_nat_sapellido, cli_nat_sexo, fk_lugar, cli_cantidad_puntos) VALUES
-('J123456789', 'Av. Libertador 123, Caracas', 'NATURAL', 'V12345678', 'Carlos', 'Alberto', 'Rodriguez', 'Perez', 'M', 360, 150),
-('J123456790', 'Calle Real 456, Maracay', 'NATURAL', 'V23456789', 'Maria', 'Elena', 'Gonzalez', 'Martinez', 'F', 61, 200),
-('J123456791', 'Av. Universidad 789, Valencia', 'NATURAL', 'V34567890', 'Jose', 'Luis', 'Fernandez', 'Lopez', 'M', 115, 75),
-('J123456792', 'Calle Bolivar 321, Barquisimeto', 'NATURAL', 'V45678901', 'Ana', 'Maria', 'Sanchez', 'Garcia', 'F', 171, 300),
-('J123456793', 'Av. 5 de Julio 654, Maracaibo', 'NATURAL', 'V56789012', 'Luis', 'Fernando', 'Ramirez', 'Morales', 'M', 352, 120),
-('J123456794', 'Calle Miranda 987, Puerto La Cruz', 'NATURAL', 'V67890123', 'Carmen', 'Rosa', 'Herrera', 'Vargas', 'F', 43, 180),
-('J123456795', 'Av. Las Americas 147, San Cristobal', 'NATURAL', 'V78901234', 'Pedro', 'Antonio', 'Castillo', 'Romero', 'M', 297, 90),
-('J123456796', 'Calle Sucre 258, Cumana', 'NATURAL', 'V89012345', 'Rosa', 'Isabel', 'Mendoza', 'Silva', 'F', 273, 250),
-('J123456797', 'Av. Intercomunal 369, Barinas', 'NATURAL', 'V90123456', 'Miguel', 'Angel', 'Torres', 'Jimenez', 'M', 83, 160),
-('J123456798', 'Calle Paez 741, Merida', 'NATURAL', 'V01234567', 'Luisa', 'Fernanda', 'Moreno', 'Ruiz', 'F', 189, 210),
-('J123456799', 'Av. Principal 852, Ciudad Bolivar', 'NATURAL', 'V12345679', 'Roberto', 'Carlos', 'Gutierrez', 'Diaz', 'M', 95, 110),
-('J123456800', 'Calle Comercio 963, Punto Fijo', 'NATURAL', 'V23456780', 'Elena', 'Victoria', 'Navarro', 'Cruz', 'F', 133, 175),
-('J123456801', 'Av. Fuerzas Armadas 159, Los Teques', 'NATURAL', 'V34567891', 'Jorge', 'Eduardo', 'Ramos', 'Ortega', 'M', 210, 135),
-('J123456802', 'Calle Ayacucho 357, Guarenas', 'NATURAL', 'V45678902', 'Patricia', 'Alejandra', 'Vega', 'Molina', 'F', 217, 195),
-('J123456803', 'Av. Romulo Gallegos 468, Maturin', 'NATURAL', 'V56789013', 'Fernando', 'Jose', 'Delgado', 'Paredes', 'M', 229, 85),
-('J123456804', 'Calle Urdaneta 579, Porlamar', 'NATURAL', 'V67890124', 'Gabriela', 'Antonieta', 'Campos', 'Rivero', 'F', 241, 220),
-('J123456805', 'Av. Rotaria 680, Acarigua', 'NATURAL', 'V78901235', 'Andres', 'Manuel', 'Suarez', 'Acosta', 'M', 247, 140),
-('J123456806', 'Calle Carabobo 791, Carora', 'NATURAL', 'V89012346', 'Beatriz', 'Esperanza', 'Flores', 'Vera', 'F', 176, 265),
-('J123456807', 'Av. Los Proceres 802, Valera', 'NATURAL', 'V90123457', 'Ricardo', 'Enrique', 'Medina', 'Aguilar', 'M', 323, 100),
-('J123456808', 'Calle Democracia 913, Catia La Mar', 'NATURAL', 'V01234568', 'Maritza', 'del Carmen', 'Ponce', 'Guerrero', 'F', 324, 230),
+INSERT INTO CLIENTE (cli_rif, cli_direccion_fisica, cli_tipo_cliente, cli_nat_ci, cli_nat_pnombre, cli_nat_snombre, cli_nat_papellido, cli_nat_sapellido, cli_nat_sexo, cli_jur_denom_comercial, cli_jur_razon_social, cli_jur_url_web, cli_jur_capital, cli_jur_dir_fiscal, fk_lugar, cli_cantidad_puntos) VALUES
+('J123456789', 'Av. Libertador 123, Caracas', 'NATURAL', 'V12345678', 'Carlos', 'Alberto', 'Rodriguez', 'Perez', 'M', NULL, NULL, NULL, NULL, NULL, 360, 150),
+('J123456790', 'Calle Real 456, Maracay', 'NATURAL', 'V23456789', 'Maria', 'Elena', 'Gonzalez', 'Martinez', 'F', NULL, NULL, NULL, NULL, NULL, 61, 200),
+('J123456791', 'Av. Universidad 789, Valencia', 'NATURAL', 'V34567890', 'Jose', 'Luis', 'Fernandez', 'Lopez', 'M', NULL, NULL, NULL, NULL, NULL, 115, 75),
+('J123456792', 'Calle Bolivar 321, Barquisimeto', 'NATURAL', 'V45678901', 'Ana', 'Maria', 'Sanchez', 'Garcia', 'F', NULL, NULL, NULL, NULL, NULL, 171, 300),
+('J123456793', 'Av. 5 de Julio 654, Maracaibo', 'NATURAL', 'V56789012', 'Luis', 'Fernando', 'Ramirez', 'Morales', 'M', NULL, NULL, NULL, NULL, NULL, 352, 120),
+('J123456794', 'Calle Miranda 987, Puerto La Cruz', 'NATURAL', 'V67890123', 'Carmen', 'Rosa', 'Herrera', 'Vargas', 'F', NULL, NULL, NULL, NULL, NULL, 43, 180),
+('J123456795', 'Av. Las Americas 147, San Cristobal', 'NATURAL', 'V78901234', 'Pedro', 'Antonio', 'Castillo', 'Romero', 'M', NULL, NULL, NULL, NULL, NULL, 297, 90),
+('J123456796', 'Calle Sucre 258, Cumana', 'NATURAL', 'V89012345', 'Rosa', 'Isabel', 'Mendoza', 'Silva', 'F', NULL, NULL, NULL, NULL, NULL, 273, 250),
+('J123456797', 'Av. Intercomunal 369, Barinas', 'NATURAL', 'V90123456', 'Miguel', 'Angel', 'Torres', 'Jimenez', 'M', NULL, NULL, NULL, NULL, NULL, 83, 160),
+('J123456798', 'Calle Paez 741, Merida', 'NATURAL', 'V01234567', 'Luisa', 'Fernanda', 'Moreno', 'Ruiz', 'F', NULL, NULL, NULL, NULL, NULL, 189, 210),
+('J123456799', 'Av. Principal 852, Ciudad Bolivar', 'NATURAL', 'V12345679', 'Roberto', 'Carlos', 'Gutierrez', 'Diaz', 'M', NULL, NULL, NULL, NULL, NULL, 95, 110),
+('J123456800', 'Calle Comercio 963, Punto Fijo', 'NATURAL', 'V23456780', 'Elena', 'Victoria', 'Navarro', 'Cruz', 'F', NULL, NULL, NULL, NULL, NULL, 133, 175),
+('J123456801', 'Av. Fuerzas Armadas 159, Los Teques', 'NATURAL', 'V34567891', 'Jorge', 'Eduardo', 'Ramos', 'Ortega', 'M', NULL, NULL, NULL, NULL, NULL, 210, 135),
+('J123456802', 'Calle Ayacucho 357, Guarenas', 'NATURAL', 'V45678902', 'Patricia', 'Alejandra', 'Vega', 'Molina', 'F', NULL, NULL, NULL, NULL, NULL, 217, 195),
+('J123456803', 'Av. Romulo Gallegos 468, Maturin', 'NATURAL', 'V56789013', 'Fernando', 'Jose', 'Delgado', 'Paredes', 'M',NULL, NULL, NULL, NULL, NULL, 229, 85),
+('J123456804', 'Calle Urdaneta 579, Porlamar', 'NATURAL', 'V67890124', 'Gabriela', 'Antonieta', 'Campos', 'Rivero', 'F', NULL, NULL, NULL, NULL, NULL,  241, 220),
+('J123456805', 'Av. Rotaria 680, Acarigua', 'NATURAL', 'V78901235', 'Andres', 'Manuel', 'Suarez', 'Acosta', 'M', NULL, NULL, NULL, NULL, NULL,  247, 140),
+('J123456806', 'Calle Carabobo 791, Carora', 'NATURAL', 'V89012346', 'Beatriz', 'Esperanza', 'Flores', 'Vera', 'F', NULL, NULL, NULL, NULL, NULL, 176, 265),
+('J123456807', 'Av. Los Proceres 802, Valera', 'NATURAL', 'V90123457', 'Ricardo', 'Enrique', 'Medina', 'Aguilar', 'M', NULL, NULL, NULL, NULL, NULL, 323, 100),
+('J123456808', 'Calle Democracia 913, Catia La Mar', 'NATURAL', 'V01234568', 'Maritza', 'del Carmen', 'Ponce', 'Guerrero', 'F', NULL, NULL, NULL, NULL, NULL, 324, 230),
 
 -- Inserts para Clientes Juridicos (20 registros)
 ('J234567890', 'Torre Empresarial, Piso 15, Caracas', 'JURIDICO', NULL, NULL, NULL, NULL, NULL, NULL, 'Distribuidora Andina', 'Distribuidora Andina C.A.', 'https://www.distribuidoraandina.com', 5000000, 'Av. Francisco de Miranda, Caracas', 360, 500),
@@ -2045,8 +2069,6 @@ INSERT INTO CONTACTO_CLIENTE (con_cli_nombre, con_cli_apellido, fk_cliente) VALU
 ('Camila', 'Hernandez', 30); -- Montana Brewery
 
 -- FIN DE LOS INSERT DE CONTACTO_CLIENTE
-
-
 
 -- INICIO DE LOS INSERT DE PROVEEDOR
 
@@ -2415,11 +2437,11 @@ INSERT INTO REC_ING (fk_receta, fk_ingrediente, rec_ing_cantidad) VALUES
 -- Inserts para INSTRUCCION
 INSERT INTO INSTRUCCION (ins_descripcion) VALUES
 ('Macerar toda la malta durante 1 hora a 66 grados Celsius.'),
-('Realizar el sparging (lavado del grano) a 76 grados Celsius.'),
+('Realizar el sparging a 76 grados Celsius.'),
 ('Hervir el mosto durante una hora.'),
 ('A los 60 minutos restantes de hervor, añadir 7g de lúpulo Columbus.'),
 ('A los 20 minutos restantes de hervor, añadir 7g de lúpulo Cascade.'),
-('Al apagar el fuego (flameout), añadir 10g de lúpulo Columbus y 30g de lúpulo Cascade.'),
+('Al apagar el fuego , añadir 10g de lúpulo Columbus y 30g de lúpulo Cascade.'),
 ('Enfriar el mosto y fermentar a una temperatura entre 18 y 20 grados Celsius.'),
 ('Madurar en botella o en barril durante 4 semanas.');
 
@@ -2862,9 +2884,9 @@ INSERT INTO VENTA_ONLINE (ven_onl_fecha, ven_onl_total, fk_usuario, fk_oferta, f
 ('2024-03-10',145300,47,4,4),('2024-03-13',178900,48,1,4),('2024-03-16',156900,49,5,4),('2024-03-19',134500,50,2,4),
 ('2024-03-22',556000,51,1,4),('2024-03-25',778000,52,2,4),('2024-03-28',445000,53,3,4),('2024-03-31',889000,54,1,4),
 ('2024-04-03',334000,55,4,4),('2024-04-06',667000,56,2,4),('2024-04-09',532000,57,5,4),('2024-04-12',754000,58,3,4),
-('2024-04-15',398000,59,1,4),('2024-04-18',643000,60,4,4),('2024-04-21',476000,61,2,4),('2024-04-24',787000,62,5,4),
-('2024-04-27',334000,63,3,4),('2024-04-30',556000,64,1,4),('2024-05-03',667000,65,4,4),('2024-05-06',445000,66,2,4),
-('2024-05-09',532000,67,5,4),('2024-05-12',754000,68,3,4),('2024-05-15',476000,69,1,4),('2024-05-18',643000,70,4,4);
+('2024-04-15',398000,59,1,4),('2024-04-18',643000,60,4,4),('2024-04-21',476000,60,2,4),('2024-04-24',787000,6,5,4),
+('2024-04-27',334000,9,3,4),('2024-04-30',556000,7,1,4),('2024-05-03',667000,3,4,4),('2024-05-06',445000,24,2,4),
+('2024-05-09',532000,4,5,4),('2024-05-12',754000,15,3,4),('2024-05-15',476000,14,1,4),('2024-05-18',643000,12,4,4);
 
 -- FIN DE LOS INSERT DE VENTA_ONLINE
 
@@ -3149,7 +3171,7 @@ INSERT INTO METODO_PAGO (efe_denominacion, che_num_cheque, tar_deb_numero, tar_d
 -- Métodos de pago con tarjeta de crédito
 (NULL, NULL, NULL, NULL, NULL, 4567890123456789, '2026-12-31', 'TARJETA_CREDITO', NULL),
 (NULL, NULL, NULL, NULL, NULL, 4567890123456790, '2027-03-31', 'TARJETA_CREDITO', NULL),
-(NULL, NULL, NULL, NULL, NULL, 4567890123456791, '2026-08-31', 'TARJETA_CREDITO', NULL),
+(NULL, NULL, NULL, NULL, NULL, 4567890123456791, '2024-08-31', 'TARJETA_CREDITO', NULL),
 -- Métodos de pago con puntos
 (NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'PUNTO', 1),
 (NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'PUNTO', 6),
@@ -3218,8 +3240,10 @@ INSERT INTO ESTATUS (est_tipo_estatus, est_descripcion) VALUES
 ('PENDIENTE', 'Estado inicial de cualquier proceso, esperando aprobacion o procesamiento.'),
 ('APROBADO', 'Proceso aprobado y autorizado para continuar con la siguiente etapa.'),
 ('RECHAZADO', 'Proceso rechazado por no cumplir con los requisitos establecidos.'),
-('EN_PROCESO', 'Proceso en ejecucion, siendo trabajado actualmente.'),
-('FINALIZADO', 'Proceso completado exitosamente y cerrado.');
+('EN PROCESO', 'Proceso en ejecucion, siendo trabajado actualmente.'),
+('FINALIZADO', 'Proceso completado exitosamente y cerrado.'),
+('LISTO PARA LA ENTREGA', 'Pedido listo para ser entregado al cliente'),
+('ENTREGADO', 'Pedido entregado al cliente');
 
 -- FIN DE LOS INSERT DE ESTATUS
 
@@ -3282,29 +3306,29 @@ INSERT INTO VEN_ONL_EST (ven_onl_est_fecha_inicio, ven_onl_est_fecha_fin, fk_ven
 -- Inserts para Afi_Est (15 registros - 3 por cada afiliación existente)
 INSERT INTO AFI_EST (afi_est_fecha_inicio, afi_est_fecha_fin, fk_afiliacion, fk_estatus) VALUES
 -- Afiliación 1 - Evolución completa
-(1, '2024-01-01', '2024-01-02', 1, 1),  -- PENDIENTE
-(2, '2024-01-02', '2024-01-03', 1, 2),  -- APROBADO
-(3, '2024-01-03', NULL, 1, 5),          -- FINALIZADO (activo)
+('2024-01-01', '2024-01-02', 1, 1),  -- PENDIENTE
+('2024-01-02', '2024-01-03', 1, 2),  -- APROBADO
+('2024-01-03', NULL, 1, 5),          -- FINALIZADO (activo)
 
 -- Afiliación 2 - Evolución completa
-(4, '2024-01-05', '2024-01-06', 2, 1),  -- PENDIENTE
-(5, '2024-01-06', '2024-01-07', 2, 2),  -- APROBADO
-(6, '2024-01-07', NULL, 2, 5),          -- FINALIZADO (activo)
+('2024-01-05', '2024-01-06', 2, 1),  -- PENDIENTE
+('2024-01-06', '2024-01-07', 2, 2),  -- APROBADO
+('2024-01-07', NULL, 2, 5),          -- FINALIZADO (activo)
 
 -- Afiliación 3 - Evolución completa
-(7, '2024-01-10', '2024-01-11', 3, 1),  -- PENDIENTE
-(8, '2024-01-11', '2024-01-12', 3, 2),  -- APROBADO
-(9, '2024-01-12', NULL, 3, 5),          -- FINALIZADO (activo)
+('2024-01-10', '2024-01-11', 3, 1),  -- PENDIENTE
+('2024-01-11', '2024-01-12', 3, 2),  -- APROBADO
+('2024-01-12', NULL, 3, 5),          -- FINALIZADO (activo)
 
 -- Afiliación 4 - Evolución completa
-(10, '2024-01-15', '2024-01-16', 4, 1), -- PENDIENTE
-(11, '2024-01-16', '2024-01-17', 4, 2), -- APROBADO
-(12, '2024-01-17', NULL, 4, 5),         -- FINALIZADO (activo)
+('2024-01-15', '2024-01-16', 4, 1), -- PENDIENTE
+('2024-01-16', '2024-01-17', 4, 2), -- APROBADO
+('2024-01-17', NULL, 4, 5),         -- FINALIZADO (activo)
 
 -- Afiliación 5 - Evolución completa
-(13, '2024-01-20', '2024-01-21', 5, 1), -- PENDIENTE
-(14, '2024-01-21', '2024-01-22', 5, 2), -- APROBADO
-(15, '2024-01-22', NULL, 5, 5);         -- FINALIZADO (activo)
+('2024-01-20', '2024-01-21', 5, 1), -- PENDIENTE
+('2024-01-21', '2024-01-22', 5, 2), -- APROBADO
+('2024-01-22', NULL, 5, 5);         -- FINALIZADO (activo)
 
 -- FIN DE LOS INSERT DE AFI_EST
 
@@ -3313,50 +3337,50 @@ INSERT INTO AFI_EST (afi_est_fecha_inicio, afi_est_fecha_fin, fk_afiliacion, fk_
 -- Inserts para Sol_Rep_Est (30 registros - 2 por cada solicitud de reposición)
 INSERT INTO SOL_REP_EST (sol_rep_est_fecha_inicio, sol_rep_est_fecha_fin, fk_sol_rep, fk_estatus) VALUES
 -- Solicitudes de Reposición 1-15 (2 estados por solicitud)
-(1, '2024-12-01', '2024-12-01', 1, 1),  -- Sol Rep 1 - PENDIENTE
-(2, '2024-12-01', NULL, 1, 2),          -- Sol Rep 1 - APROBADO (actual)
+('2024-12-01', '2024-12-01', 1, 1),  -- Sol Rep 1 - PENDIENTE
+('2024-12-01', NULL, 1, 2),          -- Sol Rep 1 - APROBADO (actual)
 
-(3, '2024-12-01', '2024-12-01', 2, 1),  -- Sol Rep 2 - PENDIENTE
-(4, '2024-12-01', NULL, 2, 4),          -- Sol Rep 2 - EN_PROCESO (actual)
+('2024-12-01', '2024-12-01', 2, 1),  -- Sol Rep 2 - PENDIENTE
+('2024-12-01', NULL, 2, 4),          -- Sol Rep 2 - EN_PROCESO (actual)
 
-(5, '2024-12-01', '2024-12-01', 3, 1),  -- Sol Rep 3 - PENDIENTE
-(6, '2024-12-01', NULL, 3, 2),          -- Sol Rep 3 - APROBADO (actual)
+('2024-12-01', '2024-12-01', 3, 1),  -- Sol Rep 3 - PENDIENTE
+('2024-12-01', NULL, 3, 2),          -- Sol Rep 3 - APROBADO (actual)
 
-(7, '2024-12-01', '2024-12-01', 4, 1),  -- Sol Rep 4 - PENDIENTE
-(8, '2024-12-01', NULL, 4, 5),          -- Sol Rep 4 - FINALIZADO (actual)
+('2024-12-01', '2024-12-01', 4, 1),  -- Sol Rep 4 - PENDIENTE
+('2024-12-01', NULL, 4, 5),          -- Sol Rep 4 - FINALIZADO (actual)
 
-(9, '2024-12-01', '2024-12-01', 5, 1),  -- Sol Rep 5 - PENDIENTE
-(10, '2024-12-01', NULL, 5, 4),         -- Sol Rep 5 - EN_PROCESO (actual)
+('2024-12-01', '2024-12-01', 5, 1),  -- Sol Rep 5 - PENDIENTE
+( '2024-12-01', NULL, 5, 4),         -- Sol Rep 5 - EN_PROCESO (actual)
 
-(11, '2024-12-01', '2024-12-01', 6, 1), -- Sol Rep 6 - PENDIENTE
-(12, '2024-12-01', NULL, 6, 2),         -- Sol Rep 6 - APROBADO (actual)
+( '2024-12-01', '2024-12-01', 6, 1), -- Sol Rep 6 - PENDIENTE
+( '2024-12-01', NULL, 6, 2),         -- Sol Rep 6 - APROBADO (actual)
 
-(13, '2024-12-01', '2024-12-01', 7, 1), -- Sol Rep 7 - PENDIENTE
-(14, '2024-12-01', NULL, 7, 4),         -- Sol Rep 7 - EN_PROCESO (actual)
+('2024-12-01', '2024-12-01', 7, 1), -- Sol Rep 7 - PENDIENTE
+('2024-12-01', NULL, 7, 4),         -- Sol Rep 7 - EN_PROCESO (actual)
 
-(15, '2024-12-02', '2024-12-02', 8, 1), -- Sol Rep 8 - PENDIENTE
-(16, '2024-12-02', NULL, 8, 5),         -- Sol Rep 8 - FINALIZADO (actual)
+('2024-12-02', '2024-12-02', 8, 1), -- Sol Rep 8 - PENDIENTE
+('2024-12-02', NULL, 8, 5),         -- Sol Rep 8 - FINALIZADO (actual)
 
-(17, '2024-12-02', '2024-12-02', 9, 1), -- Sol Rep 9 - PENDIENTE
-(18, '2024-12-02', NULL, 9, 2),         -- Sol Rep 9 - APROBADO (actual)
+('2024-12-02', '2024-12-02', 9, 1), -- Sol Rep 9 - PENDIENTE
+('2024-12-02', NULL, 9, 2),         -- Sol Rep 9 - APROBADO (actual)
 
-(19, '2024-12-02', '2024-12-02', 10, 1),-- Sol Rep 10 - PENDIENTE
-(20, '2024-12-02', NULL, 10, 4),        -- Sol Rep 10 - EN_PROCESO (actual)
+('2024-12-02', '2024-12-02', 10, 1),-- Sol Rep 10 - PENDIENTE
+('2024-12-02', NULL, 10, 4),        -- Sol Rep 10 - EN_PROCESO (actual)
 
-(21, '2024-12-02', '2024-12-02', 11, 1),-- Sol Rep 11 - PENDIENTE
-(22, '2024-12-02', NULL, 11, 5),        -- Sol Rep 11 - FINALIZADO (actual)
+('2024-12-02', '2024-12-02', 11, 1),-- Sol Rep 11 - PENDIENTE
+('2024-12-02', NULL, 11, 5),        -- Sol Rep 11 - FINALIZADO (actual)
 
-(23, '2024-12-02', '2024-12-02', 12, 1),-- Sol Rep 12 - PENDIENTE
-(24, '2024-12-02', NULL, 12, 2),        -- Sol Rep 12 - APROBADO (actual)
+('2024-12-02', '2024-12-02', 12, 1),-- Sol Rep 12 - PENDIENTE
+('2024-12-02', NULL, 12, 2),        -- Sol Rep 12 - APROBADO (actual)
 
-(25, '2024-12-02', '2024-12-02', 13, 1),-- Sol Rep 13 - PENDIENTE
-(26, '2024-12-02', NULL, 13, 4),        -- Sol Rep 13 - EN_PROCESO (actual)
+('2024-12-02', '2024-12-02', 13, 1),-- Sol Rep 13 - PENDIENTE
+('2024-12-02', NULL, 13, 4),        -- Sol Rep 13 - EN_PROCESO (actual)
 
-(27, '2024-12-03', '2024-12-03', 14, 1),-- Sol Rep 14 - PENDIENTE
-(28, '2024-12-03', NULL, 14, 2),        -- Sol Rep 14 - APROBADO (actual)
+('2024-12-03', '2024-12-03', 14, 1),-- Sol Rep 14 - PENDIENTE
+('2024-12-03', NULL, 14, 2),        -- Sol Rep 14 - APROBADO (actual)
 
-(29, '2024-12-03', '2024-12-03', 15, 1),-- Sol Rep 15 - PENDIENTE
-(30, '2024-12-03', NULL, 15, 4);        -- Sol Rep 15 - EN_PROCESO (actual)
+('2024-12-03', '2024-12-03', 15, 1),-- Sol Rep 15 - PENDIENTE
+('2024-12-03', NULL, 15, 4);        -- Sol Rep 15 - EN_PROCESO (actual)
 
 -- FIN DE LOS INSERT DE SOL_REP_EST
 
@@ -3365,50 +3389,429 @@ INSERT INTO SOL_REP_EST (sol_rep_est_fecha_inicio, sol_rep_est_fecha_fin, fk_sol
 -- Inserts para Sol_Com_Est (30 registros - 2 por cada solicitud de compra)
 INSERT INTO SOL_COM_EST (sol_com_est_fecha_inicio, sol_com_est_fecha_fin, fk_sol_com, fk_estatus) VALUES
 -- Solicitudes de Compra 1-15 (2 estados por solicitud)
-(1, '2024-12-01', '2024-12-01', 1, 1),  -- Sol Com 1 - PENDIENTE
-(2, '2024-12-01', NULL, 1, 5),          -- Sol Com 1 - FINALIZADO (actual)
+('2024-12-01', '2024-12-01', 1, 1),  -- Sol Com 1 - PENDIENTE
+('2024-12-01', NULL, 1, 5),          -- Sol Com 1 - FINALIZADO (actual)
 
-(3, '2024-12-01', '2024-12-01', 2, 1),  -- Sol Com 2 - PENDIENTE
-(4, '2024-12-01', NULL, 2, 5),          -- Sol Com 2 - FINALIZADO (actual)
+('2024-12-01', '2024-12-01', 2, 1),  -- Sol Com 2 - PENDIENTE
+('2024-12-01', NULL, 2, 5),          -- Sol Com 2 - FINALIZADO (actual)
 
-(5, '2024-12-01', '2024-12-01', 3, 1),  -- Sol Com 3 - PENDIENTE
-(6, '2024-12-01', NULL, 3, 5),          -- Sol Com 3 - FINALIZADO (actual)
+('2024-12-01', '2024-12-01', 3, 1),  -- Sol Com 3 - PENDIENTE
+('2024-12-01', NULL, 3, 5),          -- Sol Com 3 - FINALIZADO (actual)
 
-(7, '2024-12-01', '2024-12-01', 4, 1),  -- Sol Com 4 - PENDIENTE
-(8, '2024-12-01', NULL, 4, 5),          -- Sol Com 4 - FINALIZADO (actual)
+('2024-12-01', '2024-12-01', 4, 1),  -- Sol Com 4 - PENDIENTE
+('2024-12-01', NULL, 4, 5),          -- Sol Com 4 - FINALIZADO (actual)
 
-(9, '2024-12-01', '2024-12-01', 5, 1),  -- Sol Com 5 - PENDIENTE
-(10, '2024-12-01', NULL, 5, 5),         -- Sol Com 5 - FINALIZADO (actual)
+('2024-12-01', '2024-12-01', 5, 1),  -- Sol Com 5 - PENDIENTE
+( '2024-12-01', NULL, 5, 5),         -- Sol Com 5 - FINALIZADO (actual)
 
-(11, '2024-12-02', '2024-12-02', 6, 1), -- Sol Com 6 - PENDIENTE
-(12, '2024-12-02', NULL, 6, 5),         -- Sol Com 6 - FINALIZADO (actual)
+('2024-12-02', '2024-12-02', 6, 1), -- Sol Com 6 - PENDIENTE
+('2024-12-02', NULL, 6, 5),         -- Sol Com 6 - FINALIZADO (actual)
 
-(13, '2024-12-02', '2024-12-02', 7, 1), -- Sol Com 7 - PENDIENTE
-(14, '2024-12-02', NULL, 7, 5),         -- Sol Com 7 - FINALIZADO (actual)
+('2024-12-02', '2024-12-02', 7, 1), -- Sol Com 7 - PENDIENTE
+('2024-12-02', NULL, 7, 5),         -- Sol Com 7 - FINALIZADO (actual)
 
-(15, '2024-12-02', '2024-12-02', 8, 1), -- Sol Com 8 - PENDIENTE
-(16, '2024-12-02', NULL, 8, 5),         -- Sol Com 8 - FINALIZADO (actual)
+('2024-12-02', '2024-12-02', 8, 1), -- Sol Com 8 - PENDIENTE
+('2024-12-02', NULL, 8, 5),         -- Sol Com 8 - FINALIZADO (actual)
 
-(17, '2024-12-02', '2024-12-02', 9, 1), -- Sol Com 9 - PENDIENTE
-(18, '2024-12-02', NULL, 9, 5),         -- Sol Com 9 - FINALIZADO (actual)
+('2024-12-02', '2024-12-02', 9, 1), -- Sol Com 9 - PENDIENTE
+('2024-12-02', NULL, 9, 5),         -- Sol Com 9 - FINALIZADO (actual)
 
-(19, '2024-12-03', '2024-12-03', 10, 1),-- Sol Com 10 - PENDIENTE
-(20, '2024-12-03', NULL, 10, 5),        -- Sol Com 10 - FINALIZADO (actual)
+('2024-12-03', '2024-12-03', 10, 1),-- Sol Com 10 - PENDIENTE
+('2024-12-03', NULL, 10, 5),        -- Sol Com 10 - FINALIZADO (actual)
 
-(21, '2024-12-03', '2024-12-03', 11, 1),-- Sol Com 11 - PENDIENTE
-(22, '2024-12-03', NULL, 11, 4),        -- Sol Com 11 - EN_PROCESO (actual)
+('2024-12-03', '2024-12-03', 11, 1),-- Sol Com 11 - PENDIENTE
+('2024-12-03', NULL, 11, 4),        -- Sol Com 11 - EN_PROCESO (actual)
 
-(23, '2024-12-03', '2024-12-03', 12, 1),-- Sol Com 12 - PENDIENTE
-(24, '2024-12-03', NULL, 12, 4),        -- Sol Com 12 - EN_PROCESO (actual)
+('2024-12-03', '2024-12-03', 12, 1),-- Sol Com 12 - PENDIENTE
+('2024-12-03', NULL, 12, 4),        -- Sol Com 12 - EN_PROCESO (actual)
 
-(25, '2024-12-03', '2024-12-03', 13, 1),-- Sol Com 13 - PENDIENTE
-(26, '2024-12-03', NULL, 13, 2),        -- Sol Com 13 - APROBADO (actual)
+('2024-12-03', '2024-12-03', 13, 1),-- Sol Com 13 - PENDIENTE
+('2024-12-03', NULL, 13, 2),        -- Sol Com 13 - APROBADO (actual)
 
-(27, '2024-12-04', '2024-12-04', 14, 1),-- Sol Com 14 - PENDIENTE
-(28, '2024-12-04', NULL, 14, 2),        -- Sol Com 14 - APROBADO (actual)
+('2024-12-04', '2024-12-04', 14, 1),-- Sol Com 14 - PENDIENTE
+('2024-12-04', NULL, 14, 2),        -- Sol Com 14 - APROBADO (actual)
 
-(29, '2024-12-04', '2024-12-04', 15, 1),-- Sol Com 15 - PENDIENTE
-(30, '2024-12-04', NULL, 15, 1);        -- Sol Com 15 - PENDIENTE (actual)
+('2024-12-04', '2024-12-04', 15, 1),-- Sol Com 15 - PENDIENTE
+('2024-12-04', NULL, 15, 1);        -- Sol Com 15 - PENDIENTE (actual)
 
 -- FIN DE LOS INSERT DE SOL_COM_EST
 
+
+-- INICIO DE LOS INSERT DE TIPO_EVENTO
+
+-- Se insertan primero los tipos de evento principales (padres), por lo que su fk_tipo_evento es NULL.
+INSERT INTO TIPO_EVENTO (tip_eve_nombre, tip_eve_descripcion, fk_tipo_evento) VALUES
+('Festival', 'Evento a gran escala con multiples cervecerias y musica en vivo.', NULL),
+('Cata', 'Sesion de degustacion para evaluar y disfrutar diferentes tipos de cerveza.', NULL),
+('Taller de Elaboracion', 'Curso practico sobre el proceso de fabricacion de cerveza artesanal.', NULL),
+('Competencia', 'Certamen para premiar a las mejores cervezas en diversas categorias.', NULL),
+('Lanzamiento', 'Evento para presentar una nueva cerveza o linea de productos al mercado.', NULL),
+('Evento de Maridaje', 'Experiencia gastronomica que combina cervezas con alimentos especificos.', NULL),
+('Feria', 'Evento que reúne a productores locales y artesanales para exhibir sus productos.', NULL),
+('Exposición', 'Evento donde se exhiben productos cerveceros, maquinaria y tecnología relacionada.', NULL);
+
+INSERT INTO TIPO_EVENTO (tip_eve_nombre, tip_eve_descripcion, fk_tipo_evento) VALUES
+('Feria de Cerveceros Locales', 'Festival enfocado en productores de la region.', 1),
+('Cata Guiada', 'Degustacion dirigida por un sommelier de cervezas o beer server.', 2),
+('Taller de Iniciacion', 'Curso basico para aprender a hacer cerveza en casa.', 3),
+('Taller de Estilos Avanzados', 'Curso enfocado en la elaboracion de estilos complejos como Sours o Barleywines.', 3),
+('Competencia Homebrew', 'Concurso para cerveceros caseros no profesionales.', 4),
+('Lanzamiento de Cerveza de Temporada', 'Presentacion de una cerveza estacional como una Pumpkin Ale.', 5);
+
+-- FIN DE LOS INSERT DE  TIPO_EVENTO
+
+-- INICIO DE LOS INSERT DE EVENTO
+
+-- Inserts para Evento (125 registros - 5 por cada estado de venezuela)
+-- Eventos en Amazonas (fk_lugar = 1)
+INSERT INTO EVENTO (eve_nombre, eve_descripcion, eve_fecha_hora, eve_nro_boletos, fk_tip_eve, fk_lugar) VALUES
+('Cata Selvatica', 'Degustacion de cervezas con frutas exoticas del amazonas.', '2025-07-20 19:00:00', 50, 2, 1),
+('Taller de Cerveza Ancestral', 'Aprende tecnicas de fermentacion con ingredientes locales.', '2025-08-15 09:00:00', 40, 3, 1),
+('Noche de Maridaje Amazonico', 'Cervezas artesanales combinadas con gastronomia local.', '2025-09-10 20:00:00', 60, 6, 1),
+('Lanzamiento de la Orinoco IPA', 'Presentacion de nuestra nueva Indian Pale Ale.', '2025-10-01 18:30:00', 100, 5, 1),
+('Competencia de Cerveza Casera del Sur', 'Concurso para homebrewers de la region.', '2025-11-22 14:00:00', 150, 4, 1);
+
+-- Eventos en Anzoátegui (fk_lugar = 2)
+INSERT INTO EVENTO (eve_nombre, eve_descripcion, eve_fecha_hora, eve_nro_boletos, fk_tip_eve, fk_lugar) VALUES
+('Festival de la Cerveza Playera', 'Musica, playa y las mejores cervezas del oriente.', '2025-08-01 12:00:00', 500, 1, 2),
+('Cata Guiada de Lagers', 'Un viaje por las cervezas mas refrescantes.', '2025-08-25 19:30:00', 80, 9, 2),
+('Taller de Iniciacion Cervecera PLC', 'Tu primer lote de cerveza hecho por ti mismo.', '2025-09-20 10:00:00', 30, 11, 2),
+('Oktoberfest Lecheria', 'La tradicion alemana en el morro.', '2025-10-18 17:00:00', 400, 8, 2),
+('Maridaje Marino', 'Cervezas y los mejores platos del mar.', '2025-11-15 20:00:00', 70, 12, 2);
+
+-- Eventos en Apure (fk_lugar = 3)
+INSERT INTO EVENTO (eve_nombre, eve_descripcion, eve_fecha_hora, eve_nro_boletos, fk_tip_eve, fk_lugar) VALUES
+('Festival del Llano Cervecero', 'Joropo, carne en vara y cerveza artesanal.', '2025-12-05 15:00:00', 300, 1, 3),
+('Cata de Cervezas de Maiz', 'Explorando cervezas hechas con cereales alternativos.', '2024-01-20 19:00:00', 50, 2, 3),
+('Competencia Homebrew Llanera', 'Buscando al mejor cervecero casero de Apure.', '2024-02-15 13:00:00', 100, 13, 3),
+('Taller Basico en San Fernando', 'Aprende lo esencial de la elaboracion casera.', '2024-03-10 09:30:00', 45, 11, 3),
+('Lanzamiento de la Apurena Stout', 'Una cerveza oscura con notas de cafe y cacao.', '2024-04-01 19:00:00', 90, 5, 3);
+
+-- Eventos en Aragua (fk_lugar = 4)
+INSERT INTO EVENTO (eve_nombre, eve_descripcion, eve_fecha_hora, eve_nro_boletos, fk_tip_eve, fk_lugar) VALUES
+('Oktoberfest Colonia Tovar', 'La fiesta de la cerveza mas famosa de Venezuela.', '2025-10-24 12:00:00', 1500, 8, 4),
+('Feria de Cerveceros de Aragua', 'Los mejores productores del centro del pais reunidos.', '2025-11-28 17:00:00', 600, 7, 4),
+('Taller de Estilos Avanzados', 'Perfecciona tu tecnica con estilos complejos.', '2024-01-15 09:00:00', 25, 12, 4),
+('Cata a Ciegas Maracay', 'Pon a prueba tu paladar sin ver las etiquetas.', '2024-02-20 20:00:00', 60, 10, 4),
+('Maridaje con Chocolates de Chuao', 'Una experiencia sensorial unica con cervezas y cacao.', '2024-03-18 19:30:00', 50, 6, 4);
+
+-- Eventos en Barinas (fk_lugar = 5)
+INSERT INTO EVENTO (eve_nombre, eve_descripcion, eve_fecha_hora, eve_nro_boletos, fk_tip_eve, fk_lugar) VALUES
+('Festival de la Cerveza Ganadera', 'El sabor del llano con la mejor cerveza.', '2025-10-10 16:00:00', 400, 1, 5),
+('Taller de Iniciacion Barinas', 'El primer paso para ser un maestro cervecero.', '2025-11-08 10:00:00', 35, 11, 5),
+('Cata de Stouts y Porters', 'Explorando el lado oscuro de la cerveza.', '2025-12-12 19:00:00', 70, 2, 5),
+('Lanzamiento de la Barinas Pale Ale', 'Una cerveza refrescante y con caracter.', '2024-01-30 18:00:00', 120, 5, 5),
+('Competencia de Cerveza Casera', 'Demuestra tu talento en nuestra competencia anual.', '2024-02-28 14:00:00', 90, 13, 5);
+
+-- Eventos en Bolívar (fk_lugar = 6)
+INSERT INTO EVENTO (eve_nombre, eve_descripcion, eve_fecha_hora, eve_nro_boletos, fk_tip_eve, fk_lugar) VALUES
+('Festival Dorado de Cerveza', 'El oro liquido de Guayana en un solo lugar.', '2024-03-20 18:00:00', 700, 1, 6),
+('Cata a Orillas del Orinoco', 'Degustacion con vistas al rio mas grande de Venezuela.', '2024-04-17 17:00:00', 100, 9, 6),
+('Lanzamiento de la Tepuy Stout', 'Una cerveza robusta inspirada en nuestras formaciones rocosas.', '2025-05-15 19:30:00', 150, 14, 6),
+('Taller de Elaboracion Guayanes', 'Aprende los secretos de la cerveza de la region.', '2025-06-12 09:00:00', 40, 11, 6),
+('Maridaje con Queso Guayanes', 'La combinacion perfecta de la tradicion y la innovacion.', '2025-07-10 20:00:00', 80, 12, 6);
+
+-- Eventos en Carabobo (fk_lugar = 7)
+INSERT INTO EVENTO (eve_nombre, eve_descripcion, eve_fecha_hora, eve_nro_boletos, fk_tip_eve, fk_lugar) VALUES
+('Valencia Beer Fest', 'El festival mas grande del centro del pais.', '2025-11-07 16:00:00', 1200, 7, 7),
+('Copa Cervecera Industrial', 'La competencia que reune a los mejores cerveceros.', '2025-02-06 11:00:00', 300, 4, 7),
+('Taller de Lupulos en Naguanagua', 'Un curso intensivo sobre el alma de la IPA.', '2025-03-06 10:00:00', 30, 12, 7),
+('Cata de Cervezas Belgas', 'Descubre la complejidad de los estilos de Belgica.', '2025-04-03 19:00:00', 90, 9, 7),
+('Lanzamiento de la Valencia Lager', 'Presentacion de una nueva lager para la ciudad.', '2025-05-01 18:00:00', 250, 14, 7);
+
+-- Eventos en Cojedes (fk_lugar = 8)
+INSERT INTO EVENTO (eve_nombre, eve_descripcion, eve_fecha_hora, eve_nro_boletos, fk_tip_eve, fk_lugar) VALUES
+('Festival Cervecero de Cojedes', 'Apoyando a los productores locales.', '2025-09-12 17:00:00', 200, 1, 8),
+('Taller Basico en San Carlos', 'Iniciate en el mundo de la cerveza casera.', '2025-10-10 09:30:00', 50, 11, 8),
+('Cata de Cervezas Nacionales', 'Un recorrido por los sabores de Venezuela.', '2025-11-14 19:00:00', 60, 2, 8),
+('Competencia Homebrew Cojedes', 'El concurso para cerveceros caseros de la region.', '2025-12-12 14:00:00', 80, 13, 8),
+('Maridaje Criollo', 'Cervezas artesanales con platos tipicos de la region.', '2025-01-09 20:00:00', 50, 6, 8);
+
+-- Eventos en Delta Amacuro (fk_lugar = 9)
+INSERT INTO EVENTO (eve_nombre, eve_descripcion, eve_fecha_hora, eve_nro_boletos, fk_tip_eve, fk_lugar) VALUES
+('Cata Flotante en el Delta', 'Una experiencia unica en los canos del Orinoco.', '2025-05-22 16:00:00', 40, 9, 9),
+('Taller con Frutos del Delta', 'Elaboracion de cerveza usando ingredientes exoticos.', '2025-06-19 10:00:00', 25, 3, 9),
+('Lanzamiento de la Warao Ale', 'Una cerveza inspirada en la cultura indigena local.', '2025-07-17 18:00:00', 70, 5, 9),
+('Festival del Pescador Cervecero', 'Combinando la pesca del dia con cerveza fresca.', '2025-08-14 15:00:00', 150, 1, 9),
+('Noche de Maridaje de Rio', 'Pescado de rio y cervezas artesanales.', '2025-09-11 19:30:00', 50, 13, 9);
+
+-- Eventos en Falcón (fk_lugar = 10)
+INSERT INTO EVENTO (eve_nombre, eve_descripcion, eve_fecha_hora, eve_nro_boletos, fk_tip_eve, fk_lugar) VALUES
+('Festival de la Cerveza Medanal', 'Cerveza y viento en los Medanos de Coro.', '2025-12-26 13:00:00', 500, 1, 10),
+('Cata de Gose y Sours', 'Explorando cervezas acidas y salinas, perfectas para el calor.', '2025-01-23 19:00:00', 70, 2, 10),
+('Taller de Elaboracion en Paraguaná', 'Aprende a hacer cerveza en la peninsula.', '2025-02-20 09:00:00', 40, 3, 10),
+('Lanzamiento de la Cardon IPA', 'Una IPA con un toque desertico.', '2025-03-20 19:00:00', 120, 14, 10),
+('Maridaje con Chivo Al Coco', 'La tradicion falconiana se une a la cerveza artesanal.', '2025-04-17 20:30:00', 60, 6, 10);
+
+-- Eventos en Guárico (fk_lugar = 11)
+INSERT INTO EVENTO (eve_nombre, eve_descripcion, eve_fecha_hora, eve_nro_boletos, fk_tip_eve, fk_lugar) VALUES
+('Festival del Estero Cervecero', 'El llano se viste de fiesta y cerveza.', '2023-03-13 13:00:00', 250, 7, 11),
+('Taller de Cerveza en Calabozo', 'Conceptos basicos y avanzados de elaboracion.', '2023-04-10 09:00:00', 35, 3, 11),
+('Cata de Cervezas Rojas', 'Un recorrido por los estilos Amber, Red Ale y mas.', '2023-05-08 19:30:00', 50, 2, 11),
+('Lanzamiento de la Guariquena Pilsner', 'Una cerveza ligera y refrescante para el calor.', '2023-06-05 18:30:00', 100, 5, 11),
+('Competencia de Cerveceros del Llano', 'El evento que premia la creatividad llanera.', '2024-07-03 13:00:00', 90, 4, 11);
+
+-- Eventos en Lara (fk_lugar = 12)
+INSERT INTO EVENTO (eve_nombre, eve_descripcion, eve_fecha_hora, eve_nro_boletos, fk_tip_eve, fk_lugar) VALUES
+('Barquisimeto Beer Festival', 'La capital musical se llena de la mejor cerveza.', '2025-09-12 17:00:00', 900, 1, 12),
+('Taller de Elaboracion con Cocuy', 'Innovando con el destilado local en la cerveza.', '2025-10-17 10:00:00', 30, 12, 12),
+('Cata a Ciegas Crepuscular', 'Degusta y adivina bajo los atardeceres de Barquisimeto.', '2025-11-21 18:30:00', 80, 10, 12),
+('Lanzamiento de la Divina Pastora Ale', 'Una cerveza de edicion especial para la feria.', '2024-01-13 19:00:00', 200, 14, 12),
+('Maridaje con Lomo Prensado', 'Sabores de Lara en armonia con cervezas unicas.', '2024-02-13 20:00:00', 70, 13, 12);
+
+-- Eventos en Mérida (fk_lugar = 13)
+INSERT INTO EVENTO (eve_nombre, eve_descripcion, eve_fecha_hora, eve_nro_boletos, fk_tip_eve, fk_lugar) VALUES
+('Festival de Cerveza del Paramo', 'Cervezas de altura en el corazon de los Andes.', '2024-01-02 14:00:00', 450, 1, 13),
+('Cata de Cervezas de Trigo', 'Estilos Hefeweizen, Witbier y mas en el clima frio.', '2024-01-30 19:00:00', 60, 2, 13),
+('Taller de Elaboracion en Frio', 'Aprende las tecnicas de fermentacion a bajas temperaturas.', '2022-02-27 09:30:00', 25, 3, 13),
+('Maridaje con Trucha Ahumada', 'La delicadeza de la trucha con cervezas seleccionadas.', '2022-03-27 20:00:00', 50, 13, 13),
+('Competencia Homebrew de los Andes', 'El concurso mas alto de Venezuela.', '2022-04-24 12:00:00', 120, 13, 13);
+
+-- Eventos en Miranda (fk_lugar = 14)
+INSERT INTO EVENTO (eve_nombre, eve_descripcion, eve_fecha_hora, eve_nro_boletos, fk_tip_eve, fk_lugar) VALUES
+('Gran Feria Cervecera de Caracas', 'El evento que reune a toda la capital y sus alrededores.', '2025-11-14 15:00:00', 2000, 7, 14),
+('Taller de Estilos IPA en Los Teques', 'Un dia completo dedicado al lupulo.', '2025-12-05 09:00:00', 40, 12, 14),
+('Lanzamiento de Cerveza de Temporada', 'Presentacion de la cerveza de navidad.', '2025-12-19 19:00:00', 300, 14, 14),
+('Cata Guiada en El Hatillo', 'Un paseo por los sabores de la cerveza en un ambiente colonial.', '2022-01-23 19:30:00', 80, 9, 14),
+('Maridaje con Quesos y Fiambres', 'Una noche de sabores intensos.', '2022-02-20 20:30:00', 100, 10, 14);
+
+-- Eventos en Monagas (fk_lugar = 15)
+INSERT INTO EVENTO (eve_nombre, eve_descripcion, eve_fecha_hora, eve_nro_boletos, fk_tip_eve, fk_lugar) VALUES
+('Festival Cervecero de Oriente', 'Maturin se convierte en la capital de la cerveza.', '2022-06-12 17:00:00', 600, 1, 15),
+('Cata de Cervezas Ahumadas', 'Explorando el caracter del Rauchbier y otras.', '2022-07-10 19:00:00', 50, 2, 15),
+('Taller de Iniciacion en Maturin', 'Empieza tu camino como cervecero casero.', '2022-08-07 10:00:00', 40, 11, 15),
+('Lanzamiento de la Petrolera Porter', 'Una porter robusta y oscura como el oro negro.', '2022-09-04 18:30:00', 150, 5, 15),
+('Competencia de Cervezas de Monagas', 'Buscando la mejor cerveza del estado.', '2022-10-02 14:00:00', 100, 4, 15);
+
+-- Eventos en Nueva Esparta (fk_lugar = 16)
+INSERT INTO EVENTO (eve_nombre, eve_descripcion, eve_fecha_hora, eve_nro_boletos, fk_tip_eve, fk_lugar) VALUES
+('Margarita Craft Beer Fest', 'La perla del caribe se llena de cerveza artesanal.', '2025-12-12 16:00:00', 800, 7, 16),
+('Cata de Cervezas Tropicales', 'Degustacion de cervezas con sabores a mango, parchita y mas.', '2024-01-16 18:00:00', 100, 2, 16),
+('Maridaje con Pescados y Mariscos', 'La mejor combinacion en la isla.', '2024-02-13 20:00:00', 90, 14, 16),
+('Lanzamiento de la Pampatar Pils', 'Una pilsner refrescante para disfrutar en la playa.', '2024-03-13 17:00:00', 200, 5, 16),
+('Taller de Cerveza para el Calor', 'Aprende a hacer estilos ligeros y refrescantes.', '2024-04-10 10:00:00', 30, 3, 16);
+
+-- Eventos en Portuguesa (fk_lugar = 17)
+INSERT INTO EVENTO (eve_nombre, eve_descripcion, eve_fecha_hora, eve_nro_boletos, fk_tip_eve, fk_lugar) VALUES
+('Festival de la Cosecha Cervecera', 'Celebrando los granos de Portuguesa con cerveza.', '2024-02-06 16:00:00', 350, 1, 17),
+('Taller Basico en Acarigua', 'El ABC de la elaboracion de cerveza.', '2024-03-06 09:00:00', 45, 11, 17),
+('Cata de Cervezas de Arroz', 'Explorando un adjunto clasico en las lagers.', '2024-04-03 19:00:00', 60, 2, 17),
+('Competencia del Granero de Venezuela', 'El concurso cervecero de Portuguesa.', '2024-05-01 13:00:00', 100, 13, 17),
+('Lanzamiento de la Coromotana Ale', 'Una cerveza en honor a la patrona de Venezuela.', '2025-05-29 18:00:00', 120, 5, 17);
+
+-- Eventos en Sucre (fk_lugar = 18)
+INSERT INTO EVENTO (eve_nombre, eve_descripcion, eve_fecha_hora, eve_nro_boletos, fk_tip_eve, fk_lugar) VALUES
+('Festival Cumaná 500 y Cerveza', 'Celebrando la historia con la mejor cerveza de oriente.', '2025-11-27 17:00:00', 550, 7, 18),
+('Cata de Cervezas en Mochima', 'Una degustacion en un paraiso natural.', '2025-01-23 16:00:00', 70, 9, 18),
+('Maridaje con Chorizo de Carupano', 'Un clasico local con un giro artesanal.', '2025-02-20 19:30:00', 60, 6, 18),
+('Taller de Elaboracion en Cumana', 'Aprende de los pioneros de la cerveza en Sucre.', '2025-03-20 09:00:00', 35, 3, 18),
+('Lanzamiento de la Mariscala Session IPA', 'Una IPA suave para disfrutar todo el dia.', '2025-04-17 18:00:00', 130, 14, 18);
+
+-- Eventos en Táchira (fk_lugar = 19)
+INSERT INTO EVENTO (eve_nombre, eve_descripcion, eve_fecha_hora, eve_nro_boletos, fk_tip_eve, fk_lugar) VALUES
+('Feria Cervecera de San Cristobal', 'El gran evento cervecero de los Andes.', '2025-01-16 16:00:00', 750, 7, 19),
+('Cata de Cervezas de Cafe', 'Combinando las dos grandes pasiones del Tachira.', '2025-02-13 19:00:00', 80, 2, 19),
+('Competencia de la Frontera', 'El concurso que une a cerveceros de ambos paises.', '2025-03-13 11:00:00', 200, 4, 19),
+('Taller de Estilos Europeos', 'Aprende a elaborar lagers alemanas y ales inglesas.', '2025-04-10 09:30:00', 30, 12, 19),
+('Lanzamiento de la Gocha Pils', 'La pilsner con el sabor de la cordialidad.', '2025-05-08 19:00:00', 180, 5, 19);
+
+-- Eventos en Trujillo (fk_lugar = 20)
+INSERT INTO EVENTO (eve_nombre, eve_descripcion, eve_fecha_hora, eve_nro_boletos, fk_tip_eve, fk_lugar) VALUES
+('Festival de Cerveza de las 7 Colinas', 'Valera se viste de gala cervecera.', '2025-06-05 17:00:00', 300, 1, 20),
+('Cata en Honor a la Virgen de la Paz', 'Una degustacion con vistas al monumento.', '2025-07-03 16:00:00', 60, 9, 20),
+('Taller de Elaboracion en Valera', 'Desde el grano hasta el vaso, aprende todo el proceso.', '2025-07-31 09:00:00', 40, 11, 20),
+('Maridaje con Mojo Trujillano', 'Sabores autoctonos y cerveza artesanal.', '2025-08-28 20:00:00', 50, 6, 20),
+('Lanzamiento de la Andes Ale', 'Una cerveza ambar con caracter andino.', '2025-09-25 18:30:00', 100, 14, 20);
+
+-- Eventos en Vargas (La Guaira) (fk_lugar = 21)
+INSERT INTO EVENTO (eve_nombre, eve_descripcion, eve_fecha_hora, eve_nro_boletos, fk_tip_eve, fk_lugar) VALUES
+('Festival Cervecero del Litoral', 'La brisa del mar y la mejor cerveza.', '2025-10-24 17:00:00', 600, 1, 21),
+('Taller de Cerveza en la Playa', 'Aprende a hacer cerveza con los pies en la arena.', '2025-11-21 10:00:00', 35, 3, 21),
+('Cata de Session IPAs', 'Cervezas lupuladas y refrescantes para el calor.', '2025-12-19 18:30:00', 80, 2, 21),
+('Maridaje con Tostones y Pescado Frito', 'El sabor del litoral en tu copa.', '2025-01-16 19:30:00', 70, 6, 21),
+('Lanzamiento de la Guaira Summer Ale', 'La cerveza oficial del verano.', '2025-02-13 17:00:00', 150, 5, 21);
+
+-- Eventos en Yaracuy (fk_lugar = 22)
+INSERT INTO EVENTO (eve_nombre, eve_descripcion, eve_fecha_hora, eve_nro_boletos, fk_tip_eve, fk_lugar) VALUES
+('Festival de Cerveza y Esoterismo', 'Una fiesta magica en las montanas de Sorte.', '2025-03-13 18:00:00', 400, 1, 22),
+('Cata de Cervezas con Maiz', 'Explorando el sabor del maiz en la cerveza.', '2025-04-10 19:00:00', 50, 2, 22),
+('Taller de Elaboracion en San Felipe', 'Aprende de los maestros cerveceros de Yaracuy.', '2025-05-08 09:00:00', 40, 11, 22),
+('Lanzamiento de la Maria Lionza Ale', 'Una cerveza mistica y llena de sabor.', '2025-06-05 19:00:00', 120, 14, 22),
+('Maridaje con Sapasapo', 'La tradicion culinaria de Yaracuy y la cerveza.', '2025-07-03 20:00:00', 60, 6, 22);
+
+-- Eventos en Zulia (fk_lugar = 23)
+INSERT INTO EVENTO (eve_nombre, eve_descripcion, eve_fecha_hora, eve_nro_boletos, fk_tip_eve, fk_lugar) VALUES
+('Festival de la Chinita Cervecera', 'La feria y la cerveza se unen en Maracaibo.', '2025-11-14 18:00:00', 1500, 7, 23),
+('Cata en el Puente Sobre el Lago', 'Una degustacion con una vista iconica.', '2025-12-12 17:30:00', 100, 9, 23),
+('Lanzamiento de la Relampago IPA', 'Una explosion de lupulo como el relampago del Catatumbo.', '2025-01-09 19:00:00', 250, 5, 23),
+('Taller de Cervezas para el Calor', 'Estilos ligeros para el clima de Maracaibo.', '2025-02-06 09:00:00', 35, 11, 23),
+('Maridaje con Patacones', 'La combinacion zuliana por excelencia.', '2025-03-06 20:00:00', 90, 10, 23);
+
+-- Eventos en Distrito Capital (fk_lugar = 24)
+INSERT INTO EVENTO (eve_nombre, eve_descripcion, eve_fecha_hora, eve_nro_boletos, fk_tip_eve, fk_lugar) VALUES
+('Caracas Beer Week', 'Una semana completa de eventos cerveceros por toda la ciudad.', '2024-04-20 12:00:00', 2500, 1, 24),
+('Cata Vertical de Barleywines', 'Una degustacion de diferentes anadas de Barleywine.', '2024-05-15 19:30:00', 40, 2, 24),
+('Taller de Fermentacion Avanzada', 'Control de levaduras y fermentaciones complejas.', '2024-06-12 09:00:00', 25, 12, 24),
+('Competencia Copa Cerveza de Caracas', 'El evento mas prestigioso para cerveceros del pais.', '2024-07-10 10:00:00', 300, 4, 24),
+('Lanzamiento de la Avila Ale', 'Una cerveza inspirada en la montana que custodia la ciudad.', '2024-08-07 18:30:00', 400, 14, 24);
+
+-- Eventos en Dependencias Federales (fk_lugar = 25)
+INSERT INTO EVENTO (eve_nombre, eve_descripcion, eve_fecha_hora, eve_nro_boletos, fk_tip_eve, fk_lugar) VALUES
+('Festival Cervecero Los Roques', 'Cerveza artesanal en el paraiso.', '2024-04-10 15:00:00', 250, 1, 25),
+('Cata de Cervezas Ligeras', 'Ideal para el calor del caribe.', '2024-05-15 18:00:00', 80, 2, 25),
+('Maridaje con Langosta', 'La combinacion perfecta de lujo y sabor.', '2024-06-20 20:00:00', 60, 10, 25),
+('Lanzamiento de la Caribe Ale', 'Una cerveza edicion especial para el verano.', '2024-07-01 19:00:00', 100, 14, 25),
+('Taller de Cerveza en el Archipielago', 'Aprende a hacer cerveza con vista al mar.', '2024-08-05 10:00:00', 30, 3, 25);
+
+-- FIN DE LOS INSERT DE EVENTO
+
+-- INICIO DE LOS INSERT DE VENTA_EVENTO
+
+INSERT INTO VENTA_EVENTO (ven_eve_fecha_hora, ven_eve_monto_total, fk_evento, fk_cliente) VALUES
+('2025-06-15 10:22:00', 40.00, 1, 1), -- Venta para 'Cata Selvatica'
+('2025-06-20 11:05:00', 30.00, 6, 2), -- Venta para 'Festival de la Cerveza Playera'
+('2025-07-01 14:00:00', 50.00, 16, 3), -- Venta para 'Oktoberfest Colonia Tovar'
+('2025-07-10 09:15:00', 25.00, 21, 4), -- Venta para 'Taller de Estilos Avanzados'
+('2025-07-12 18:30:00', 80.00, 26, 5), -- Venta para 'Festival Dorado de Cerveza'
+('2025-08-01 20:00:00', 24.00, 31, 1), -- Venta para 'Valencia Beer Fest'
+('2025-08-05 12:45:00', 120.00, 41, 6), -- Venta para 'Festival Cervecero de Cojedes'
+('2025-08-15 16:10:00', 35.00, 46, 7), -- Venta para 'Festival de la Cerveza Medanal'
+('2025-09-01 11:50:00', 50.00, 56, 8), -- Venta para 'Barquisimeto Beer Festival'
+('2025-09-10 13:00:00', 45.00, 61, 2), -- Venta para 'Festival de Cerveza del Paramo'
+('2025-09-22 19:20:00', 100.00, 66, 9), -- Venta para 'Gran Feria Cervecera de Caracas'
+('2025-10-03 10:00:00', 60.00, 71, 10), -- Venta para 'Festival Cervecero de Oriente'
+('2025-10-15 15:05:00', 2000.00, 76, 29), -- Venta para 'Margarita Craft Beer Fest'
+('2025-11-01 17:40:00', 70.00, 81, 11), -- Venta para 'Festival de la Cosecha Cervecera'
+('2025-11-10 14:25:00', 55.00, 86, 12), -- Venta para 'Festival Cumaná 500 y Cerveza'
+('2025-12-01 09:00:00', 35.00, 91, 5), -- Venta para 'Feria Cervecera de San Cristobal'
+('2025-12-15 18:00:00', 30.00, 106, 13), -- Venta para 'Festival Cervecero del Litoral'
+('2026-01-05 11:11:00', 90.00, 116, 14), -- Venta para 'Festival de la Chinita Cervecera'
+('2026-02-10 16:55:00', 1250.00, 121, 25), -- Venta para 'Caracas Beer Week'
+('2026-03-01 21:30:00', 75.00, 125, 20); -- Venta para 'Taller de Cerveza en el Archipielago'
+
+-- FIN DE LOS INSERT DE VENTA_EVENTO
+
+-- INICIO DE LOS INSERT DE EVE_PRO
+
+INSERT INTO EVE_PRO (fk_evento, fk_proveedor) VALUES
+(1, 5),   -- 'Cata Selvatica' con 'Ingredientes Premium'
+(2, 5),   -- 'Taller de Cerveza Ancestral' con 'Ingredientes Premium'
+(6, 1),   -- 'Festival de la Cerveza Playera' con 'Maltas Venezolanas'
+(6, 2),   -- 'Festival de la Cerveza Playera' con 'Lupulos del Caribe'
+(6, 4),   -- 'Festival de la Cerveza Playera' con 'Envases Cerveceros Unidos'
+(11, 1),  -- 'Festival del Llano Cervecero' con 'Maltas Venezolanas'
+(11, 13), -- 'Festival del Llano Cervecero' con 'Productos Organicos del Llano'
+(16, 1),  -- 'Oktoberfest Colonia Tovar' con 'Maltas Venezolanas'
+(16, 2),  -- 'Oktoberfest Colonia Tovar' con 'Lupulos del Caribe'
+(16, 3),  -- 'Oktoberfest Colonia Tovar' con 'Levaduras Tropicales'
+(16, 4),  -- 'Oktoberfest Colonia Tovar' con 'Envases Cerveceros Unidos'
+(21, 1);  -- 'Cata a Ciegas Maracay' con 'Maltas Venezolanas'
+
+-- FIN DE LOS INSERT DE EVE_PRO
+
+-- INICIO DE LOS INSERT DE EXISTENCIA_EVENTO
+
+INSERT INTO EXISTENCIA_EVENTO (exi_eve_cantidad, fk_presentacion, fk_evento_proveedor) VALUES
+(50, 5, 1),   -- 50 Amber Ales del proveedor 5 para el evento 1 ('Cata Selvatica')
+(30, 9, 2),   -- 30 Hidromieles del proveedor 5 para el evento 2 ('Taller Ancestral')
+(500, 1, 6),  -- 500 Lagers del proveedor 1 para el evento 6 ('Festival Playera')
+(400, 2, 6),  -- 400 IPAs del proveedor 2 para el evento 6 ('Festival Playera')
+(1000, 3, 6), -- 1000 Vasos del proveedor 4 para el evento 6 ('Festival Playera')
+(300, 1, 11),-- 300 Lagers del proveedor 13 para el evento 11 ('Festival del Llano')
+(2000, 1, 12),-- 2000 Lagers del proveedor 1 para el evento 16 ('Oktoberfest')
+(500, 4, 11), -- 500 Stouts del proveedor 3 para el evento 16 ('Oktoberfest')
+(3000, 3, 10),-- 3000 Vasos del proveedor 4 para el evento 16 ('Oktoberfest')
+(60, 1, 4),  -- 60 Lagers del proveedor 1 para el evento 21 ('Cata a Ciegas')
+(60, 2, 5),  -- 60 IPAs del proveedor 1 para el evento 21 ('Cata a Ciegas')
+(60, 4, 3),  -- 60 Stouts del proveedor 1 para el evento 21 ('Cata a Ciegas')
+(200, 6, 7),-- 200 Gorras del proveedor 19 para el evento 31 ('Valencia Beer Fest')
+(200, 8, 8),-- 200 Franelas del proveedor 19 para el evento 31 ('Valencia Beer Fest')
+(100, 7, 9), -- 100 Barleywines del proveedor 5 para el evento 56 ('Barquisimeto Beer Festival')
+(250, 4, 3), -- 250 Stouts del proveedor 7 para el evento 61 ('Festival del Paramo')
+(1500, 3, 7),-- 1500 Vasos del proveedor 16 para el evento 66 ('Gran Feria Caracas')
+(700, 8, 5),-- 700 Franelas del proveedor 11 para el evento 66 ('Gran Feria Caracas')
+(600, 1, 9), -- 600 Lagers del proveedor 7 para el evento 91 ('Feria San Cristobal')
+(1000, 2, 2),-- 1000 IPAs del proveedor 3 para el evento 116 ('Feria Chinita')
+(50, 7, 1),-- 50 Barleywines del proveedor 17 para el evento 121 ('Caracas Beer Week')
+(40, 9, 12);-- 40 Hidromieles del proveedor 20 para el evento 125 ('Taller Archipielago')
+
+-- FIN DE LOS INSERT DE EXISTENCIA_EVENTO
+
+-- INICIO DE LOS INSERT DE DETALLE_VENTA_EVENTO
+
+INSERT INTO DETALLE_VENTA_EVENTO (det_ven_eve_cantidad, det_ven_eve_precio_unitario, fk_venta_evento, fk_exi_eve) VALUES
+(2, 20.00, 1, 1),   -- Venta 1: 2 unidades del producto en existencia 1 (ej: Entrada a Cata Selvatica)
+(1, 30.00, 2, 3),   -- Venta 2: 1 unidad del producto en existencia 3 (ej: Vaso del Festival Playero)
+(2, 25.00, 3, 6),   -- Venta 3: 2 unidades del producto en existencia 6 (ej: Vaso del Oktoberfest)
+(1, 25.00, 4, 4),   -- Venta 4: 1 unidad del producto en existencia 4 (ej: Entrada a Taller Avanzado)
+(4, 20.00, 5, 8),   -- Venta 5: 4 unidades del producto en existencia 8 (ej: Cerveza Lager en Festival Dorado)
+(2, 12.00, 6, 9),   -- Venta 6: 2 unidades del producto en existencia 9 (ej: Cerveza IPA en Valencia Beer Fest)
+(4, 30.00, 7, 3),   -- Venta 7: 4 unidades del producto en existencia 3 (ej: Vaso en Festival Cojedes)
+(2, 17.50, 8, 11),  -- Venta 8: 2 unidades del producto en existencia 11 (ej: Entrada a Festival Medanal)
+(2, 25.00, 9, 12),  -- Venta 9: 2 unidades del producto en existencia 12 (ej: Barleywine en Barquisimeto Beer Fest)
+(1, 45.00, 10, 18), -- Venta 10: 1 unidad del producto en existencia 18 (ej: Hidromiel en Festival del Paramo)
+(2, 50.00, 11, 17), -- Venta 11: 2 unidades del producto en existencia 17 (ej: Franela de Gran Feria de Caracas)
+(2, 30.00, 12, 1),  -- Venta 12: 2 unidades del producto en existencia 1 (ej: Cerveza Lager en Festival de Oriente)
+(1, 20.00, 13, 16), -- Venta 13: 1 unidad del producto en existencia 16 (ej: Gorra de Margarita Craft Beer Fest)
+(2, 17.50, 14, 1),  -- Venta 14: 2 Cervezas Lager en Festival de la Cosecha
+(2, 17.50, 14, 2),  -- Venta 14: 2 Cervezas IPA en Festival de la Cosecha (misma venta, otro producto)
+(1, 55.00, 15, 17), -- Venta 15: 1 Franela del Festival Cumaná 500
+(1, 35.00, 16, 17), -- Venta 16: 1 Franela de la Feria de San Cristobal
+(1, 30.00, 17, 3),  -- Venta 17: 1 Vaso del Festival del Litoral
+(3, 30.00, 18, 1),  -- Venta 18: 3 Cervezas Lager en la Feria de la Chinita
+(5, 25.00, 19, 17), -- Venta 19: 5 Franelas de Caracas Beer Week
+(1, 75.00, 20, 18); -- Venta 20: 1 Hidromiel en el Taller del Archipielago
+
+-- FIN DE LOS INSERT DE DETALLE_VENTA_EVENTO
+
+-- INICIO DE LOS INSERT DE 
+
+INSERT INTO VENTA_BOLETO_EVENTO (ven_bol_eve_fecha_hora, ven_bol_eve_monto_total, ven_bol_eve_descripcion) VALUES
+('2025-06-16 18:30:00', 25.00, 'Venta de 1 boleto para Cata Selvatica'),
+('2025-06-25 10:15:00', 50.00, 'Venta de 2 boletos para Festival de la Cerveza Playera'),
+('2025-07-01 11:00:00', 75.00, 'Venta de 3 boletos para Oktoberfest Colonia Tovar'),
+('2025-07-15 14:20:00', 35.00, 'Venta de 1 boleto para Taller de Estilos Avanzados'),
+('2025-07-20 09:05:00', 100.00, 'Venta de 4 boletos para Festival Dorado de Cerveza'),
+('2025-08-02 19:45:00', 60.00, 'Venta de 2 boletos para Valencia Beer Fest'),
+('2025-08-10 12:00:00', 20.00, 'Venta de 1 boleto para Festival Cervecero de Cojedes'),
+('2025-08-18 21:00:00', 30.00, 'Venta de 1 boleto para Festival de la Cerveza Medanal'),
+('2025-09-05 13:10:00', 100.00, 'Venta de 2 boletos para Barquisimeto Beer Festival'),
+('2025-09-12 15:30:00', 80.00, 'Venta de 2 boletos para Festival de Cerveza del Paramo'),
+('2025-09-25 17:00:00', 200.00, 'Venta de 4 boletos para Gran Feria Cervecera de Caracas'),
+('2025-10-10 18:50:00', 90.00, 'Venta de 3 boletos para Festival Cervecero de Oriente'),
+('2025-10-20 20:00:00', 50.00, 'Venta de 1 boleto para Margarita Craft Beer Fest'),
+('2025-11-05 10:40:00', 40.00, 'Venta de 2 boletos para Festival de la Cosecha Cervecera'),
+('2025-11-15 11:25:00', 60.00, 'Venta de 2 boletos para Festival Cumana 500 y Cerveza'),
+('2025-12-02 16:00:00', 70.00, 'Venta de 2 boletos para Feria Cervecera de San Cristobal'),
+('2025-12-20 19:15:00', 45.00, 'Venta de 1 boleto para Festival Cervecero del Litoral'),
+('2026-01-10 22:00:00', 120.00, 'Venta de 3 boletos para Festival de la Chinita Cervecera'),
+('2026-02-15 08:30:00', 300.00, 'Venta de 5 boletos para Caracas Beer Week'),
+('2026-03-05 14:00:00', 150.00, 'Venta de 2 boletos para Taller de Cerveza en el Archipielago');
+
+-- FIN DE LOS INSERT DE VENTA_BOLETO_EVENTO
+
+-- INICIO DE LOS INSERT DE ASISTENCIA_EVENTO
+
+INSERT INTO ASISTENCIA_EVENTO (fk_evento, asi_eve_fecha_hora, fk_ven_bol_eve, fk_cliente) VALUES
+(1, '2025-07-20 19:00:00', 1, 1),
+(6, '2025-08-01 16:00:00', 2, 2),
+(16, '2025-10-24 12:00:00', 3, 3),
+(18, '2026-01-15 09:00:00', 4, 4),
+(26, '2026-03-20 18:00:00', 5, 5),
+(31, '2025-11-07 16:00:00', 6, 6),
+(36, '2025-09-12 17:00:00', 7, 7),
+(46, '2025-12-26 16:00:00', 8, 8),
+(56, '2025-09-12 17:00:00', 9, 9),
+(61, '2026-01-02 14:00:00', 10, 10),
+(66, '2025-11-14 15:00:00', 11, 11),
+(71, '2026-06-12 17:00:00', 12, 12),
+(76, '2025-12-12 16:00:00', 13, 13),
+(81, '2026-02-06 16:00:00', 14, 14),
+(86, '2025-11-27 17:00:00', 15, 15),
+(91, '2026-01-16 16:00:00', 16, 1),
+(101, '2025-10-24 17:00:00', 17, 2),
+(111, '2025-11-14 18:00:00', 18, 3),
+(121, '2026-04-20 12:00:00', 19, 4),
+(125, '2026-08-05 10:00:00', 20, 5);
+
+-- FIN DE LOS INSERT DE ASISTENCIA_EVENTO
