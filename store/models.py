@@ -11,7 +11,6 @@ class Lugar(models.Model):
         return self.lug_nombre
 
     class Meta:
-        managed = False
         db_table = 'LUGAR'
 
 
@@ -25,7 +24,6 @@ class Tienda(models.Model):
         return self.tie_nombre
 
     class Meta:
-        managed = False
         db_table = 'TIENDA'
 
 
@@ -60,7 +58,6 @@ class Cliente(models.Model):
         return self.cli_rif
 
     class Meta:
-        managed = False
         db_table = 'CLIENTE'
 
 
@@ -77,7 +74,6 @@ class Proveedor(models.Model):
         return self.pro_razon_social
 
     class Meta:
-        managed = False
         db_table = 'PROVEEDOR'
 
 
@@ -90,7 +86,6 @@ class Cargo(models.Model):
         return self.car_nombre
 
     class Meta:
-        managed = False
         db_table = 'CARGO'
 
 
@@ -110,7 +105,6 @@ class Empleado(models.Model):
         return f"{self.emp_pnombre} {self.emp_papellido}"
 
     class Meta:
-        managed = False
         db_table = 'EMPLEADO'
 
 class VentaOnline(models.Model):
@@ -122,7 +116,6 @@ class VentaOnline(models.Model):
         return f"VentaOnline #{self.ven_onl_id}"
 
     class Meta:
-        managed = False
         db_table = 'VENTA_ONLINE'
 
 class DetalleVentaOnline(models.Model):
@@ -134,7 +127,6 @@ class DetalleVentaOnline(models.Model):
         return f"DetalleVentaOnline #{self.id}"
 
     class Meta:
-        managed = False
         db_table = 'DETALLE_VENTA_ONLINE'
 
 class MetodoPago(models.Model):
@@ -144,7 +136,6 @@ class MetodoPago(models.Model):
         return f"MetodoPago #{self.met_pag_id}"
 
     class Meta:
-        managed = False
         db_table = 'METODO_PAGO'
 
 class Cheque(models.Model):
@@ -155,7 +146,6 @@ class Cheque(models.Model):
         return self.che_num_cheque
 
     class Meta:
-        managed = False
         db_table = 'CHEQUE'
 
 class TarjetaDebito(models.Model):
@@ -168,7 +158,6 @@ class TarjetaDebito(models.Model):
         return self.tar_deb_numero
 
     class Meta:
-        managed = False
         db_table = 'TARJETA_DEBITO'
 
 class TarjetaCredito(models.Model):
@@ -180,7 +169,6 @@ class TarjetaCredito(models.Model):
         return self.tar_cre_numero
 
     class Meta:
-        managed = False
         db_table = 'TARJETA_CREDITO'
 
 class Efectivo(models.Model):
@@ -191,7 +179,6 @@ class Efectivo(models.Model):
         return f"{self.efe_denominacion} Bs"
 
     class Meta:
-        managed = False
         db_table = 'EFECTIVO'
 
 class Pago(models.Model):
@@ -203,7 +190,6 @@ class Pago(models.Model):
         return f"Pago #{self.pag_id}"
 
     class Meta:
-        managed = False
         db_table = 'PAGO'
 
 class CorreoElectronico(models.Model):
@@ -214,7 +200,6 @@ class CorreoElectronico(models.Model):
         return self.cor_ele_dirreccion
 
     class Meta:
-        managed = False
         db_table = 'CORREO_ELECTRONICO'
 
 class Telefono(models.Model):
@@ -226,7 +211,6 @@ class Telefono(models.Model):
         return f"({self.tel_codigo_area}) {self.tel_numero}"
 
     class Meta:
-        managed = False
         db_table = 'TELEFONO'
 
 class Evento(models.Model):
@@ -240,7 +224,6 @@ class Evento(models.Model):
         return self.eve_nombre
 
     class Meta:
-        managed = False
         db_table = 'EVENTO'
 
 class TipoEvento(models.Model):
@@ -252,7 +235,6 @@ class TipoEvento(models.Model):
         return self.tip_eve_nombre
 
     class Meta:
-        managed = False
         db_table = 'TIPO_EVENTO'
 
 class VentaEvento(models.Model):
@@ -265,7 +247,6 @@ class VentaEvento(models.Model):
         return f"VentaEvento #{self.ven_eve_id}"
 
     class Meta:
-        managed = False
         db_table = 'VENTA_EVENTO'
 
 class DetalleVentaEvento(models.Model):
@@ -277,7 +258,6 @@ class DetalleVentaEvento(models.Model):
         return f"Detalle #{self.id} de VentaEvento {self.venta_evento_id}"
 
     class Meta:
-        managed = False
         db_table = 'DETALLE_VENTA_EVENTO'
 
 class VentaBoletoEvento(models.Model):
@@ -290,7 +270,6 @@ class VentaBoletoEvento(models.Model):
         return f"BoletoEvento #{self.ven_bol_eve_id}"
 
     class Meta:
-        managed = False
         db_table = 'VENTA_BOLETO_EVENTO'
 
 
@@ -303,7 +282,6 @@ class LugarTienda(models.Model):
         return self.lug_tie_nombre
 
     class Meta:
-        managed = False
         db_table = 'LUGAR_TIENDA'
 
 class Punto(models.Model):
@@ -313,7 +291,6 @@ class Punto(models.Model):
         return f"Punto #{self.id}"
 
     class Meta:
-        managed = False
         db_table = 'PUNTO'
 
 class Salario(models.Model):
@@ -324,7 +301,6 @@ class Salario(models.Model):
         return f"Salario #{self.sal_id}"
 
     class Meta:
-        managed = False
         db_table = 'SALARIO'
 
 class EmpCar(models.Model):
@@ -337,7 +313,6 @@ class EmpCar(models.Model):
         return f"{self.empleado} - {self.cargo}"
 
     class Meta:
-        managed = False
         db_table = 'EMP_CAR'
 
 class Horario(models.Model):
@@ -350,7 +325,6 @@ class Horario(models.Model):
         return f"{self.hor_dia} {self.hor_hora_inicio}-{self.hor_hora_fin}"
 
     class Meta:
-        managed = False
         db_table = 'HORARIO'
 
 class EmpCarHor(models.Model):
@@ -361,7 +335,6 @@ class EmpCarHor(models.Model):
         return f"{self.emp_car} - {self.horario}"
 
     class Meta:
-        managed = False
         db_table = 'EMP_CAR_HOR'
 
 class Vacacion(models.Model):
@@ -373,7 +346,6 @@ class Vacacion(models.Model):
         return self.vac_nombre
 
     class Meta:
-        managed = False
         db_table = 'VACACION'
 
 class EmpVac(models.Model):
@@ -386,7 +358,6 @@ class EmpVac(models.Model):
         return f"{self.empleado} - {self.vacacion}"
 
     class Meta:
-        managed = False
         db_table = 'EMP_VAC'
 
 class TipoBeneficio(models.Model):
@@ -398,7 +369,6 @@ class TipoBeneficio(models.Model):
         return self.tip_ben_nombre
 
     class Meta:
-        managed = False
         db_table = 'TIPO_BENFICIO'
 
 class EmpTipBen(models.Model):
@@ -409,7 +379,6 @@ class EmpTipBen(models.Model):
         return f"{self.empleado} - {self.tipo_beneficio}"
 
     class Meta:
-        managed = False
         db_table = 'EMP_TIP_BEN'
 
 class Estatus(models.Model):
@@ -421,7 +390,6 @@ class Estatus(models.Model):
         return self.est_tipo_estatus
 
     class Meta:
-        managed = False
         db_table = 'ESTATUS'
 
 class Oferta(models.Model):
@@ -436,7 +404,6 @@ class Oferta(models.Model):
         return self.ofe_nombre
 
     class Meta:
-        managed = False
         db_table = 'OFERTA'
 
 class Moneda(models.Model):
@@ -447,7 +414,6 @@ class Moneda(models.Model):
         return self.mon_tipo
 
     class Meta:
-        managed = False
         db_table = 'MONEDA'
 
 class HistoricoMoneda(models.Model):
@@ -460,7 +426,6 @@ class HistoricoMoneda(models.Model):
         return f"Cambio {self.mon_valor_cambio} desde {self.his_mon_fecha_inicio}"
 
     class Meta:
-        managed = False
         db_table = 'HISTORICO_MONEDA'
 
 class Almacen(models.Model):
@@ -472,7 +437,6 @@ class Almacen(models.Model):
         return self.alm_nombre
 
     class Meta:
-        managed = False
         db_table = 'ALMACEN'
 
 class Anaquel(models.Model):
@@ -483,7 +447,6 @@ class Anaquel(models.Model):
         return self.ana_numero
 
     class Meta:
-        managed = False
         db_table = 'ANAQUEL'
 
 class Dimension(models.Model):
@@ -495,7 +458,6 @@ class Dimension(models.Model):
         return self.dim_nombre
 
     class Meta:
-        managed = False
         db_table = 'DIMENSION'
 
 class Ingrediente(models.Model):
@@ -507,7 +469,6 @@ class Ingrediente(models.Model):
         return self.ing_nombre
 
     class Meta:
-        managed = False
         db_table = 'INGREDIENTE'
 
 class Instruccion(models.Model):
@@ -518,7 +479,6 @@ class Instruccion(models.Model):
         return self.ins_descripcion[:50]
 
     class Meta:
-        managed = False
         db_table = 'INSTRUCCION'
 
 class Receta(models.Model):
@@ -530,7 +490,6 @@ class Receta(models.Model):
         return self.rec_nombre
 
     class Meta:
-        managed = False
         db_table = 'RECETA'
 
 class RecIng(models.Model):
@@ -542,7 +501,6 @@ class RecIng(models.Model):
         return f"{self.receta} - {self.ingrediente} ({self.rec_ing_cantidad})"
 
     class Meta:
-        managed = False
         db_table = 'REC_ING'
 
 class EstiloCerveza(models.Model):
@@ -554,20 +512,44 @@ class EstiloCerveza(models.Model):
         return self.tip_cer_nombre
 
     class Meta:
-        managed = False
         db_table = 'ESTILO_CERVEZA'
+
+class Presentacion(models.Model):
+    prese_id = models.AutoField(primary_key=True)
+    prese_nombre = models.CharField(max_length=100)
+    prese_recipiente = models.CharField(max_length=100)
+    prese_imagen = models.ImageField(upload_to='productos/', null=True, blank=True)
+
+    def __str__(self):
+        return self.prese_nombre
+    
+    @property
+    def precio_actual(self):
+        from datetime import date
+        hoy = date.today()
+        precio = self.historicopreciocerveza_set.filter(
+            his_pre_cer_fecha_inicio__lte=hoy
+        ).filter(
+            models.Q(his_pre_cer_fecha_fin__gte=hoy) | models.Q(his_pre_cer_fecha_fin__isnull=True)
+        ).order_by('-his_pre_cer_fecha_inicio').first()
+        return precio.his_pre_cer_precio if precio else None
+
+
+    class Meta:
+        db_table = 'PRESENTACION'
+
 
 class HistoricoPrecioCerveza(models.Model):
     his_pre_cer_id = models.AutoField(primary_key=True)
+    presentacion = models.ForeignKey(Presentacion, on_delete=models.CASCADE)
     his_pre_cer_precio = models.DecimalField(max_digits=10, decimal_places=2)
     his_pre_cer_fecha_inicio = models.DateField()
     his_pre_cer_fecha_fin = models.DateField(null=True, blank=True)
 
     def __str__(self):
-        return f"{self.his_pre_cer_precio} desde {self.his_pre_cer_fecha_inicio}"
+        return f"{self.presentacion} - {self.his_pre_cer_precio}"
 
     class Meta:
-        managed = False
         db_table = 'HISTORICO_PRECIO_CERVEZA'
 
 class HistoricoPrecioPunto(models.Model):
@@ -580,7 +562,6 @@ class HistoricoPrecioPunto(models.Model):
         return f"{self.his_pre_pun_valor} desde {self.his_pre_pun_fecha_inicio}"
 
     class Meta:
-        managed = False
         db_table = 'HISTORICO_PRECIO_PUNTO'
 
 class CuePun(models.Model):
@@ -591,7 +572,6 @@ class CuePun(models.Model):
         return f"Cuenta Punto #{self.cue_pun_id}"
 
     class Meta:
-        managed = False
         db_table = 'CUE_PUN'
 
 class PreAlm(models.Model):
@@ -602,7 +582,6 @@ class PreAlm(models.Model):
         return f"Precio: {self.pre_alm_precio}, Cantidad: {self.pre_alm_cantidad}"
 
     class Meta:
-        managed = False
         db_table = 'PRE_ALM'
 
 class PreDim(models.Model):
@@ -612,7 +591,6 @@ class PreDim(models.Model):
         return str(self.pre_dim_valor)
 
     class Meta:
-        managed = False
         db_table = 'PRE_DIM'
 
 class PagoEfectivo(models.Model):
@@ -624,7 +602,6 @@ class PagoEfectivo(models.Model):
         return f"{self.pag_efe_monto} Bs el {self.pag_efe_fecha}"
 
     class Meta:
-        managed = False
         db_table = 'PAGO_EFECTIVO'
 
 class ExistenciaEvento(models.Model):
@@ -636,7 +613,6 @@ class ExistenciaEvento(models.Model):
         return f"Existencia #{self.exi_eve_id}"
 
     class Meta:
-        managed = False
         db_table = 'EXISTENCIA_EVENTO'
 
 class Asistencia(models.Model):
@@ -649,7 +625,6 @@ class Asistencia(models.Model):
         return f"Asistencia #{self.asi_id}"
 
     class Meta:
-        managed = False
         db_table = 'ASISTENCIA'
 
 class AsistenciaEvento(models.Model):
@@ -660,7 +635,6 @@ class AsistenciaEvento(models.Model):
         return f"AsistenciaEvento #{self.asi_eve_id}"
 
     class Meta:
-        managed = False
         db_table = 'ASISTENCIA_EVENTO'
 
 class EmpSalCar(models.Model):
@@ -671,6 +645,4 @@ class EmpSalCar(models.Model):
         return f"Inicio: {self.emp_sal_car_fecha_inicio}"
 
     class Meta:
-        managed = False
         db_table = 'EMP_SAL_CAR'
-
