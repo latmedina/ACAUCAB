@@ -1,97 +1,71 @@
 from django.contrib import admin
 from .models import (
-    Lugar, Tienda, Cliente, Proveedor, Cargo, Empleado,
-    MetodoPago, Cheque, TarjetaDebito, TarjetaCredito, Efectivo, Pago,
-    CorreoElectronico, Telefono, Evento, TipoEvento, VentaOnline,
-    DetalleVentaOnline, VentaEvento, DetalleVentaEvento, VentaBoletoEvento,
-    LugarTienda, Punto, Salario, EmpCar, Horario, EmpCarHor,
-    Vacacion, EmpVac, TipoBeneficio, EmpTipBen, Estatus, Oferta,
-    Moneda, HistoricoMoneda, Almacen, Anaquel, Dimension, Ingrediente,
-    Instruccion, Receta, RecIng, EstiloCerveza, HistoricoPrecioCerveza,
-    HistoricoPrecioPunto, CuePun, PreAlm, PreDim, PagoEfectivo,
-    ExistenciaEvento, Asistencia, AsistenciaEvento, EmpSalCar, Presentacion
+    lugar, tienda, cliente, proveedor, cargo, empleado, presentacion,
+    metodo_pago, pago, correo_electronico, telefono, evento, tipo_evento,
+    venta_online, venta_evento, detalle_venta_evento, venta_boleto_evento,
+    lugar_tienda, horario, vacacion, tipo_beneficio, estatus, oferta,
+    moneda, historico_moneda, almacen, anaquel, ingrediente, instruccion,
+    receta, estilo_cerveza, historico_precio_punto, pago_efectivo,
+    existencia_evento, asistencia, asistencia_evento, pre_alm
 )
 
-@admin.register(Lugar)
-class LugarAdmin(admin.ModelAdmin):
+@admin.register(lugar)
+class lugar_admin(admin.ModelAdmin):
     list_display = ('lug_id', 'lug_nombre', 'lug_tipo')
 
-@admin.register(Tienda)
-class TiendaAdmin(admin.ModelAdmin):
+@admin.register(tienda)
+class tienda_admin(admin.ModelAdmin):
     list_display = ('tie_id', 'tie_nombre', 'tie_direccion')
 
-@admin.register(Cliente)
-class ClienteAdmin(admin.ModelAdmin):
+@admin.register(cliente)
+class cliente_admin(admin.ModelAdmin):
     list_display = ('cli_id', 'cli_rif', 'cli_tipo_cliente', 'cli_direccion_fisica')
 
-@admin.register(Proveedor)
-class ProveedorAdmin(admin.ModelAdmin):
-    list_display = ('pro_id', 'pro_rif', 'pro_razon_social', 'pro_direccion_fisica')
+@admin.register(proveedor)
+class proveedor_admin(admin.ModelAdmin):
+    list_display = ('pro_id', 'pro_rif', 'pro_razon_social', 'pro_direccion_fiscal')
 
-@admin.register(Cargo)
-class CargoAdmin(admin.ModelAdmin):
+@admin.register(cargo)
+class cargo_admin(admin.ModelAdmin):
     list_display = ('car_id', 'car_nombre', 'car_descripcion')
 
-@admin.register(Empleado)
-class EmpleadoAdmin(admin.ModelAdmin):
+@admin.register(empleado)
+class empleado_admin(admin.ModelAdmin):
     list_display = ('emp_id', 'emp_ci', 'emp_pnombre', 'emp_papellido', 'emp_sexo')
 
-
-@admin.register(Presentacion)
-class PresentacionAdmin(admin.ModelAdmin):
+@admin.register(presentacion)
+class presentacion_admin(admin.ModelAdmin):
     list_display = ('prese_id', 'prese_nombre', 'prese_recipiente')
     search_fields = ('prese_nombre',)
 
-@admin.register(HistoricoPrecioCerveza)
-class HistoricoPrecioCervezaAdmin(admin.ModelAdmin):
-    list_display = ('presentacion', 'his_pre_cer_precio', 'his_pre_cer_fecha_inicio', 'his_pre_cer_fecha_fin')
-    list_filter = ('his_pre_cer_fecha_inicio',)
-
-
-# Registros básicos sin customización especial:
-admin.site.register(MetodoPago)
-admin.site.register(Cheque)
-admin.site.register(TarjetaDebito)
-admin.site.register(TarjetaCredito)
-admin.site.register(Efectivo)
-admin.site.register(Pago)
-admin.site.register(CorreoElectronico)
-admin.site.register(Telefono)
-admin.site.register(Evento)
-admin.site.register(TipoEvento)
-admin.site.register(VentaOnline)
-admin.site.register(DetalleVentaOnline)
-admin.site.register(VentaEvento)
-admin.site.register(DetalleVentaEvento)
-admin.site.register(VentaBoletoEvento)
-admin.site.register(LugarTienda)
-admin.site.register(Punto)
-admin.site.register(Salario)
-admin.site.register(EmpCar)
-admin.site.register(Horario)
-admin.site.register(EmpCarHor)
-admin.site.register(Vacacion)
-admin.site.register(EmpVac)
-admin.site.register(TipoBeneficio)
-admin.site.register(EmpTipBen)
-admin.site.register(Estatus)
-admin.site.register(Oferta)
-admin.site.register(Moneda)
-admin.site.register(HistoricoMoneda)
-admin.site.register(Almacen)
-admin.site.register(Anaquel)
-admin.site.register(Dimension)
-admin.site.register(Ingrediente)
-admin.site.register(Instruccion)
-admin.site.register(Receta)
-admin.site.register(RecIng)
-admin.site.register(EstiloCerveza)
-admin.site.register(HistoricoPrecioPunto)
-admin.site.register(CuePun)
-admin.site.register(PreAlm)
-admin.site.register(PreDim)
-admin.site.register(PagoEfectivo)
-admin.site.register(ExistenciaEvento)
-admin.site.register(Asistencia)
-admin.site.register(AsistenciaEvento)
-admin.site.register(EmpSalCar)
+# Registros sin personalización
+admin.site.register(metodo_pago)
+admin.site.register(pago)
+admin.site.register(correo_electronico)
+admin.site.register(telefono)
+admin.site.register(evento)
+admin.site.register(tipo_evento)
+admin.site.register(venta_online)
+admin.site.register(venta_evento)
+admin.site.register(detalle_venta_evento)
+admin.site.register(venta_boleto_evento)
+admin.site.register(lugar_tienda)
+admin.site.register(horario)
+admin.site.register(vacacion)
+admin.site.register(tipo_beneficio)
+admin.site.register(estatus)
+admin.site.register(oferta)
+admin.site.register(moneda)
+admin.site.register(historico_moneda)
+admin.site.register(almacen)
+admin.site.register(anaquel)
+admin.site.register(ingrediente)
+admin.site.register(instruccion)
+admin.site.register(receta)
+admin.site.register(estilo_cerveza)
+admin.site.register(historico_precio_punto)
+admin.site.register(pago_efectivo)
+admin.site.register(existencia_evento)
+admin.site.register(asistencia)
+admin.site.register(asistencia_evento)
+admin.site.register(pre_alm)

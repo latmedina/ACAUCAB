@@ -38,7 +38,7 @@
                     <p>{{ item.product.prese_nombre }}</p>
                 </div>
                 <div style="flex:1">
-                    <p>{{ item.product.precio_actual|floatformat:2 }}</p>
+                    <p>${{ item.precio_unitario|floatformat:2 }}</p>
                 </div>
                 <div style="flex:1">
                     <p class="quantity">{{ item.quantity }}</p>

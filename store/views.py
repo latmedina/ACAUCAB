@@ -1,17 +1,17 @@
 # views.py adaptado solo al modelo User de Django
 
 from django.shortcuts import render, redirect
-from .models import Presentacion
 from django.http import JsonResponse, HttpResponse
 import json
 from django.utils import timezone
 from django.contrib.auth.models import User, Group
-from .models import Presentacion, HistoricoPrecioCerveza, VentaOnline, DetalleVentaOnline
+from .models import presentacion, venta_online, detalle_venta_online, pre_alm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from .utils import cartData, guestOrder
 from django.views.decorators.csrf import csrf_exempt
+from store.models import tienda
 
 # VISTAS DE TIENDA
 def store(request):
@@ -20,7 +20,7 @@ def store(request):
     order = data['order']
     items = data['items']
 
-    products = Presentacion.objects.all()
+    products = presentacion.objects.all()
     context = {'products': products, 'cartItems': cartItems}
     return render(request, 'store.html', context)
 
@@ -48,53 +48,61 @@ def update_cart(request):
     total_items = sum(quantity for pid, quantity in cart.items() if pid.strip().isdigit())
     return JsonResponse({'status': 'ok', 'cartItems': total_items})
 
-
-
-def cart_view(request):
+def cartData(request):
     cart = request.session.get('cart', {})
     items = []
     total = 0
     total_items = 0
 
     for product_id, quantity in cart.items():
-        if not product_id.strip():
-            continue  # Ignora claves vacías
-
         try:
-            product = Presentacion.objects.get(prese_id=int(product_id))
-            precio = product.precio_actual
-            if precio is None:
-                continue  # Si no hay precio, no mostrar
+            product = presentacion.objects.get(prese_id=int(product_id))
+            prealm = pre_alm.objects.filter(fk_presentacion=product).first()
+            if not prealm:
+                continue
 
+            precio = prealm.pre_alm_precio
             subtotal = precio * quantity
+
             item = {
                 'product': product,
                 'quantity': quantity,
                 'get_total': subtotal,
+                'precio_unitario': precio,
             }
             items.append(item)
             total += subtotal
             total_items += quantity
-        except Presentacion.DoesNotExist:
+        except presentacion.DoesNotExist:
             continue
 
     order = {
         'get_cart_total': total,
         'get_cart_items': total_items,
+        'shipping': False  # si estás usando esta bandera en JS
     }
 
-    context = {'items': items, 'order': order}
-    return render(request, 'cart.html', context)
+    return {
+        'items': items,
+        'order': order,
+        'cartItems': total_items,
+    }
 
+def cart_view(request):
+    data = cartData(request)
+    return render(request, 'cart.html', {
+        'items': data['items'],
+        'order': data['order'],
+    })
 def checkout(request):
     data = cartData(request)
-    cartItems = data['cartItems']
-    order = data['order']
-    items = data['items']
+    return render(request, 'checkout.html', {
+        'items': data['items'],
+        'order': data['order'],
+        'cartItems': data['cartItems'],
+    })
 
-    context = {'items': items, 'order': order, 'cartItems': cartItems}
-    return render(request, 'checkout.html', context)
-
+@login_required
 def updateItem(request):
     data = json.loads(request.body)
     productId = data['productId']
@@ -115,41 +123,52 @@ def processOrder(request):
     total_venta = 0
     detalles = []
 
+    print("==== INICIANDO PROCESO DE ORDEN ====")
+    print("Carrito:", cart)
+
     for product_id, cantidad in cart.items():
-        if not product_id.strip().isdigit():
-            continue  # ⚠️ Evita IDs vacíos o inválidos que rompen int()
-
+        print("Producto ID:", product_id, "Cantidad:", cantidad)
         try:
-            producto = Presentacion.objects.get(prese_id=int(product_id))
-            precio_unitario = producto.precio_actual or 0
-            subtotal = precio_unitario * cantidad
-
-            total_venta += subtotal
-
+            producto = presentacion.objects.get(prese_id=int(product_id))
+            print("Producto:", producto)
+            prealm = PreAlm.objects.filter(fk_presentacion=producto).first()
+            if not prealm:
+                print("❌ No se encontró PreAlm")
+                continue
+            precio_unitario = prealm.pre_alm_precio or 0
+            total_venta += precio_unitario * cantidad
             detalles.append({
                 'producto': producto,
                 'cantidad': cantidad,
-                'precio_unitario': precio_unitario
+                'precio_unitario': precio_unitario,
+                'prealm': prealm
             })
+        except Exception as e:
+            print("⚠️ Error al procesar producto:", e)
 
-        except Presentacion.DoesNotExist:
+            print("Total venta:", total_venta)
+            print("Detalles:", detalles)
+        except presentacion.DoesNotExist:
             continue
 
-    # Crear venta
-    venta = VentaOnline.objects.create(
+    tienda = tienda.objects.first()
+    if total_venta <= 0:
+        return JsonResponse({'status': 'error', 'message': 'Total de la venta inválido'}, status=400)
+    venta = venta_online.objects.create(
         ven_onl_fecha=timezone.now(),
-        ven_onl_total=total_venta
+        ven_onl_total=total_venta,
+        fk_usuario=request.user,
+        fk_tienda=tienda
     )
 
-    # Crear detalles
     for item in detalles:
-        DetalleVentaOnline.objects.create(
-            venta=venta,
+        detalle_venta_online.objects.create(
+            fk_venta_online=venta,
+            fk_pre_alm=item['prealm'],
             det_ven_onl_cantidad=item['cantidad'],
-            det_ven_onl_precio_unitario=item['precio_unitario']
+            det_ven_onl_precio=item['precio_unitario']
         )
 
-    # Limpiar carrito
     request.session['cart'] = {}
 
     return JsonResponse({'status': 'ok', 'message': 'Venta registrada', 'venta_id': venta.ven_onl_id})
