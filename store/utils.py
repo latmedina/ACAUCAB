@@ -10,7 +10,7 @@ def sessionCart(request):
     for prese_id_str, quantity in cart.items():
         try:
             product = Presentacion.objects.get(prese_id=int(prese_id_str))
-            price = product.precio_actual or 0
+            price = product.prese_precio or 0
             subtotal = price * quantity
 
             item = {
@@ -40,7 +40,7 @@ def cartData(request):
 
         try:
             product = Presentacion.objects.get(prese_id=int(prese_id_str))
-            price = product.precio_actual or 0
+            price = product.prese_precio or 0
             subtotal = price * quantity
 
             item = {
