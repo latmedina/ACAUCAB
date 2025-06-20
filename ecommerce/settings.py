@@ -40,8 +40,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'store.apps.StoreConfig',
-    'colorfield'
+    'colorfield',
 ]
+
+# Modelo de usuario personalizado
+AUTH_USER_MODEL = 'store.Usuario'
 
 X_FRAME_OPTIONS = "SAMEORIGIN"
 
@@ -82,7 +85,7 @@ WSGI_APPLICATION = 'ecommerce.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'ACAUCAB3',
+        'NAME': 'ACAUCAB',
         'USER': 'postgres',
         'PASSWORD': '1234',
         'HOST': 'localhost',

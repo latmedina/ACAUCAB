@@ -1,5 +1,6 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
+from django.conf import settings
 
 class afi_est(models.Model):
     afi_est_id = models.AutoField(primary_key=True)
@@ -9,7 +10,7 @@ class afi_est(models.Model):
     fk_estatus = models.ForeignKey('estatus', models.DO_NOTHING, db_column='fk_estatus')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'afi_est'
 
 
@@ -21,7 +22,7 @@ class afiliacion(models.Model):
     fk_tienda = models.ForeignKey('tienda', models.DO_NOTHING, db_column='fk_tienda')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'afiliacion'
 
 
@@ -32,7 +33,7 @@ class almacen(models.Model):
     fk_tienda = models.ForeignKey('tienda', models.DO_NOTHING, db_column='fk_tienda')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'almacen'
 
     def __str__(self):
@@ -44,7 +45,7 @@ class anaquel(models.Model):
     fk_lugar_tienda = models.ForeignKey('lugar_tienda', models.DO_NOTHING, db_column='fk_lugar_tienda')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'anaquel'
 
     def __str__(self):
@@ -58,7 +59,7 @@ class asistencia(models.Model):
     fk_empleado = models.ForeignKey('empleado', models.DO_NOTHING, db_column='fk_empleado')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'asistencia'
 
 
@@ -70,18 +71,17 @@ class asistencia_evento(models.Model):
     fk_ven_bol_eve = models.ForeignKey('venta_boleto_evento', models.DO_NOTHING, db_column='fk_ven_bol_eve')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'asistencia_evento'
 
 
 class car_tip_cer(models.Model):
-    pk = models.CompositePrimaryKey('fk_caracteristica', 'fk_tipo_cerveza')
     fk_caracteristica = models.ForeignKey('caracteristica', models.DO_NOTHING, db_column='fk_caracteristica')
     fk_tipo_cerveza = models.ForeignKey('tipo_cerveza', models.DO_NOTHING, db_column='fk_tipo_cerveza')
     carac_tip_cer_valor = models.CharField(max_length=255)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'car_tip_cer'
 
 
@@ -91,7 +91,7 @@ class caracteristica(models.Model):
     car_descripcion = models.CharField(max_length=255)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'caracteristica'
 
 
@@ -102,18 +102,17 @@ class cargo(models.Model):
     car_salario = models.IntegerField()
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'cargo'
 
 
 class cerv_car(models.Model):
-    pk = models.CompositePrimaryKey('fk_cerveza', 'fk_caracteristica')
     fk_cerveza = models.ForeignKey('cerveza', models.DO_NOTHING, db_column='fk_cerveza')
     fk_caracteristica = models.ForeignKey(caracteristica, models.DO_NOTHING, db_column='fk_caracteristica')
     carac_cer_valor = models.CharField(max_length=255)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'cerv_car'
 
 
@@ -125,7 +124,7 @@ class cerveza(models.Model):
     fk_tipo_estilo_cerveza = models.ForeignKey('tipo_estilo_cerveza', models.DO_NOTHING, db_column='fk_tipo_estilo_cerveza')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'cerveza'
 
 
@@ -149,11 +148,16 @@ class cliente(models.Model):
     cli_cantidad_puntos = models.IntegerField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'cliente'
 
     def __str__(self):
-        return self.cli_nat_pnombre + self.cli_nat_papellido
+        if self.cli_tipo_cliente == 'JURIDICO':
+            return self.cli_jur_razon_social or "(Razón Social no especificada)"
+        else:
+            nombre = self.cli_nat_pnombre or ""
+            apellido = self.cli_nat_papellido or ""
+            return f"{nombre} {apellido}".strip() or "(Nombre no especificado)"
 
 
 class contacto_cliente(models.Model):
@@ -163,7 +167,7 @@ class contacto_cliente(models.Model):
     fk_cliente = models.ForeignKey(cliente, models.DO_NOTHING, db_column='fk_cliente')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'contacto_cliente'
 
 
@@ -174,7 +178,7 @@ class contacto_proveedor(models.Model):
     fk_proveedor = models.ForeignKey('Proveedor', models.DO_NOTHING, db_column='fk_proveedor')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'contacto_proveedor'
 
 
@@ -188,7 +192,7 @@ class correo_electronico(models.Model):
     fk_proveedor = models.ForeignKey('Proveedor', models.DO_NOTHING, db_column='fk_proveedor', blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'correo_electronico'
 
 
@@ -199,19 +203,18 @@ class cuenta_punto(models.Model):
     fk_venta_fisica = models.IntegerField()
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'cuenta_punto'
 
 
 class dep_tie(models.Model):
-    pk = models.CompositePrimaryKey('fk_departamento', 'fk_tienda')
     fk_departamento = models.ForeignKey('Departamento', models.DO_NOTHING, db_column='fk_departamento')
     fk_tienda = models.ForeignKey('tienda', models.DO_NOTHING, db_column='fk_tienda')
     dep_tie_fecha_inicio = models.DateField()
     dep_tie_fecha_fin = models.DateField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'dep_tie'
 
 
@@ -221,7 +224,7 @@ class departamento(models.Model):
     dep_descripcion = models.TextField()
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'departamento'
 
 
@@ -234,7 +237,7 @@ class detalle_compra(models.Model):
     fk_presentacion = models.ForeignKey('presentacion', models.DO_NOTHING, db_column='fk_presentacion')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'detalle_compra'
 
 
@@ -246,7 +249,7 @@ class detalle_venta_evento(models.Model):
     fk_exi_eve = models.ForeignKey('existencia_evento', models.DO_NOTHING, db_column='fk_exi_eve')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'detalle_venta_evento'
 
 
@@ -258,19 +261,19 @@ class detalle_venta_fisica(models.Model):
     fk_inventario = models.ForeignKey('inventario', models.DO_NOTHING, db_column='fk_inventario')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'detalle_venta_fisica'
 
 
 class detalle_venta_online(models.Model):
-    pk = models.CompositePrimaryKey('fk_venta_online', 'fk_pre_alm')
+    det_ven_onl_id = models.AutoField(primary_key=True)  # <- clave primaria explícita
     det_ven_onl_cantidad = models.IntegerField()
     det_ven_onl_precio = models.DecimalField(max_digits=10, decimal_places=2)
     fk_venta_online = models.ForeignKey('venta_online', models.DO_NOTHING, db_column='fk_venta_online')
     fk_pre_alm = models.ForeignKey('pre_alm', models.DO_NOTHING, db_column='fk_pre_alm')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'detalle_venta_online'
 
 class emp_car(models.Model):
@@ -283,13 +286,12 @@ class emp_car(models.Model):
     emp_car_fecha_fin = models.DateField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'emp_car'
         unique_together = (('fk_empleado', 'fk_cargo', 'fk_departamento', 'fk_tienda'),)
 
 
 class emp_car_hor(models.Model):
-    pk = models.CompositePrimaryKey('fk_empleado', 'fk_cargo', 'fk_departamento', 'fk_tienda', 'fk_horario')
     fk_empleado = models.ForeignKey('empleado', models.DO_NOTHING, db_column='fk_empleado')
     fk_cargo = models.ForeignKey(cargo, models.DO_NOTHING, db_column='fk_cargo')
     fk_departamento = models.ForeignKey(departamento, models.DO_NOTHING, db_column='fk_departamento')
@@ -297,18 +299,17 @@ class emp_car_hor(models.Model):
     fk_horario = models.ForeignKey('horario', models.DO_NOTHING, db_column='fk_horario')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'emp_car_hor'
 
 
 class emp_tip_ben(models.Model):
-    pk = models.CompositePrimaryKey('fk_empleado', 'fk_tipo_beneficio')
     fk_empleado = models.ForeignKey('empleado', models.DO_NOTHING, db_column='fk_empleado')
     fk_tipo_beneficio = models.ForeignKey('tipo_beneficio', models.DO_NOTHING, db_column='fk_tipo_beneficio')
     emp_tip_ben_monto = models.IntegerField()
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'emp_tip_ben'
 
 
@@ -325,7 +326,7 @@ class empleado(models.Model):
     fk_lugar = models.ForeignKey('lugar', models.DO_NOTHING, db_column='fk_lugar')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'empleado'
 
     def __str__(self):
@@ -338,7 +339,7 @@ class estatus(models.Model):
     est_descripcion = models.CharField(max_length=255)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'estatus'
 
 
@@ -348,7 +349,7 @@ class estilo_cerveza(models.Model):
     est_cer_descripcion = models.CharField(max_length=255)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'estilo_cerveza'
 
 
@@ -358,7 +359,7 @@ class eve_pro(models.Model):
     fk_proveedor = models.ForeignKey('proveedor', models.DO_NOTHING, db_column='fk_proveedor')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'eve_pro'
         unique_together = (('fk_evento', 'fk_proveedor'),)
 
@@ -373,7 +374,7 @@ class evento(models.Model):
     fk_lugar = models.ForeignKey('lugar', models.DO_NOTHING, db_column='fk_lugar')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'evento'
 
 
@@ -384,7 +385,7 @@ class existencia_evento(models.Model):
     fk_evento_proveedor = models.ForeignKey(eve_pro, models.DO_NOTHING, db_column='fk_evento_proveedor')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'existencia_evento'
 
 
@@ -395,7 +396,7 @@ class historico_moneda(models.Model):
     fk_moneda = models.ForeignKey('moneda', models.DO_NOTHING, db_column='fk_moneda')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'historico_moneda'
 
 
@@ -405,7 +406,7 @@ class historico_precio_punto(models.Model):
     his_pre_pun_valor = models.IntegerField()
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'historico_precio_punto'
 
 
@@ -416,7 +417,7 @@ class horario(models.Model):
     hor_hora_fin = models.TimeField()
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'horario'
 
 
@@ -426,7 +427,7 @@ class ingrediente(models.Model):
     ing_descripcion = models.CharField(max_length=255)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'ingrediente'
 
 
@@ -435,7 +436,7 @@ class instruccion(models.Model):
     ins_descripcion = models.CharField(max_length=1000)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'instruccion'
 
 
@@ -447,7 +448,7 @@ class inventario(models.Model):
     fk_oferta = models.ForeignKey('oferta', models.DO_NOTHING, db_column='fk_oferta', blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'inventario'
 
 class lugar(models.Model):
@@ -457,7 +458,7 @@ class lugar(models.Model):
     fk_lugar = models.ForeignKey('self', models.DO_NOTHING, db_column='fk_lugar', blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'lugar'
 
     def __str__(self):
@@ -472,7 +473,7 @@ class lugar_tienda(models.Model):
     fk_lugar_tienda = models.ForeignKey(lugar, models.DO_NOTHING, db_column='fk_lugar_tienda', blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'lugar_tienda'
 
     def __str__(self):
@@ -491,7 +492,7 @@ class metodo_pago(models.Model):
     fk_his_pre_pun = models.ForeignKey(historico_precio_punto, models.DO_NOTHING, db_column='fk_his_pre_pun', blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'metodo_pago'
 
 
@@ -500,7 +501,7 @@ class moneda(models.Model):
     mon_tipo = models.CharField(unique=True, max_length=50)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'moneda'
 
 
@@ -513,7 +514,7 @@ class oferta(models.Model):
     of_procentaje = models.IntegerField()
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'oferta'
 
 
@@ -529,7 +530,7 @@ class pago(models.Model):
     fk_moneda = models.ForeignKey(moneda, models.DO_NOTHING, db_column='fk_moneda')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'pago'
 
 
@@ -541,7 +542,7 @@ class pago_efectivo(models.Model):
     fk_metodo_pago = models.ForeignKey(metodo_pago, models.DO_NOTHING, db_column='fk_metodo_pago')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'pago_efectivo'
 
 
@@ -554,7 +555,7 @@ class pre_alm(models.Model):
     fk_oferta = models.ForeignKey(oferta, models.DO_NOTHING, db_column='fk_oferta', blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'pre_alm'
 
     def __str__(self):
@@ -573,7 +574,7 @@ class presentacion(models.Model):
     prese_ancho = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'presentacion'
 
     def __str__(self):
@@ -593,8 +594,11 @@ class proveedor(models.Model):
     fk_lugar = models.ForeignKey(lugar, models.DO_NOTHING, db_column='fk_lugar')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'proveedor'
+
+    def __str__(self):
+        return f"{self.pro_razon_social or self.pro_denominacion_comercial or self.pro_rif}"
 
 
 class rec_ing(models.Model):
@@ -604,7 +608,7 @@ class rec_ing(models.Model):
     rec_ing_cantidad = models.DecimalField(max_digits=10, decimal_places=3)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'rec_ing'
 
 
@@ -614,7 +618,7 @@ class rec_ins(models.Model):
     fk_instruccion = models.ForeignKey(instruccion, models.DO_NOTHING, db_column='fk_instruccion')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'rec_ins'
 
 
@@ -624,7 +628,7 @@ class receta(models.Model):
     rec_descripcion = models.CharField(max_length=255)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'receta'
 
 
@@ -636,7 +640,7 @@ class sol_com_est(models.Model):
     fk_estatus = models.ForeignKey(estatus, models.DO_NOTHING, db_column='fk_estatus')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'sol_com_est'
 
 
@@ -648,7 +652,7 @@ class sol_rep_est(models.Model):
     fk_estatus = models.ForeignKey(estatus, models.DO_NOTHING, db_column='fk_estatus')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'sol_rep_est'
 
 
@@ -658,9 +662,10 @@ class solicitud_compra(models.Model):
     sol_com_total = models.DecimalField(max_digits=10, decimal_places=2)
     fk_proveedor = models.ForeignKey(proveedor, models.DO_NOTHING, db_column='fk_proveedor')
     fk_pre_alm = models.ForeignKey(pre_alm, models.DO_NOTHING, db_column='fk_pre_alm')
-
+    fk_usuario = models.ForeignKey('usuario', on_delete=models.DO_NOTHING, db_column='fk_usuario', null=True, blank=True)
+    
     class Meta:
-        managed = False
+        managed = True
         db_table = 'solicitud_compra'
 
 
@@ -670,9 +675,10 @@ class solicitud_reposicion(models.Model):
     sol_rep_descripcion = models.CharField(max_length=255)
     fk_inv = models.ForeignKey(inventario, models.DO_NOTHING, db_column='fk_inv')
     fk_pre_alm = models.ForeignKey(pre_alm, models.DO_NOTHING, db_column='fk_pre_alm')
+    fk_usuario = models.ForeignKey('usuario', on_delete=models.DO_NOTHING, db_column='fk_usuario', null=True, blank=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'solicitud_reposicion'
 
 
@@ -687,7 +693,7 @@ class telefono(models.Model):
     fk_proveedor = models.ForeignKey(proveedor, models.DO_NOTHING, db_column='fk_proveedor', blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'telefono'
 
 
@@ -699,7 +705,7 @@ class tienda(models.Model):
     fk_lugar = models.ForeignKey(lugar, models.DO_NOTHING, db_column='fk_lugar')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'tienda'
 
     def __str__(self):
@@ -712,7 +718,7 @@ class tipo_beneficio(models.Model):
     tip_ben_descripcion = models.TextField()
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'tipo_beneficio'
 
     def __str__(self):
@@ -724,7 +730,7 @@ class tipo_cerveza(models.Model):
     tip_cer_familia = models.CharField(max_length=255)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'tipo_cerveza'
 
     def __str__(self):
@@ -739,7 +745,7 @@ class tipo_estilo_cerveza(models.Model):
     fk_tipo_cerveza = models.ForeignKey(tipo_cerveza, models.DO_NOTHING, db_column='fk_tipo_cerveza')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'tipo_estilo_cerveza'
 
     def __str__(self):
@@ -753,9 +759,19 @@ class tipo_evento(models.Model):
     fk_tipo_evento = models.ForeignKey('self', models.DO_NOTHING, db_column='fk_tipo_evento', blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'tipo_evento'
 
+class usuario(AbstractUser):
+    fk_cliente = models.ForeignKey(cliente, on_delete=models.DO_NOTHING, db_column='fk_cliente', null=True, blank=True)
+    fk_proveedor = models.ForeignKey('proveedor', on_delete=models.DO_NOTHING, db_column='fk_proveedor', null=True, blank=True)
+    
+    class Meta:
+        db_table = 'usuario'  # Esto cambia el nombre de la tabla a 'usuario'
+
+    def __str__(self):
+        return self.username
+        
 class vacacion(models.Model):
     vac_id = models.AutoField(primary_key=True)
     vac_fecha_inicio = models.DateField()
@@ -763,7 +779,7 @@ class vacacion(models.Model):
     fk_empleado = models.ForeignKey(empleado, models.DO_NOTHING, db_column='fk_empleado')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'vacacion'
 
 
@@ -775,7 +791,7 @@ class ven_onl_est(models.Model):
     fk_estatus = models.ForeignKey(estatus, models.DO_NOTHING, db_column='fk_estatus')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'ven_onl_est'
 
 
@@ -786,7 +802,7 @@ class venta_boleto_evento(models.Model):
     ven_bol_eve_descripcion = models.CharField(max_length=255)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'venta_boleto_evento'
 
 
@@ -798,7 +814,7 @@ class venta_evento(models.Model):
     fk_cliente = models.ForeignKey(cliente, models.DO_NOTHING, db_column='fk_cliente')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'venta_evento'
 
 
@@ -811,7 +827,7 @@ class venta_fisica(models.Model):
     fk_oferta = models.ForeignKey(oferta, models.DO_NOTHING, db_column='fk_oferta', blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'venta_fisica'
 
 
@@ -820,7 +836,7 @@ class venta_online(models.Model):
     ven_onl_fecha = models.DateField()
     ven_onl_total = models.IntegerField()
     fk_oferta = models.ForeignKey(oferta, models.DO_NOTHING, db_column='fk_oferta', blank=True, null=True)
-    fk_usuario = models.ForeignKey(User, on_delete=models.CASCADE, db_column='fk_usuario')
+    fk_usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, db_column='fk_usuario')
     fk_tienda = models.ForeignKey(tienda, models.DO_NOTHING, db_column='fk_tienda')
 
     class Meta:
