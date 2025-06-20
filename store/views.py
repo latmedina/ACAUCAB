@@ -131,9 +131,9 @@ def processOrder(request):
         try:
             producto = presentacion.objects.get(prese_id=int(product_id))
             print("Producto:", producto)
-            prealm = PreAlm.objects.filter(fk_presentacion=producto).first()
+            prealm = pre_alm.objects.filter(fk_presentacion=producto).first()
             if not prealm:
-                print("❌ No se encontró PreAlm")
+                print("❌ No se encontró pre_alm")
                 continue
             precio_unitario = prealm.pre_alm_precio or 0
             total_venta += precio_unitario * cantidad
@@ -151,14 +151,14 @@ def processOrder(request):
         except presentacion.DoesNotExist:
             continue
 
-    tienda = tienda.objects.first()
+    tienda_obj = tienda.objects.first()
     if total_venta <= 0:
         return JsonResponse({'status': 'error', 'message': 'Total de la venta inválido'}, status=400)
     venta = venta_online.objects.create(
         ven_onl_fecha=timezone.now(),
         ven_onl_total=total_venta,
         fk_usuario=request.user,
-        fk_tienda=tienda
+        fk_tienda=tienda_obj
     )
 
     for item in detalles:

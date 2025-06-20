@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
 from .models import (
     lugar, tienda, cliente, proveedor, cargo, empleado, presentacion,
     metodo_pago, pago, correo_electronico, telefono, evento, tipo_evento,
@@ -6,8 +7,17 @@ from .models import (
     lugar_tienda, horario, vacacion, tipo_beneficio, estatus, oferta,
     moneda, historico_moneda, almacen, anaquel, ingrediente, instruccion,
     receta, estilo_cerveza, historico_precio_punto, pago_efectivo,
-    existencia_evento, asistencia, asistencia_evento, pre_alm
+    existencia_evento, asistencia, asistencia_evento, pre_alm, usuario
 )
+
+@admin.register(usuario)
+class usuario_admin(UserAdmin):
+    list_display = ('id', 'username', 'email', 'is_staff', 'fk_cliente', 'fk_proveedor')
+    fieldsets = UserAdmin.fieldsets + (
+        ('Relaciones adicionales', {
+            'fields': ('fk_cliente', 'fk_proveedor')
+        }),
+    )
 
 @admin.register(lugar)
 class lugar_admin(admin.ModelAdmin):
