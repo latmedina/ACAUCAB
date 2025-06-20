@@ -1,986 +1,4889 @@
-/*
---Archivo create para la primera entrega de codigo de la base de datos.
-*/
-/************************************************************/
-/***************** CREACIÓN DE TABLAS ***********************/
-/************************************************************/
-
--- Tabla: LUGAR
-CREATE TABLE LUGAR (
-    lug_id INT NOT NULL, -- Identificador único del lugar.
-    lug_nombre VARCHAR(255) NOT NULL, -- Nombre del lugar.
-    lug_tipo VARCHAR(255) NOT NULL, -- Descripción del lugar.
-    FK_lugar INT, -- Clave foránea que referencia a lugar.
-    PRIMARY KEY (lug_id)
-);
-
--- Tabla: TIENDA
-CREATE TABLE TIENDA (
-    tie_id INT NOT NULL, -- Identificador único de la tienda.
-    tie_nombre VARCHAR(255) NOT NULL, -- Nombre de la tienda.
-    tie_direccion VARCHAR(255) NOT NULL, -- Dirección de la tienda.
-    FK_lugar INT NOT NULL, -- Clave foránea que hace referencia al lugar (ubicación) de la tienda.
-    PRIMARY KEY (tie_id)
-);
-
--- Tabla: CARGO
-CREATE TABLE CARGO (
-    car_id INT NOT NULL, -- Identificador único del cargo.
-    car_nombre VARCHAR(255) NOT NULL, -- Nombre del cargo.
-    car_descripcion VARCHAR(255) NOT NULL, -- Descripción del cargo.
-    PRIMARY KEY (car_id)
-);
-
--- Tabla: EMPLEADO
-CREATE TABLE EMPLEADO (
-    emp_id INT NOT NULL, -- Identificador único del empleado.
-    emp_ci INT NOT NULL, -- Cédula de identidad del empleado.
-    emp_pnombre VARCHAR(255) NOT NULL, -- Primer nombre del empleado.
-    emp_snombres VARCHAR(255), -- Segundos nombres del empleado.
-    emp_papellido VARCHAR(255) NOT NULL, -- Primer apellido del empleado.
-    emp_sapellido VARCHAR(255), -- Segundo apellido del empleado.
-    emp_fecha_nacimiento DATETIME NOT NULL, -- Fecha de nacimiento del empleado.
-    FK_lugar INT NOT NULL, -- Clave foránea que hace referencia al lugar (ubicación) del empleado.
-    FK_tienda INT NOT NULL, -- Clave foránea que hace referencia a la tienda donde trabaja el empleado.
-    emp_sexo VARCHAR(50) NOT NULL CHECK (emp_sexo IN ('Masculino', 'femenino')), -- Sexo del empleado (Masculino o Femenino).
-    PRIMARY KEY (emp_id)
-);
-
--- Tabla: EMP_CAR
-CREATE TABLE EMP_CAR (
-    emp_car_id INT NOT NULL, -- Identificador único del cargo del empleado.
-    FK_empleado INT NOT NULL, -- Clave foránea que referencia al empleado asociado al cargo.
-    FK_cargo INT NOT NULL, -- Clave foránea que referencia el cargo del empleado.
-    emc_fecha_inicio DATETIME NOT NULL, -- Fecha de inicio del empleado en el cargo.
-    emc_fecha_fin DATETIME NOT NULL, -- Fecha de fin del empleado en el cargo.
-    PRIMARY KEY (emp_car_id, FK_empleado, FK_cargo)
-);
-
--- Tabla: CLIENTE
-CREATE TABLE CLIENTE (
-    cli_id INT NOT NULL, -- Identificador único del cliente.
-    cli_rif VARCHAR(20) NOT NULL, -- Número de Registro de Identificación Fiscal (RIF) del cliente.
-    cli_direccion_fisica VARCHAR(255) NOT NULL, -- Dirección física del cliente.
-    cli_nat_ci INT, -- Cédula de identidad (CI) del cliente natural.
-    cli_nat_pnombre VARCHAR(255), -- Primer nombre del cliente natural.
-    cli_nat_snombre VARCHAR(255), -- Segundo nombre del cliente natural.
-    cli_nat_papellido VARCHAR(255), -- Primer apellido del cliente natural.
-    cli_nat_sapellido VARCHAR(255), -- Segundo apellido del cliente natural.
-    cli_nat_sexo CHAR(1) CHECK (cli_nat_sexo IN ('M', 'F')), -- Sexo del cliente natural (Masculino o Femenino).
-    cli_jur_denom_comercial VARCHAR(255), -- Denominación comercial del cliente jurídico.
-    cli_jur_razon_social VARCHAR(255), -- Razón social del cliente jurídico.
-    cli_jur_url_web VARCHAR(255), -- URL web del cliente jurídico.
-    cli_jur_capital VARCHAR(255), -- Capital del cliente jurídico.
-    cli_jur_dir_fiscal VARCHAR(255), -- Dirección fiscal del cliente jurídico.
-    cli_tipo_cliente VARCHAR(50) NOT NULL CHECK (cli_tipo_cliente IN ('NATURAL', 'JURIDICO')), -- Tipo de cliente (NATURAL o JURIDICO).
-    FK_lugar INT NOT NULL, -- Clave foránea que referencia el lugar asociado al cliente.
-    PRIMARY KEY (cli_id)
-);
-
--- Tabla: PROVEEDOR
-CREATE TABLE PROVEEDOR (
-    pro_id INT NOT NULL, -- Identificador único del proveedor.
-    pro_rif VARCHAR(20) NOT NULL, -- Registro de Identificación Fiscal (RIF) del proveedor.
-    pro_razon_social VARCHAR(255) NOT NULL, -- Razón social del proveedor.
-    pro_denominacion_comercial VARCHAR(255) NOT NULL, -- Denominación comercial del proveedor.
-    pro_direccion_fisica VARCHAR(255) NOT NULL, -- Dirección física del proveedor.
-    pro_url_web VARCHAR(255) NOT NULL, -- URL web del proveedor.
-    FK_lugar INT NOT NULL, -- Clave foránea que referencia el lugar (ubicación) del proveedor.
-    PRIMARY KEY (pro_id)
-);
-
--- Tabla: ROL
-CREATE TABLE ROL (
-    rol_id INT NOT NULL, -- Identificador único del rol.
-    rol_nombre VARCHAR(255) NOT NULL, -- Nombre del rol.
-    rol_descripcion VARCHAR(255) NOT NULL, -- Descripción del rol.
-    PRIMARY KEY (rol_id)
-);
-
--- Tabla: USUARIO
-CREATE TABLE USUARIO (
-    usu_id INT NOT NULL, -- Identificador único del usuario.
-    usu_nombre_usuario VARCHAR(255) NOT NULL, -- Nombre de usuario del usuario.
-    usu_contraseña VARCHAR(255) NOT NULL, -- Contraseña del usuario.
-    usu_email VARCHAR(255) NOT NULL, -- Correo electrónico del usuario.
-    FK_emp_car1 INT, -- Clave foránea que referencia una de las claves de EMP_CAR
-    FK_emp_car2 INT, -- Clave foránea que referencia una de las claves de EMP_CAR
-    FK_emp_car3 INT, -- Clave foránea que referencia una de las claves de EMP_CAR
-    FK_cliente INT, -- Clave foránea que referencia el cliente asociado al usuario.
-    FK_proveedor INT, -- Clave foránea que referencia el proveedor asociado al usuario.
-    FK_rol INT NOT NULL, -- Clave foránea que referencia el rol del usuario.
-    PRIMARY KEY (usu_id)
-);
-
--- Tabla: TIPO_EVENTO
-CREATE TABLE TIPO_EVENTO (
-    tip_eve_id INT NOT NULL, -- Identificador único del tipo de evento.
-    tip_eve_nombre VARCHAR(255) NOT NULL, -- Nombre del tipo de evento.
-    tip_eve_descripcion VARCHAR(255) NOT NULL, -- Descripción del tipo de evento.
-    PRIMARY KEY (tip_eve_id)
-);
-
--- Tabla: EVENTO
-CREATE TABLE EVENTO (
-    eve_id INT NOT NULL, -- Identificador único del evento.
-    eve_nombre VARCHAR(255) NOT NULL, -- Nombre del evento.
-    eve_descripcion VARCHAR(255) NOT NULL, -- Descripción detallada del evento.
-    eve_fecha_hora DATETIME NOT NULL, -- Fecha y hora en que el evento tendrá lugar.
-    eve_nro_boletos INT NOT NULL, -- Número total de boletos disponibles para el evento.
-    FK_tip_eve INT NOT NULL, -- Clave foránea que referencia el tipo de evento.
-    PRIMARY KEY (eve_id)
-);
-
--- Tabla: VENTA_EVENTO
-CREATE TABLE VENTA_EVENTO (
-    ven_eve_id INT NOT NULL, -- Identificador único de la venta del evento.
-    ven_eve_fecha_hora DATETIME NOT NULL, -- Fecha y hora en que se realizó la venta del evento.
-    ven_eve_monto_total DECIMAL(18, 2) NOT NULL, -- Monto total de la venta del evento.
-    ven_eve_descripcion VARCHAR(255) NOT NULL, -- Descripción de la venta del evento.
-    FK_evento INT NOT NULL, -- Clave foránea que referencia el evento asociado a la venta.
-    PRIMARY KEY (ven_eve_id)
-);
-
--- Tabla: ASISTENCIA_EVENTO
-CREATE TABLE ASISTENCIA_EVENTO (
-    asi_eve_id INT NOT NULL, -- Identificador único de la asistencia al evento.
-    FK_evento INT NOT NULL, -- Clave foránea que referencia el evento al que se asistió.
-    FK_cliente INT, -- Clave foránea que referencia al cliente que asistió al evento.
-    asi_eve_fecha_hora DATETIME NOT NULL, -- Fecha y hora en que el cliente asistió al evento.
-    PRIMARY KEY (asi_eve_id, FK_evento)
-);
-
--- Tabla: VENTA_BOLETO_EVENTO
-CREATE TABLE VENTA_BOLETO_EVENTO (
-    ven_bol_eve_id INT NOT NULL, -- Identificador único de la venta del boleto del evento.
-    ven_bol_eve_fecha_hora DATETIME NOT NULL, -- Fecha y hora en que se realizó la venta del boleto del evento.
-    ven_bol_eve_monto_total DECIMAL(18, 2) NOT NULL, -- Monto total de la venta del boleto del evento.
-    ven_bol_eve_descripcion VARCHAR(255) NOT NULL, -- Descripción de la venta del boleto del evento.
-    FK_asi_eve_id INT NOT NULL, -- FK para asi_eve_id de ASISTENCIA_EVENTO
-    FK_asi_eve_evento INT NOT NULL, -- FK para FK_evento de ASISTENCIA_EVENTO
-    PRIMARY KEY (ven_bol_eve_id)
-);
-
--- Tabla: EVE_PRO
-CREATE TABLE EVE_PRO (
-    eve_pro_id INT NOT NULL, -- identificador único de EVE_PRO.
-    FK_evento INT NOT NULL, -- Clave foránea que referencia el evento asociado a EVE_PRO.
-    FK_proveedor INT NOT NULL, -- Clave foránea que referencia el proveedor asociado a EVE_PRO.
-    PRIMARY KEY (eve_pro_id, FK_evento, FK_proveedor)
-);
-
--- Tabla: TIPO_CERVEZA
-CREATE TABLE TIPO_CERVEZA (
-    tip_cer_id INT NOT NULL, -- Identificador único del tipo de cerveza.
-    tip_cer_familia VARCHAR(255) NOT NULL CHECK (tip_cer_familia IN ('Lager', 'Ale', 'Wheat Beer')), -- Familia o clasificación del tipo de cerveza.
-    PRIMARY KEY (tip_cer_id)
-);
-
--- Tabla: CERVEZA
-CREATE TABLE CERVEZA (
-    cer_id INT NOT NULL, -- Identificador único de la cerveza.
-    cer_nombre VARCHAR(255) NOT NULL, -- Nombre de la cerveza.
-    cer_descripcion VARCHAR(255) NOT NULL, -- Descripción de la cerveza.
-    cer_grado_alcohol DECIMAL(5, 2) NOT NULL, -- Grado de alcohol de la cerveza.
-    FK_tipo_cerveza INT NOT NULL, -- Clave foránea que referencia el tipo de cerveza.
-    PRIMARY KEY (cer_id)
-);
-
--- Tabla: PRESENTACION
-CREATE TABLE PRESENTACION (
-    prese_id INT NOT NULL, -- Identificador único de la presentación.
-    prese_volumen DECIMAL(10, 2) NOT NULL, -- Volumen de la presentación.
-    prese_recipiente VARCHAR(255) NOT NULL, -- Tipo de recipiente de la presentación.
-    FK_cerveza INT, -- Clave foránea que referencia la cerveza asociada a la presentación.
-    prese_imagen VARCHAR(255) NOT NULL, -- Imagen de la presentación del producto.
-    PRIMARY KEY (prese_id)
-);
-
--- Tabla: OFERTA
-CREATE TABLE OFERTA (
-    ofe_id INT NOT NULL, -- Identificador único de la oferta.
-    ofe_nombre VARCHAR(255) NOT NULL, -- Nombre de la oferta.
-    ofe_fecha_inicio DATETIME NOT NULL, -- Fecha de inicio de la oferta.
-    ofe_fecha_fin DATETIME NOT NULL, -- Fecha de fin de la oferta.
-    ofe_descripcion VARCHAR(255) NOT NULL, -- Descripción de la oferta.
-    ofe_porcentaje DECIMAL(5, 2) NOT NULL, -- Porcentaje de la oferta.
-    PRIMARY KEY (ofe_id)
-);
-
--- Tabla: ALMACEN
-CREATE TABLE ALMACEN (
-    alm_id INT NOT NULL, -- Identificador único del almacén.
-    alm_nombre VARCHAR(255) NOT NULL, -- Nombre del almacén.
-    alm_descripcion VARCHAR(255) NOT NULL, -- Descripción del almacén.
-    FK_tienda INT NOT NULL, -- Clave foránea que referencia la tienda asociada al almacén.
-    PRIMARY KEY (alm_id)
-);
-
--- Tabla: PRE_ALM
-CREATE TABLE PRE_ALM (
-    pre_alm_id INT NOT NULL, -- Identificador único de la relación cerveza-almacén.
-    FK_presentacion INT NOT NULL, -- Clave foránea que referencia a la cerveza.
-    FK_almacen INT NOT NULL, -- Clave foránea que referencia al almacén.
-    pre_alm_precio DECIMAL(18, 2) NOT NULL, -- Precio de la cerveza en el almacén.
-    pre_alm_cantidad INT NOT NULL, -- Cantidad de cervezas en el almacén.
-    FK_oferta INT, -- Clave foránea que referencia a la oferta (si aplica).
-    PRIMARY KEY (pre_alm_id, FK_presentacion, FK_almacen)
-);
-
--- Tabla: EXISTENCIA_EVENTO
-CREATE TABLE EXISTENCIA_EVENTO (
-    exi_eve_id INT NOT NULL, -- Identificador único de la existencia del evento.
-    FK_presentacion INT NOT NULL, -- Clave foránea que referencia la cerveza asociada a la existencia del evento.
-    FK_eve_pro_id INT NOT NULL, -- FK a eve_pro_id de EVE_PRO
-    FK_eve_pro_evento INT NOT NULL, -- FK a FK_evento de EVE_PRO
-    FK_eve_pro_proveedor INT NOT NULL, -- FK a FK_proveedor de EVE_PRO
-    exi_eve_cantidad INT NOT NULL, -- Cantidad de existencias disponibles para el evento.
-    exi_eve_precio DECIMAL(18, 2) NOT NULL, -- Precio de la existencia para el evento.
-    PRIMARY KEY (exi_eve_id, FK_presentacion, FK_eve_pro_id, FK_eve_pro_evento, FK_eve_pro_proveedor)
-);
-
--- Tabla: DETALLE_VENTA_EVENTO
-CREATE TABLE DETALLE_VENTA_EVENTO (
-    det_ven_eve_id INT NOT NULL, -- Identificador único del detalle de la venta del evento.
-    FK_ven_eve INT NOT NULL, -- Clave foránea que referencia la venta del evento asociada al detalle.
-    FK_exi_eve_id INT NOT NULL,
-    FK_exi_eve_presentacion INT NOT NULL,
-    FK_exi_eve_pro_id INT NOT NULL,
-    FK_exi_eve_pro_evento INT NOT NULL,
-    FK_exi_eve_pro_proveedor INT NOT NULL,
-    det_ven_eve_precio_unitario DECIMAL(18, 2) NOT NULL, -- Precio unitario del detalle de la venta del evento.
-    det_ven_eve_cantidad INT NOT NULL, -- Cantidad del detalle de la venta del evento.
-    PRIMARY KEY (det_ven_eve_id, FK_ven_eve, FK_exi_eve_id, FK_exi_eve_presentacion, FK_exi_eve_pro_id, FK_exi_eve_pro_evento, FK_exi_eve_pro_proveedor)
-);
-
--- Tabla: SOLICITUD_COMPRA
-CREATE TABLE SOLICITUD_COMPRA (
-    sol_com_id INT NOT NULL, -- Identificador único de la solicitud de compra.
-    sol_com_fecha DATETIME NOT NULL, -- Fecha y hora en que se realizó la solicitud de compra.
-    sol_com_total DECIMAL(18, 2) NOT NULL, -- Monto total de la solicitud de compra.
-    FK_usuario INT, -- Clave foránea que referencia al usuario que realizó la solicitud de compra.
-    FK_proveedor INT, -- Clave foránea que referencia al proveedor asociado a la solicitud de compra.
-    FK_pre_alm_id INT, -- Clave foránea que referencia una de las claves de pre_alm
-    FK_pre_alm_presentacion INT, -- Clave foránea que referencia una de las claves de pre_alm
-    FK_pre_alm_almacen INT, -- Clave foránea que referencia una de las claves de pre_alm
-    PRIMARY KEY (sol_com_id)
-);
-
--- Tabla: SALARIO
-CREATE TABLE SALARIO (
-    sal_id INT NOT NULL, -- Identificador único del salario.
-    sal_monto DECIMAL(18, 2) NOT NULL, -- Monto del salario.
-    PRIMARY KEY (sal_id)
-);
-
--- Tabla: EMP_CAR_SAL
-CREATE TABLE EMP_CAR_SAL (
-    emp_car_sal_id INT NOT NULL, -- Identificador único del salario del cargo del empleado.
-    FK_emp_car_id INT NOT NULL,
-    FK_emp_car_empleado INT NOT NULL,
-    FK_emp_car_cargo INT NOT NULL,
-    FK_salario INT NOT NULL, -- Clave foránea que referencia al salario asociado al cargo del empleado.
-    emp_car_sal_fecha_inicio DATETIME NOT NULL, -- Fecha de inicio del salario del cargo del empleado.
-    emp_car_sal_fecha_hora_fin DATETIME, -- Fecha y hora de fin del salario del cargo del empleado.
-    PRIMARY KEY (emp_car_sal_id, FK_emp_car_id, FK_emp_car_empleado, FK_emp_car_cargo, FK_salario)
-);
-
--- Tabla: HORARIO
-CREATE TABLE HORARIO (
-    hor_id INT NOT NULL, -- Identificador único del horario.
-    hor_dia VARCHAR(50) NOT NULL CHECK (hor_dia IN ('Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo')), -- Día del horario (Lunes, Martes, etc.).
-    hor_hora_inicio DATETIME NOT NULL, -- Hora de inicio del horario.
-    hor_hora_fin DATETIME NOT NULL, -- Hora de fin del horario.
-    PRIMARY KEY (hor_id)
-);
-
--- Tabla: EMP_CAR_HOR
-CREATE TABLE EMP_CAR_HOR (
-    emp_car_hor_id INT NOT NULL, -- Identificador único de la relación entre el cargo del empleado y el horario.
-    FK_emp_car_id INT NOT NULL,
-    FK_emp_car_empleado INT NOT NULL,
-    FK_emp_car_cargo INT NOT NULL,
-    FK_horario INT NOT NULL, -- Clave foránea que referencia el horario asociado al cargo del empleado.
-    PRIMARY KEY (emp_car_hor_id, FK_emp_car_id, FK_emp_car_empleado, FK_emp_car_cargo, FK_horario)
-);
-
--- Tabla: ASISTENCIA
-CREATE TABLE ASISTENCIA (
-    asi_id INT NOT NULL, -- Identificador único de la asistencia.
-    FK_emp_car_id INT NOT NULL,
-    FK_emp_car_empleado INT NOT NULL,
-    FK_emp_car_cargo INT NOT NULL,
-    asi_hora_inicio DATETIME NOT NULL, -- Hora de inicio de la asistencia.
-    asi_hora_fin DATETIME, -- Hora de fin de la asistencia.
-    asi_pagado BOOLEAN, -- Indicador si la asistencia fue pagada.
-    PRIMARY KEY (asi_id, FK_emp_car_id, FK_emp_car_empleado, FK_emp_car_cargo)
-);
-
--- Tabla: LUGAR_TIENDA
-CREATE TABLE LUGAR_TIENDA (
-    lug_tie_id INT NOT NULL, -- Identificador único de la relación entre lugar y tienda.
-    lug_tie_nombre VARCHAR(255) NOT NULL, -- Nombre del lugar.
-    lug_tie_tipo VARCHAR(255) NOT NULL, -- Tipo de lugar.
-    FK_lugar_tienda INT, -- Clave foránea que hace referencia al lugar dentro de la tienda.
-    FK_tienda INT NOT NULL, -- Clave foránea que hace referencia a la tienda
-    PRIMARY KEY (lug_tie_id)
-);
-
--- Tabla: ANAQUEL
-CREATE TABLE ANAQUEL (
-    ana_id INT NOT NULL, -- Identificador único del anaquel.
-    ana_nombre VARCHAR(255) NOT NULL, -- Nombre del anaquel.
-    FK_lugar_tienda INT NOT NULL, -- Clave foránea que hace referencia al lugar dentro de la tienda donde esta anaquel.
-    PRIMARY KEY (ana_id)
-);
-
--- Tabla: INVENTARIO
-CREATE TABLE INVENTARIO (
-    inv_id INT NOT NULL, -- Identificador único del inventario.
-    FK_pre_alm_id INT NOT NULL, 
-    FK_pre_alm_presentacion INT NOT NULL, 
-    FK_pre_alm_almacen INT NOT NULL, 
-    inv_cantidad INT NOT NULL, -- Cantidad de artículos en el inventario.
-    FK_anaquel INT NOT NULL, -- Clave foránea que referencia el anaquel donde se encuentra el inventario.
-    PRIMARY KEY (inv_id, FK_pre_alm_id, FK_pre_alm_presentacion, FK_pre_alm_almacen)
-);
-
--- Tabla: VENTA_FISICA
-CREATE TABLE VENTA_FISICA (
-    ven_fis_id INT NOT NULL, -- Identificador único de la venta física.
-    ven_fis_fecha DATETIME NOT NULL, -- Fecha y hora en que se realizó la venta física.
-    ven_fis_total DECIMAL(18, 2) NOT NULL, -- Monto total de la venta física.
-    FK_cliente INT NOT NULL, -- Clave foránea que referencia al cliente asociado a la venta física.
-    FK_tienda INT NOT NULL, -- Clave foránea que referencia a la tienda asociada a la venta física.
-    FK_oferta INT, -- Clave foránea que referencia a la oferta aplicada en la venta física (puede ser nulo si no hay oferta).
-    PRIMARY KEY (ven_fis_id)
-);
-
--- Tabla: DETALLE_VENTA_FISICA
-CREATE TABLE DETALLE_VENTA_FISICA (
-    det_ven_fis_id INT NOT NULL, -- Identificador único del detalle de venta física.
-    FK_ven_fisica INT NOT NULL, -- Clave foránea que referencia la venta física asociada al detalle.
-    FK_inv_id INT NOT NULL,
-    FK_inv_pre_alm_id INT NOT NULL,
-    FK_inv_pre_alm_presentacion INT NOT NULL,
-    FK_inv_pre_alm_almacen INT NOT NULL,
-    det_ven_fis_precio_unitario DECIMAL(18, 2) NOT NULL, -- Precio unitario del detalle de venta física.
-    det_ven_fis_cantidad INT NOT NULL, -- Cantidad del detalle de venta física.
-    PRIMARY KEY (det_ven_fis_id, FK_ven_fisica, FK_inv_id, FK_inv_pre_alm_id, FK_inv_pre_alm_presentacion, FK_inv_pre_alm_almacen)
-);
-
--- Tabla: VENTA_ONLINE
-CREATE TABLE VENTA_ONLINE (
-    ven_onl_id INT NOT NULL, -- Identificador único de la venta en línea.
-    ven_onl_fecha DATETIME NOT NULL, -- Fecha y hora en que se realizó la venta en línea.
-    ven_onl_total DECIMAL(18, 2) NOT NULL, -- Monto total de la venta en línea.
-    FK_usuario INT NOT NULL, -- Clave foránea que referencia al usuario que realizó la venta en línea.
-    FK_tienda INT NOT NULL, -- Clave foránea que referencia a la tienda asociada a la venta en línea.
-    FK_oferta INT, -- Clave foránea que referencia a la oferta aplicada en la venta en línea.
-    PRIMARY KEY (ven_onl_id)
-);
-
--- Tabla: DETALLE_VENTA_ONLINE
-CREATE TABLE DETALLE_VENTA_ONLINE (
-    det_ven_onl_id INT NOT NULL, -- Identificador único del detalle de venta en línea.
-    FK_ven_online INT NOT NULL, -- Clave foránea que referencia la venta en línea asociada al detalle.
-    FK_pre_alm_id INT NOT NULL,
-    FK_pre_alm_presentacion INT NOT NULL,
-    FK_pre_alm_almacen INT NOT NULL,
-    det_ven_onl_precio_unitario DECIMAL(18, 2) NOT NULL, -- Precio unitario del detalle de venta en línea.
-    det_ven_onl_cantidad INT NOT NULL, -- Cantidad del detalle de venta en línea.
-    PRIMARY KEY (det_ven_onl_id, FK_ven_online, FK_pre_alm_id, FK_pre_alm_presentacion, FK_pre_alm_almacen)
-);
-
--- Tabla: AFILIACION
-CREATE TABLE AFILIACION (
-    afi_id INT NOT NULL, -- Identificador único de la afiliación.
-    afi_nombre VARCHAR(255) NOT NULL, -- Nombre de la afiliación.
-    afi_monto DECIMAL(18, 2) NOT NULL, -- Monto de la afiliación.
-    FK_tienda INT NOT NULL, -- Clave foránea que referencia a la tienda.
-    FK_proveedor INT NOT NULL, -- Clave foránea que referencia al proveedor.
-    PRIMARY KEY (afi_id)
-);
-
--- Tabla: METODO_PAGO
-CREATE TABLE METODO_PAGO (
-    met_pag_id INT NOT NULL, -- Identificador único del método de pago.
-    efe_denominacion DECIMAL(18, 2), -- Denominación del billete en efectivo.
-    che_num_cheque VARCHAR(255), -- Número de cheque.
-    tar_deb_numero VARCHAR(255), -- Número de tarjeta de débito.
-    tar_deb_vencimiento DATETIME, -- Fecha de vencimiento de la tarjeta de débito.
-    tar_deb_banco VARCHAR(255), -- Banco de la tarjeta de débito.
-    tar_cre_numero VARCHAR(255), -- Número de tarjeta de crédito.
-    tar_cre_vencimiento DATETIME, -- Fecha de vencimiento de la tarjeta de crédito.
-    met_pag_tipo VARCHAR(50) NOT NULL CHECK (met_pag_tipo IN ('EFECTIVO', 'CHEQUE', 'TARJETA_DEBITO', 'TARJETA_CREDITO', 'PUNTO')), -- Tipo de método de pago.
-    FK_cuenta_punto INT, -- Clave foránea que referencia la cuenta del punto de venta asociada al método de pago.
-    FK_his_pre_pun INT, -- Clave foránea que referencia el historial de precio del punto de venta asociado al método de pago.
-    PRIMARY KEY (met_pag_id)
-);
-
--- Tabla: PAGO
-CREATE TABLE PAGO (
-    pag_id INT NOT NULL, -- Identificador único del pago.
-    pag_fecha DATETIME NOT NULL, -- Fecha en que se realizó el pago.
-    pag_monto DECIMAL(18, 2) NOT NULL, -- Monto del pago.
-    FK_venta_online INT, -- Clave foránea que referencia la venta en línea asociada al pago.
-    FK_venta_fisica INT, -- Clave foránea que referencia la venta física asociada al pago.
-    FK_afiliacion INT, -- Clave foránea que referencia la afiliación asociada al pago.
-    FK_metodo_pago INT NOT NULL, -- Clave foránea que referencia el método de pago utilizado.
-    FK_venta_evento INT, -- Clave foránea que referencia la venta del evento asociada al pago.
-    PRIMARY KEY (pag_id)
-);
-
--- Tabla: ESTATUS
-CREATE TABLE ESTATUS (
-    est_id INT NOT NULL, -- Identificador único del estatus.
-    est_tipo_estatus VARCHAR(255) NOT NULL, -- Tipo de estatus.
-    est_descripcion VARCHAR(255) NOT NULL, -- Descripción del estatus.
-    PRIMARY KEY (est_id)
-);
-
--- Tabla: SOL_COM_EST
-CREATE TABLE SOL_COM_EST (
-    sol_com_est_id INT NOT NULL, -- Identificador único del estado de la solicitud de compra.
-    sol_com_fecha_inicio DATETIME NOT NULL, -- Fecha de inicio del estado de la solicitud de compra.
-    sol_com_fecha_fin DATETIME, -- Fecha de fin del estado de la solicitud de compra.
-    FK_estatus INT NOT NULL, -- Clave foránea que referencia el estatus de la solicitud de compra.
-    FK_sol_com INT NOT NULL, -- Clave foránea que referencia la solicitud de compra.
-    PRIMARY KEY (sol_com_est_id, FK_estatus, FK_sol_com)
-);
-
--- Tabla: AFI_EST
-CREATE TABLE AFI_EST (
-    afi_est_id INT NOT NULL, -- Identificador único del estado de la afiliación.
-    afi_est_fecha_inicio DATETIME NOT NULL, -- Fecha de inicio del estado de la afiliación.
-    afi_est_fecha_final DATETIME, -- Fecha final del estado de la afiliación.
-    FK_estatus INT NOT NULL, -- Clave foránea que referencia el estatus de la afiliación.
-    FK_afiliacion INT NOT NULL, -- Clave foránea que referencia la afiliación.
-    PRIMARY KEY (afi_est_id)
-);
-
--- Tabla: VEN_ONL_EST
-CREATE TABLE VEN_ONL_EST (
-    ven_onl_est_id INT NOT NULL, -- Identificador único del estado de la venta en línea.
-    ven_onl_est_fecha_inicio DATETIME NOT NULL, -- Fecha de inicio del estado de la venta en línea.
-    ven_onl_est_fecha_fin DATETIME, -- Fecha de fin del estado de la venta en línea (puede ser nula).
-    FK_estatus INT NOT NULL, -- Clave foránea que referencia el estatus de la venta en línea.
-    FK_venta_online INT NOT NULL, -- Clave foránea que referencia la venta en línea.
-    PRIMARY KEY (ven_onl_est_id)
-);
-
--- Tabla: SOLICITUD_REPOSICION
-CREATE TABLE SOLICITUD_REPOSICION (
-    sol_rep_id INT NOT NULL, -- Identificador único de la solicitud de reposición.
-    sol_rep_fecha DATETIME NOT NULL, -- Fecha y hora en que se realizó la solicitud de reposición.
-    FK_usuario INT, -- Clave foránea que referencia al usuario que realizó la solicitud de reposición.
-    PRIMARY KEY (sol_rep_id)
-);
-
--- Tabla: SOL_REP_EST
-CREATE TABLE SOL_REP_EST (
-    sol_rep_est_id INT NOT NULL, -- Identificador único del estado de la solicitud de reposición.
-    sol_rep_est_fecha_inicio DATETIME NOT NULL, -- Fecha de inicio del estado de la solicitud de reposición.
-    sol_rep_est_fecha_fin DATETIME, -- Fecha de fin del estado de la solicitud de reposición (puede ser nula).
-    FK_estatus INT NOT NULL, -- Clave foránea que referencia el estatus de la solicitud de reposición.
-    FK_solicitud_reposicion INT NOT NULL, -- Clave foránea que referencia la solicitud de reposición.
-    PRIMARY KEY (sol_rep_est_id)
-);
-
--- Tabla: PRIVILEGIO
-CREATE TABLE PRIVILEGIO (
-    pri_id INT NOT NULL, -- Identificador único del privilegio.
-    pri_accion VARCHAR(255) NOT NULL, -- Accion asociada al privilegio.
-    pri_vista VARCHAR(255) NOT NULL, -- Vista asociada al privilegio.
-    PRIMARY KEY (pri_id)
-);
-
--- Tabla: PRI_ROL
-CREATE TABLE PRI_ROL (
-    pri_rol_id INT NOT NULL, -- Identificador único del rol con privilegio.
-    FK_rol INT NOT NULL, -- Clave foránea que referencia el rol asociado al privilegio.
-    FK_privilegio INT NOT NULL, -- Clave foránea que referencia el privilegio asociado al rol.
-    PRIMARY KEY (pri_rol_id, FK_rol, FK_privilegio)
-);
-
--- Tabla: TIP_EVE_TIP_EVE (Manejando columnas duplicadas)
-CREATE TABLE TIP_EVE_TIP_EVE (
-    tip_eve_tip_eve_id INT NOT NULL, -- Identificador único.
-    FK_tip_eve_1 INT, -- Clave foránea que referencia al tipo de evento.
-    FK_tip_eve_2 INT, -- Clave foránea que referencia al tipo de evento.
-    PRIMARY KEY (tip_eve_tip_eve_id)
-);
-
--- Tabla: TIPO_BENEFICIO
-CREATE TABLE TIPO_BENEFICIO (
-    tip_ben_id INT NOT NULL, -- Identificador único del tipo de beneficio.
-    tip_ben_nombre VARCHAR(255) NOT NULL, -- Nombre del tipo de beneficio.
-    tip_ben_descripcion VARCHAR(255) NOT NULL, -- Descripción del tipo de beneficio.
-    PRIMARY KEY (tip_ben_id)
-);
-
--- Tabla: EMP_TIP_BEN
-CREATE TABLE EMP_TIP_BEN (
-    emp_tic_ben_id INT NOT NULL, -- Identificador único de la relación.
-    FK_tip_beneficio INT NOT NULL, -- Clave foránea que referencia el tipo de beneficio.
-    FK_empleado INT NOT NULL, -- Clave foránea que referencia al empleado.
-    PRIMARY KEY (emp_tic_ben_id, FK_tip_beneficio, FK_empleado)
-);
-
--- Tabla: VACACION
-CREATE TABLE VACACION (
-    vac_id INT NOT NULL, -- Identificador único de la vacación.
-    vac_nombre VARCHAR(255) NOT NULL, -- Nombre de la vacación.
-    vac_descripcion VARCHAR(255) NOT NULL, -- Descripción de la vacación.
-    PRIMARY KEY (vac_id)
-);
-
--- Tabla: EMP_VAC
-CREATE TABLE EMP_VAC (
-    emp_vac_id INT NOT NULL, -- Identificador único de la vacación del empleado.
-    emp_vac_fecha_inicio DATETIME NOT NULL, -- Fecha de inicio de la vacación del empleado.
-    emp_vac_fecha_fin DATETIME, -- Fecha de fin de la vacación del empleado.
-    FK_vacacion INT NOT NULL, -- Clave foránea que referencia la vacación.
-    FK_empleado INT NOT NULL, -- Clave foránea que referencia al empleado.
-    PRIMARY KEY (emp_vac_id, FK_vacacion, FK_empleado)
-);
-
--- Tabla: DETALLE_COMPRA
-CREATE TABLE DETALLE_COMPRA (
-    det_com_cantidad INT NOT NULL, -- Cantidad del detalle de compra.
-    det_com_precio_unit DECIMAL(18, 2) NOT NULL, -- Precio unitario del detalle de compra.
-    FK_solicitud_compra INT NOT NULL, -- Clave foránea que referencia la solicitud de compra.
-    FK_presentacion INT NOT NULL, -- Clave foránea que referencia la cerveza.
-    PRIMARY KEY (FK_solicitud_compra, FK_presentacion)
-);
-
--- Tabla: ESTILO_CERVEZA
-CREATE TABLE ESTILO_CERVEZA (
-    est_cer_id INT NOT NULL, -- Identificador único del estilo de cerveza.
-    est_cer_nombre VARCHAR(255) NOT NULL, -- Nombre del estilo de cerveza.
-    est_cer_descripcion VARCHAR(255) NOT NULL, -- Descripción del estilo de cerveza.
-    FK_tipo_cerveza INT NOT NULL, -- Clave foránea que referencia el tipo de cerveza.
-    PRIMARY KEY (est_cer_id)
-);
-
--- Tabla: CARACTERISTICA
-CREATE TABLE CARACTERISTICA (
-    carac_id INT NOT NULL, -- Identificador único de la característica.
-    carac_nombre VARCHAR(255) NOT NULL, -- Nombre de la característica.
-    carac_descripcion VARCHAR(255) NOT NULL, -- Descripción de la característica.
-    carac_valor DECIMAL(10, 2) NOT NULL, -- Valor numérico de la característica.
-    PRIMARY KEY (carac_id)
-);
-
--- Tabla: CAR_CER
-CREATE TABLE CAR_CER (
-    carac_distintiva VARCHAR(255) NOT NULL, -- Valor que representa una característica distintiva.
-    FK_caracteristica INT NOT NULL, -- Clave foránea a una característica específica.
-    FK_cerveza INT NOT NULL, -- Clave foránea a la cerveza.
-    PRIMARY KEY (FK_caracteristica, FK_cerveza)
-);
-
--- Tabla: DIMENSION
-CREATE TABLE DIMENSION (
-    dim_id INT NOT NULL, -- Identificador único de la dimensión.
-    dim_nombre VARCHAR(255) NOT NULL, -- Nombre de la dimensión (Corregido de Numeric).
-    dim_unidad_medida VARCHAR(50) NOT NULL, -- Unidad de medida (Corregido de Numeric).
-    PRIMARY KEY (dim_id)
-);
-
--- Tabla: PRE_DIM
-CREATE TABLE PRE_DIM (
-    FK_presentacion INT NOT NULL, -- Clave foránea que referencia la presentación.
-    FK_dimension INT NOT NULL, -- Clave foránea que referencia la dimensión.
-    pre_dim_valor DECIMAL(10, 2) NOT NULL, -- Medida específica de la dimensión para la presentación.
-    PRIMARY KEY (FK_presentacion, FK_dimension)
-);
-
--- Tabla: INGREDIENTE
-CREATE TABLE INGREDIENTE (
-    ing_id INT NOT NULL, -- Identificador único del ingrediente.
-    ing_nombre VARCHAR(255) NOT NULL, -- Nombre del ingrediente.
-    ing_descripcion VARCHAR(255) NOT NULL, -- Descripción del ingrediente.
-    PRIMARY KEY (ing_id)
-);
-
--- Tabla: INV_SOL_REP
-CREATE TABLE INV_SOL_REP (
-    inv_sol_rep_id INT NOT NULL, -- Identificador único de la relación.
-    FK_solicitud_reposicion INT NOT NULL, 
-    FK_inv_id INT NOT NULL,
-    FK_inv_pre_alm_id INT NOT NULL,
-    FK_inv_pre_alm_presentacion INT NOT NULL,
-    FK_inv_pre_alm_almacen INT NOT NULL,
-    inv_sol_rep_fecha DATETIME NOT NULL, -- Fecha de la relación.
-    PRIMARY KEY (inv_sol_rep_id, FK_solicitud_reposicion, FK_inv_id, FK_inv_pre_alm_id, FK_inv_pre_alm_presentacion, FK_inv_pre_alm_almacen)
-);
-
--- Tabla: HISTORICO_PRECIO_CERVEZA
-CREATE TABLE HISTORICO_PRECIO_CERVEZA (
-    his_pre_cer_id INT NOT NULL, -- Identificador único del precio histórico.
-    his_pre_cer_precio DECIMAL(18, 2) NOT NULL, -- Precio histórico de la cerveza.
-    his_pre_cer_fecha_inicio DATETIME NOT NULL, -- Fecha de inicio del precio.
-    his_pre_cer_fecha_fin DATETIME, -- Fecha de fin del precio.
-    FK_pre_alm_id INT NOT NULL, 
-    FK_pre_alm_presentacion INT NOT NULL, 
-    FK_pre_alm_almacen INT NOT NULL, 
-    PRIMARY KEY (his_pre_cer_id)
-);
-
--- Tabla: RECETA
-CREATE TABLE RECETA (
-    rec_id INT NOT NULL, -- Identificador único de la receta.
-    rec_nombre VARCHAR(255) NOT NULL, -- Nombre de la receta.
-    rec_descripcion VARCHAR(255) NOT NULL, -- Descripción de la receta.
-    PRIMARY KEY (rec_id)
-);
-
--- Tabla: INSTRUCCION
-CREATE TABLE INSTRUCCION (
-    ins_id INT NOT NULL, -- Identificador único de la instrucción.
-    ins_descripcion VARCHAR(1000) NOT NULL, -- Descripción detallada de la instrucción.
-    PRIMARY KEY (ins_id)
-);
-
--- Tabla: REC_INS
-CREATE TABLE REC_INS (
-    rec_ins_id INT NOT NULL, 
-    FK_receta INT NOT NULL, 
-    FK_instruccion INT NOT NULL,
-    PRIMARY KEY (rec_ins_id)
-);
-
--- Tabla: REC_ING
-CREATE TABLE REC_ING (
-    rec_ing_id INT NOT NULL, -- Identificador único.
-    FK_receta INT NOT NULL, -- Clave foránea que referencia a la receta.
-    FK_ingrediente INT NOT NULL, -- Clave foránea que referencia al ingrediente.
-    rec_ing_cantidad DECIMAL(10, 3) NOT NULL,
-    PRIMARY KEY (rec_ing_id, FK_receta, FK_ingrediente)
-);
-
--- Tabla: PAGO_EFECTIVO (Nombre corregido)
-CREATE TABLE PAGO_EFECTIVO (
-    pag_efe_id INT NOT NULL, -- Identificador único del pago en efectivo.
-    pag_efe_monto DECIMAL(18, 2) NOT NULL, -- Monto del pago en efectivo.
-    pag_efe_fecha DATETIME NOT NULL, -- Fecha del pago en efectivo.
-    FK_solicitud_compra INT NOT NULL, -- Clave foránea que referencia la solicitud de compra.
-    FK_metodo_pago INT NOT NULL, -- Clave foránea que referencia el método de pago.
-    PRIMARY KEY (pag_efe_id)
-);
-
--- Tabla: MONEDA
-CREATE TABLE MONEDA (
-    mon_id INT NOT NULL, -- Identificador único de la moneda.
-    mon_tipo VARCHAR(255) NOT NULL, -- Tipo o nombre de la moneda.
-    mon_valor_cambio DECIMAL(18, 6) NOT NULL, -- Valor de cambio de la moneda.
-    PRIMARY KEY (mon_id)
-);
-
--- Tabla: HISTORICO_MONEDA
-CREATE TABLE HISTORICO_MONEDA (
-    his_mon_id INT NOT NULL, -- Identificador único.
-    his_mon_fecha_inicio DATETIME NOT NULL, -- Fecha de inicio (Corregido).
-    his_mon_valor_cambio DECIMAL(18, 6) NOT NULL, -- Monto de la afiliación.
-    his_mon_fecha_fin DATETIME NOT NULL, -- Fecha de fin (Corregido).
-    FK_moneda INT NOT NULL, -- Clave foránea a la moneda.
-    PRIMARY KEY (his_mon_id)
-);
-
--- Tabla: CUENTA_PUNTO (Manejando columnas duplicadas)
-CREATE TABLE CUENTA_PUNTO (
-    cue_pun_id INT NOT NULL, -- Identificador único de la cuenta del punto de venta.
-    cue_pun_cantidad DECIMAL(18, 2) NOT NULL, -- Cantidad en la cuenta del punto de venta.
-    FK_metodo_pago_1 INT NOT NULL,
-    FK_metodo_pago_2 INT NOT NULL,
-    PRIMARY KEY (cue_pun_id)
-);
-
--- Tabla: HISTORICO_PRECIO_PUNTO
-CREATE TABLE HISTORICO_PRECIO_PUNTO (
-    his_pre_pun_id INT NOT NULL, -- Identificador único del precio histórico.
-    his_pre_pun_valor DECIMAL(18, 2) NOT NULL, -- Valor numérico del precio histórico.
-    his_pre_pun_fecha_inicio DATETIME NOT NULL, -- Fecha de inicio (Corregido).
-    his_pre_pun_fecha_fin DATETIME NOT NULL, -- Fecha de fin (Corregido).
-    PRIMARY KEY (his_pre_pun_id)
-);
-
--- Tabla: CONTACTO_PROVEEDOR
-CREATE TABLE CONTACTO_PROVEEDOR (
-    con_pro_id INT NOT NULL, -- Identificador único del contacto del proveedor.
-    con_pro_nombre VARCHAR(255) NOT NULL, -- Nombre del contacto.
-    con_pro_apellido VARCHAR(255) NOT NULL, -- Apellido del contacto.
-    FK_proveedor INT NOT NULL, -- Clave foránea que referencia al proveedor.
-    PRIMARY KEY (con_pro_id)
-);
-
--- Tabla: CONTACTO_CLIENTE
-CREATE TABLE CONTACTO_CLIENTE (
-    con_cli_id INT NOT NULL, -- Identificador único del contacto del cliente.
-    con_cli_nombre VARCHAR(255) NOT NULL, -- Nombre del contacto.
-    con_cli_apellido VARCHAR(255) NOT NULL, -- Apellido del contacto.
-    FK_cliente INT NOT NULL, -- Clave foránea que referencia al cliente.
-    PRIMARY KEY (con_cli_id)
-);
-
--- Tabla: CORREO_ELECTRONICO
-CREATE TABLE CORREO_ELECTRONICO (
-    cor_ele_id INT NOT NULL, -- Identificador único del correo electrónico.
-    cor_ele_direccion VARCHAR(255) NOT NULL, -- Dirección de correo electrónico.
-    FK_empleado INT, 
-    FK_cliente INT, 
-    FK_contacto_cliente INT,
-    FK_contacto_proveedor INT,
-    FK_proveedor INT, 
-    PRIMARY KEY (cor_ele_id)
-);
-
--- Tabla: TELEFONO
-CREATE TABLE TELEFONO (
-    tel_id INT NOT NULL, -- Identificador único del teléfono.
-    tel_codigo_area VARCHAR(10) NOT NULL, -- Código de área del teléfono.
-    tel_numero VARCHAR(20) NOT NULL, -- Número de teléfono.
-    FK_empleado INT,
-    FK_cliente INT,
-    FK_contacto_cliente INT,
-    FK_contacto_proveedor INT,
-    FK_proveedor INT,
-    PRIMARY KEY (tel_id)
-);
-
--- Tabla: TIPO_ESTILO_CERVEZA
-CREATE TABLE TIPO_ESTILO_CERVEZA (
-    tip_est_cer_id INT NOT NULL, -- Identificador único.
-    tip_est_cer_nombre VARCHAR(255) NOT NULL, -- Nombre.
-    tip_est_cer_descripcion VARCHAR(255) NOT NULL, -- Descripción (Corregido).
-    FK_tipo_cerveza INT NOT NULL,
-    FK_estilo_cerveza INT NOT NULL,
-    PRIMARY KEY (tip_est_cer_id)
-);
-
-
-/************************************************************/
-/************** CREACIÓN DE CLAVES FORÁNEAS *****************/
-/************************************************************/
-
--- LUGAR
-ALTER TABLE LUGAR ADD CONSTRAINT FK_LUGAR_LUGAR FOREIGN KEY (FK_lugar) REFERENCES LUGAR (lug_id);
-
--- TIENDA
-ALTER TABLE TIENDA ADD CONSTRAINT FK_TIENDA_LUGAR FOREIGN KEY (FK_lugar) REFERENCES LUGAR (lug_id);
-
--- EMPLEADO
-ALTER TABLE EMPLEADO ADD CONSTRAINT FK_EMPLEADO_LUGAR FOREIGN KEY (FK_lugar) REFERENCES LUGAR (lug_id);
-ALTER TABLE EMPLEADO ADD CONSTRAINT FK_EMPLEADO_TIENDA FOREIGN KEY (FK_tienda) REFERENCES TIENDA (tie_id);
-
--- EMP_CAR
-ALTER TABLE EMP_CAR ADD CONSTRAINT FK_EMPCAR_EMPLEADO FOREIGN KEY (FK_empleado) REFERENCES EMPLEADO (emp_id);
-ALTER TABLE EMP_CAR ADD CONSTRAINT FK_EMPCAR_CARGO FOREIGN KEY (FK_cargo) REFERENCES CARGO (car_id);
-
--- CLIENTE
-ALTER TABLE CLIENTE ADD CONSTRAINT FK_CLIENTE_LUGAR FOREIGN KEY (FK_lugar) REFERENCES LUGAR (lug_id);
-
--- PROVEEDOR
-ALTER TABLE PROVEEDOR ADD CONSTRAINT FK_PROVEEDOR_LUGAR FOREIGN KEY (FK_lugar) REFERENCES LUGAR (lug_id);
-
--- USUARIO
-ALTER TABLE USUARIO ADD CONSTRAINT FK_USUARIO_EMPCAR FOREIGN KEY (FK_emp_car1, FK_emp_car2, FK_emp_car3) REFERENCES EMP_CAR (emp_car_id, FK_empleado, FK_cargo);
-ALTER TABLE USUARIO ADD CONSTRAINT FK_USUARIO_CLIENTE FOREIGN KEY (FK_cliente) REFERENCES CLIENTE (cli_id);
-ALTER TABLE USUARIO ADD CONSTRAINT FK_USUARIO_PROVEEDOR FOREIGN KEY (FK_proveedor) REFERENCES PROVEEDOR (pro_id);
-ALTER TABLE USUARIO ADD CONSTRAINT FK_USUARIO_ROL FOREIGN KEY (FK_rol) REFERENCES ROL (rol_id);
-
--- EVENTO
-ALTER TABLE EVENTO ADD CONSTRAINT FK_EVENTO_TIPOEVENTO FOREIGN KEY (FK_tip_eve) REFERENCES TIPO_EVENTO (tip_eve_id);
-
--- VENTA_EVENTO
-ALTER TABLE VENTA_EVENTO ADD CONSTRAINT FK_VENTAEVENTO_EVENTO FOREIGN KEY (FK_evento) REFERENCES EVENTO (eve_id);
-
--- ASISTENCIA_EVENTO
-ALTER TABLE ASISTENCIA_EVENTO ADD CONSTRAINT FK_ASISTENCIAEVENTO_EVENTO FOREIGN KEY (FK_evento) REFERENCES EVENTO (eve_id);
-ALTER TABLE ASISTENCIA_EVENTO ADD CONSTRAINT FK_ASISTENCIAEVENTO_CLIENTE FOREIGN KEY (FK_cliente) REFERENCES CLIENTE (cli_id);
-
--- VENTA_BOLETO_EVENTO
-ALTER TABLE VENTA_BOLETO_EVENTO ADD CONSTRAINT FK_VENTABOLETO_ASISTENCIA FOREIGN KEY (FK_asi_eve_id, FK_asi_eve_evento) REFERENCES ASISTENCIA_EVENTO (asi_eve_id, FK_evento);
-
--- EVE_PRO
-ALTER TABLE EVE_PRO ADD CONSTRAINT FK_EVEPRO_EVENTO FOREIGN KEY (FK_evento) REFERENCES EVENTO (eve_id);
-ALTER TABLE EVE_PRO ADD CONSTRAINT FK_EVEPRO_PROVEEDOR FOREIGN KEY (FK_proveedor) REFERENCES PROVEEDOR (pro_id);
-
--- CERVEZA
-ALTER TABLE CERVEZA ADD CONSTRAINT FK_CERVEZA_TIPOCERVEZA FOREIGN KEY (FK_tipo_cerveza) REFERENCES TIPO_CERVEZA (tip_cer_id);
-
--- PRESENTACION
-ALTER TABLE PRESENTACION ADD CONSTRAINT FK_PRESENTACION_CERVEZA FOREIGN KEY (FK_cerveza) REFERENCES CERVEZA (cer_id);
-
--- ALMACEN
-ALTER TABLE ALMACEN ADD CONSTRAINT FK_ALMACEN_TIENDA FOREIGN KEY (FK_tienda) REFERENCES TIENDA (tie_id);
-
--- PRE_ALM
-ALTER TABLE PRE_ALM ADD CONSTRAINT FK_PREALM_PRESENTACION FOREIGN KEY (FK_presentacion) REFERENCES PRESENTACION (prese_id);
-ALTER TABLE PRE_ALM ADD CONSTRAINT FK_PREALM_ALMACEN FOREIGN KEY (FK_almacen) REFERENCES ALMACEN (alm_id);
-ALTER TABLE PRE_ALM ADD CONSTRAINT FK_PREALM_OFERTA FOREIGN KEY (FK_oferta) REFERENCES OFERTA (ofe_id);
-
--- EXISTENCIA_EVENTO
-ALTER TABLE EXISTENCIA_EVENTO ADD CONSTRAINT FK_EXISTENCIA_PRESENTACION FOREIGN KEY (FK_presentacion) REFERENCES PRESENTACION (prese_id);
-ALTER TABLE EXISTENCIA_EVENTO ADD CONSTRAINT FK_EXISTENCIA_EVEPRO FOREIGN KEY (FK_eve_pro_id, FK_eve_pro_evento, FK_eve_pro_proveedor) REFERENCES EVE_PRO (eve_pro_id, FK_evento, FK_proveedor);
-
--- DETALLE_VENTA_EVENTO
-ALTER TABLE DETALLE_VENTA_EVENTO ADD CONSTRAINT FK_DETALLEVENTA_VENTAEVENTO FOREIGN KEY (FK_ven_eve) REFERENCES VENTA_EVENTO (ven_eve_id);
-ALTER TABLE DETALLE_VENTA_EVENTO ADD CONSTRAINT FK_DETALLEVENTA_EXISTENCIA FOREIGN KEY (FK_exi_eve_id, FK_exi_eve_presentacion, FK_exi_eve_pro_id, FK_exi_eve_pro_evento, FK_exi_eve_pro_proveedor) REFERENCES EXISTENCIA_EVENTO (exi_eve_id, FK_presentacion, FK_eve_pro_id, FK_eve_pro_evento, FK_eve_pro_proveedor);
-
--- SOLICITUD_COMPRA
-ALTER TABLE SOLICITUD_COMPRA ADD CONSTRAINT FK_SOLCOMPRA_USUARIO FOREIGN KEY (FK_usuario) REFERENCES USUARIO (usu_id);
-ALTER TABLE SOLICITUD_COMPRA ADD CONSTRAINT FK_SOLCOMPRA_PROVEEDOR FOREIGN KEY (FK_proveedor) REFERENCES PROVEEDOR (pro_id);
-ALTER TABLE SOLICITUD_COMPRA ADD CONSTRAINT FK_SOLCOMPRA_PREALM FOREIGN KEY (FK_pre_alm_id, FK_pre_alm_presentacion, FK_pre_alm_almacen) REFERENCES PRE_ALM (pre_alm_id, FK_presentacion, FK_almacen);
-
--- EMP_CAR_SAL
-ALTER TABLE EMP_CAR_SAL ADD CONSTRAINT FK_EMPCARSAL_EMPCAR FOREIGN KEY (FK_emp_car_id, FK_emp_car_empleado, FK_emp_car_cargo) REFERENCES EMP_CAR (emp_car_id, FK_empleado, FK_cargo);
-ALTER TABLE EMP_CAR_SAL ADD CONSTRAINT FK_EMPCARSAL_SALARIO FOREIGN KEY (FK_salario) REFERENCES SALARIO (sal_id);
-
--- EMP_CAR_HOR
-ALTER TABLE EMP_CAR_HOR ADD CONSTRAINT FK_EMPCARHOR_EMPCAR FOREIGN KEY (FK_emp_car_id, FK_emp_car_empleado, FK_emp_car_cargo) REFERENCES EMP_CAR (emp_car_id, FK_empleado, FK_cargo);
-ALTER TABLE EMP_CAR_HOR ADD CONSTRAINT FK_EMPCARHOR_HORARIO FOREIGN KEY (FK_horario) REFERENCES HORARIO (hor_id);
-
--- ASISTENCIA
-ALTER TABLE ASISTENCIA ADD CONSTRAINT FK_ASISTENCIA_EMPCAR FOREIGN KEY (FK_emp_car_id, FK_emp_car_empleado, FK_emp_car_cargo) REFERENCES EMP_CAR (emp_car_id, FK_empleado, FK_cargo);
-
--- LUGAR_TIENDA
-ALTER TABLE LUGAR_TIENDA ADD CONSTRAINT FK_LUGARTIENDRA_LUGAR FOREIGN KEY (FK_lugar_tienda) REFERENCES LUGAR_TIENDA (lug_tie_id);
-ALTER TABLE LUGAR_TIENDA ADD CONSTRAINT FK_LUGARTIENDRA_TIENDA FOREIGN KEY (FK_tienda) REFERENCES TIENDA (tie_id);
-
--- ANAQUEL
-ALTER TABLE ANAQUEL ADD CONSTRAINT FK_ANAQUEL_LUGARTIENDRA FOREIGN KEY (FK_lugar_tienda) REFERENCES LUGAR_TIENDA (lug_tie_id);
-
--- INVENTARIO
-ALTER TABLE INVENTARIO ADD CONSTRAINT FK_INVENTARIO_PREALM FOREIGN KEY (FK_pre_alm_id, FK_pre_alm_presentacion, FK_pre_alm_almacen) REFERENCES PRE_ALM (pre_alm_id, FK_presentacion, FK_almacen);
-ALTER TABLE INVENTARIO ADD CONSTRAINT FK_INVENTARIO_ANAQUEL FOREIGN KEY (FK_anaquel) REFERENCES ANAQUEL (ana_id);
-
--- VENTA_FISICA
-ALTER TABLE VENTA_FISICA ADD CONSTRAINT FK_VENTAFISICA_CLIENTE FOREIGN KEY (FK_cliente) REFERENCES CLIENTE (cli_id);
-ALTER TABLE VENTA_FISICA ADD CONSTRAINT FK_VENTAFISICA_TIENDA FOREIGN KEY (FK_tienda) REFERENCES TIENDA (tie_id);
-ALTER TABLE VENTA_FISICA ADD CONSTRAINT FK_VENTAFISICA_OFERTA FOREIGN KEY (FK_oferta) REFERENCES OFERTA (ofe_id);
-
--- DETALLE_VENTA_FISICA
-ALTER TABLE DETALLE_VENTA_FISICA ADD CONSTRAINT FK_DETVENTAFIS_VENTAFISICA FOREIGN KEY (FK_ven_fisica) REFERENCES VENTA_FISICA (ven_fis_id);
-ALTER TABLE DETALLE_VENTA_FISICA ADD CONSTRAINT FK_DETVENTAFIS_INVENTARIO FOREIGN KEY (FK_inv_id, FK_inv_pre_alm_id, FK_inv_pre_alm_presentacion, FK_inv_pre_alm_almacen) REFERENCES INVENTARIO (inv_id, FK_pre_alm_id, FK_pre_alm_presentacion, FK_pre_alm_almacen);
-
--- VENTA_ONLINE
-ALTER TABLE VENTA_ONLINE ADD CONSTRAINT FK_VENTAONLINE_USUARIO FOREIGN KEY (FK_usuario) REFERENCES USUARIO (usu_id);
-ALTER TABLE VENTA_ONLINE ADD CONSTRAINT FK_VENTAONLINE_TIENDA FOREIGN KEY (FK_tienda) REFERENCES TIENDA (tie_id);
-ALTER TABLE VENTA_ONLINE ADD CONSTRAINT FK_VENTAONLINE_OFERTA FOREIGN KEY (FK_oferta) REFERENCES OFERTA (ofe_id);
-
--- DETALLE_VENTA_ONLINE
-ALTER TABLE DETALLE_VENTA_ONLINE ADD CONSTRAINT FK_DETVENTAONL_VENTAONLINE FOREIGN KEY (FK_ven_online) REFERENCES VENTA_ONLINE (ven_onl_id);
-ALTER TABLE DETALLE_VENTA_ONLINE ADD CONSTRAINT FK_DETVENTAONL_PREALM FOREIGN KEY (FK_pre_alm_id, FK_pre_alm_presentacion, FK_pre_alm_almacen) REFERENCES PRE_ALM (pre_alm_id, FK_presentacion, FK_almacen);
-
--- AFILIACION
-ALTER TABLE AFILIACION ADD CONSTRAINT FK_AFILIACION_TIENDA FOREIGN KEY (FK_tienda) REFERENCES TIENDA (tie_id);
-ALTER TABLE AFILIACION ADD CONSTRAINT FK_AFILIACION_PROVEEDOR FOREIGN KEY (FK_proveedor) REFERENCES PROVEEDOR (pro_id);
-
--- PAGO
-ALTER TABLE PAGO ADD CONSTRAINT FK_PAGO_VENTAONLINE FOREIGN KEY (FK_venta_online) REFERENCES VENTA_ONLINE (ven_onl_id);
-ALTER TABLE PAGO ADD CONSTRAINT FK_PAGO_VENTAFISICA FOREIGN KEY (FK_venta_fisica) REFERENCES VENTA_FISICA (ven_fis_id);
-ALTER TABLE PAGO ADD CONSTRAINT FK_PAGO_AFILIACION FOREIGN KEY (FK_afiliacion) REFERENCES AFILIACION (afi_id);
-ALTER TABLE PAGO ADD CONSTRAINT FK_PAGO_METODOPAGO FOREIGN KEY (FK_metodo_pago) REFERENCES METODO_PAGO (met_pag_id);
-ALTER TABLE PAGO ADD CONSTRAINT FK_PAGO_VENTAEVENTO FOREIGN KEY (FK_venta_evento) REFERENCES VENTA_EVENTO (ven_eve_id);
-
--- SOL_COM_EST
-ALTER TABLE SOL_COM_EST ADD CONSTRAINT FK_SOLCOMEST_ESTATUS FOREIGN KEY (FK_estatus) REFERENCES ESTATUS (est_id);
-ALTER TABLE SOL_COM_EST ADD CONSTRAINT FK_SOLCOMEST_SOLCOMPRA FOREIGN KEY (FK_sol_com) REFERENCES SOLICITUD_COMPRA (sol_com_id);
-
--- AFI_EST
-ALTER TABLE AFI_EST ADD CONSTRAINT FK_AFIEST_ESTATUS FOREIGN KEY (FK_estatus) REFERENCES ESTATUS (est_id);
-ALTER TABLE AFI_EST ADD CONSTRAINT FK_AFIEST_AFILIACION FOREIGN KEY (FK_afiliacion) REFERENCES AFILIACION (afi_id);
-
--- VEN_ONL_EST
-ALTER TABLE VEN_ONL_EST ADD CONSTRAINT FK_VENONLEST_ESTATUS FOREIGN KEY (FK_estatus) REFERENCES ESTATUS (est_id);
-ALTER TABLE VEN_ONL_EST ADD CONSTRAINT FK_VENONLEST_VENTAONLINE FOREIGN KEY (FK_venta_online) REFERENCES VENTA_ONLINE (ven_onl_id);
-
--- SOLICITUD_REPOSICION
-ALTER TABLE SOLICITUD_REPOSICION ADD CONSTRAINT FK_SOLREP_USUARIO FOREIGN KEY (FK_usuario) REFERENCES USUARIO (usu_id);
-
--- SOL_REP_EST
-ALTER TABLE SOL_REP_EST ADD CONSTRAINT FK_SOLREPEST_ESTATUS FOREIGN KEY (FK_estatus) REFERENCES ESTATUS (est_id);
-ALTER TABLE SOL_REP_EST ADD CONSTRAINT FK_SOLREPEST_SOLREP FOREIGN KEY (FK_solicitud_reposicion) REFERENCES SOLICITUD_REPOSICION (sol_rep_id);
-
--- PRI_ROL
-ALTER TABLE PRI_ROL ADD CONSTRAINT FK_PRIROL_ROL FOREIGN KEY (FK_rol) REFERENCES ROL (rol_id);
-ALTER TABLE PRI_ROL ADD CONSTRAINT FK_PRIROL_PRIVILEGIO FOREIGN KEY (FK_privilegio) REFERENCES PRIVILEGIO (pri_id);
-
--- TIP_EVE_TIP_EVE
-ALTER TABLE TIP_EVE_TIP_EVE ADD CONSTRAINT FK_TIPEVE_TIPEVE1 FOREIGN KEY (FK_tip_eve_1) REFERENCES TIPO_EVENTO (tip_eve_id);
-ALTER TABLE TIP_EVE_TIP_EVE ADD CONSTRAINT FK_TIPEVE_TIPEVE2 FOREIGN KEY (FK_tip_eve_2) REFERENCES TIPO_EVENTO (tip_eve_id);
-
--- EMP_TIP_BEN
-ALTER TABLE EMP_TIP_BEN ADD CONSTRAINT FK_EMPTIPBEN_TIPOBENEFICIO FOREIGN KEY (FK_tip_beneficio) REFERENCES TIPO_BENEFICIO (tip_ben_id);
-ALTER TABLE EMP_TIP_BEN ADD CONSTRAINT FK_EMPTIPBEN_EMPLEADO FOREIGN KEY (FK_empleado) REFERENCES EMPLEADO (emp_id);
-
--- EMP_VAC
-ALTER TABLE EMP_VAC ADD CONSTRAINT FK_EMPVAC_VACACION FOREIGN KEY (FK_vacacion) REFERENCES VACACION (vac_id);
-ALTER TABLE EMP_VAC ADD CONSTRAINT FK_EMPVAC_EMPLEADO FOREIGN KEY (FK_empleado) REFERENCES EMPLEADO (emp_id);
-
--- DETALLE_COMPRA
-ALTER TABLE DETALLE_COMPRA ADD CONSTRAINT FK_DETCOMPRA_SOLCOMPRA FOREIGN KEY (FK_solicitud_compra) REFERENCES SOLICITUD_COMPRA (sol_com_id);
-ALTER TABLE DETALLE_COMPRA ADD CONSTRAINT FK_DETCOMPRA_PRESENTACION FOREIGN KEY (FK_presentacion) REFERENCES PRESENTACION (prese_id);
-
--- ESTILO_CERVEZA
-ALTER TABLE ESTILO_CERVEZA ADD CONSTRAINT FK_ESTILOCER_TIPOCERVEZA FOREIGN KEY (FK_tipo_cerveza) REFERENCES TIPO_CERVEZA (tip_cer_id);
-
--- CAR_CER
-ALTER TABLE CAR_CER ADD CONSTRAINT FK_CARCER_CARACTERISTICA FOREIGN KEY (FK_caracteristica) REFERENCES CARACTERISTICA (carac_id);
-ALTER TABLE CAR_CER ADD CONSTRAINT FK_CARCER_CERVEZA FOREIGN KEY (FK_cerveza) REFERENCES CERVEZA (cer_id);
-
--- PRE_DIM
-ALTER TABLE PRE_DIM ADD CONSTRAINT FK_PREDIM_PRESENTACION FOREIGN KEY (FK_presentacion) REFERENCES PRESENTACION (prese_id);
-ALTER TABLE PRE_DIM ADD CONSTRAINT FK_PREDIM_DIMENSION FOREIGN KEY (FK_dimension) REFERENCES DIMENSION (dim_id);
-
--- INV_SOL_REP
-ALTER TABLE INV_SOL_REP ADD CONSTRAINT FK_INVSOLREP_SOLREP FOREIGN KEY (FK_solicitud_reposicion) REFERENCES SOLICITUD_REPOSICION (sol_rep_id);
-ALTER TABLE INV_SOL_REP ADD CONSTRAINT FK_INVSOLREP_INVENTARIO FOREIGN KEY (FK_inv_id, FK_inv_pre_alm_id, FK_inv_pre_alm_presentacion, FK_inv_pre_alm_almacen) REFERENCES INVENTARIO (inv_id, FK_pre_alm_id, FK_pre_alm_presentacion, FK_pre_alm_almacen);
-
--- HISTORICO_PRECIO_CERVEZA
-ALTER TABLE HISTORICO_PRECIO_CERVEZA ADD CONSTRAINT FK_HISPRECER_PREALM FOREIGN KEY (FK_pre_alm_id, FK_pre_alm_presentacion, FK_pre_alm_almacen) REFERENCES PRE_ALM (pre_alm_id, FK_presentacion, FK_almacen);
-
--- REC_INS
-ALTER TABLE REC_INS ADD CONSTRAINT FK_RECINS_RECETA FOREIGN KEY (FK_receta) REFERENCES RECETA (rec_id);
-ALTER TABLE REC_INS ADD CONSTRAINT FK_RECINS_INSTRUCCION FOREIGN KEY (FK_instruccion) REFERENCES INSTRUCCION (ins_id);
-
--- REC_ING
-ALTER TABLE REC_ING ADD CONSTRAINT FK_RECING_RECETA FOREIGN KEY (FK_receta) REFERENCES RECETA (rec_id);
-ALTER TABLE REC_ING ADD CONSTRAINT FK_RECING_INGREDIENTE FOREIGN KEY (FK_ingrediente) REFERENCES INGREDIENTE (ing_id);
-
--- PAGO_EFECTIVO
-ALTER TABLE PAGO_EFECTIVO ADD CONSTRAINT FK_PAGOEFE_SOLCOMPRA FOREIGN KEY (FK_solicitud_compra) REFERENCES SOLICITUD_COMPRA (sol_com_id);
-ALTER TABLE PAGO_EFECTIVO ADD CONSTRAINT FK_PAGOEFE_METODOPAGO FOREIGN KEY (FK_metodo_pago) REFERENCES METODO_PAGO (met_pag_id);
-
--- HISTORICO_MONEDA
-ALTER TABLE HISTORICO_MONEDA ADD CONSTRAINT FK_HISMON_MONEDA FOREIGN KEY (FK_moneda) REFERENCES MONEDA (mon_id);
-
--- CUENTA_PUNTO
-ALTER TABLE CUENTA_PUNTO ADD CONSTRAINT FK_CUENTAPUNTO_METPAGO1 FOREIGN KEY (FK_metodo_pago_1) REFERENCES METODO_PAGO (met_pag_id);
-ALTER TABLE CUENTA_PUNTO ADD CONSTRAINT FK_CUENTAPUNTO_METPAGO2 FOREIGN KEY (FK_metodo_pago_2) REFERENCES METODO_PAGO (met_pag_id);
-
--- CONTACTO_PROVEEDOR
-ALTER TABLE CONTACTO_PROVEEDOR ADD CONSTRAINT FK_CONTPROV_PROVEEDOR FOREIGN KEY (FK_proveedor) REFERENCES PROVEEDOR (pro_id);
-
--- CONTACTO_CLIENTE
-ALTER TABLE CONTACTO_CLIENTE ADD CONSTRAINT FK_CONTCLI_CLIENTE FOREIGN KEY (FK_cliente) REFERENCES CLIENTE (cli_id);
-
--- CORREO_ELECTRONICO
-ALTER TABLE CORREO_ELECTRONICO ADD CONSTRAINT FK_CORREO_EMPLEADO FOREIGN KEY (FK_empleado) REFERENCES EMPLEADO (emp_id);
-ALTER TABLE CORREO_ELECTRONICO ADD CONSTRAINT FK_CORREO_CLIENTE FOREIGN KEY (FK_cliente) REFERENCES CLIENTE (cli_id);
-ALTER TABLE CORREO_ELECTRONICO ADD CONSTRAINT FK_CORREO_CONTCLI FOREIGN KEY (FK_contacto_cliente) REFERENCES CONTACTO_CLIENTE (con_cli_id);
-ALTER TABLE CORREO_ELECTRONICO ADD CONSTRAINT FK_CORREO_CONTPROV FOREIGN KEY (FK_contacto_proveedor) REFERENCES CONTACTO_PROVEEDOR (con_pro_id);
-ALTER TABLE CORREO_ELECTRONICO ADD CONSTRAINT FK_CORREO_PROVEEDOR FOREIGN KEY (FK_proveedor) REFERENCES PROVEEDOR (pro_id);
-
--- TELEFONO
-ALTER TABLE TELEFONO ADD CONSTRAINT FK_TELEFONO_EMPLEADO FOREIGN KEY (FK_empleado) REFERENCES EMPLEADO (emp_id);
-ALTER TABLE TELEFONO ADD CONSTRAINT FK_TELEFONO_CLIENTE FOREIGN KEY (FK_cliente) REFERENCES CLIENTE (cli_id);
-ALTER TABLE TELEFONO ADD CONSTRAINT FK_TELEFONO_CONTCLI FOREIGN KEY (FK_contacto_cliente) REFERENCES CONTACTO_CLIENTE (con_cli_id);
-ALTER TABLE TELEFONO ADD CONSTRAINT FK_TELEFONO_CONTPROV FOREIGN KEY (FK_contacto_proveedor) REFERENCES CONTACTO_PROVEEDOR (con_pro_id);
-ALTER TABLE TELEFONO ADD CONSTRAINT FK_TELEFONO_PROVEEDOR FOREIGN KEY (FK_proveedor) REFERENCES PROVEEDOR (pro_id);
-
--- TIPO_ESTILO_CERVEZA
-ALTER TABLE TIPO_ESTILO_CERVEZA ADD CONSTRAINT FK_TIPOESTILO_TIPOCERVEZA FOREIGN KEY (FK_tipo_cerveza) REFERENCES TIPO_CERVEZA (tip_cer_id);
-ALTER TABLE TIPO_ESTILO_CERVEZA ADD CONSTRAINT FK_TIPOESTILO_ESTILOCERVEZA FOREIGN KEY (FK_estilo_cerveza) REFERENCES ESTILO_CERVEZA (est_cer_id);
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 17.5
+-- Dumped by pg_dump version 17.5
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: admin_interface_theme; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.admin_interface_theme (
+    id integer NOT NULL,
+    name character varying(50) NOT NULL,
+    active boolean NOT NULL,
+    title character varying(50) NOT NULL,
+    title_color character varying(10) NOT NULL,
+    title_visible boolean NOT NULL,
+    logo character varying(100) NOT NULL,
+    logo_color character varying(10) NOT NULL,
+    logo_max_width smallint NOT NULL,
+    logo_max_height smallint NOT NULL,
+    logo_visible boolean NOT NULL,
+    favicon character varying(100) NOT NULL,
+    env_name character varying(50) NOT NULL,
+    env_color character varying(10) NOT NULL,
+    env_visible_in_header boolean NOT NULL,
+    env_visible_in_favicon boolean NOT NULL,
+    language_chooser_active boolean NOT NULL,
+    language_chooser_control character varying(20) NOT NULL,
+    language_chooser_display character varying(10) NOT NULL,
+    css_header_background_color character varying(10) NOT NULL,
+    css_header_text_color character varying(10) NOT NULL,
+    css_header_link_color character varying(10) NOT NULL,
+    css_header_link_hover_color character varying(10) NOT NULL,
+    css_module_background_color character varying(10) NOT NULL,
+    css_module_background_selected_color character varying(10) NOT NULL,
+    css_module_text_color character varying(10) NOT NULL,
+    css_module_link_color character varying(10) NOT NULL,
+    css_module_link_selected_color character varying(10) NOT NULL,
+    css_module_link_hover_color character varying(10) NOT NULL,
+    css_module_rounded_corners boolean NOT NULL,
+    css_generic_link_color character varying(10) NOT NULL,
+    css_generic_link_hover_color character varying(10) NOT NULL,
+    css_generic_link_active_color character varying(10) NOT NULL,
+    css_save_button_background_color character varying(10) NOT NULL,
+    css_save_button_background_hover_color character varying(10) NOT NULL,
+    css_save_button_text_color character varying(10) NOT NULL,
+    css_delete_button_background_color character varying(10) NOT NULL,
+    css_delete_button_background_hover_color character varying(10) NOT NULL,
+    css_delete_button_text_color character varying(10) NOT NULL,
+    related_modal_active boolean NOT NULL,
+    related_modal_background_color character varying(10) NOT NULL,
+    related_modal_background_opacity character varying(5) NOT NULL,
+    related_modal_rounded_corners boolean NOT NULL,
+    related_modal_close_button_visible boolean NOT NULL,
+    list_filter_highlight boolean NOT NULL,
+    list_filter_dropdown boolean NOT NULL,
+    list_filter_sticky boolean NOT NULL,
+    list_filter_removal_links boolean NOT NULL,
+    foldable_apps boolean NOT NULL,
+    show_fieldsets_as_tabs boolean NOT NULL,
+    show_inlines_as_tabs boolean NOT NULL,
+    collapsible_stacked_inlines boolean NOT NULL,
+    collapsible_stacked_inlines_collapsed boolean NOT NULL,
+    collapsible_tabular_inlines boolean NOT NULL,
+    collapsible_tabular_inlines_collapsed boolean NOT NULL,
+    recent_actions_visible boolean NOT NULL,
+    form_submit_sticky boolean NOT NULL,
+    form_pagination_sticky boolean NOT NULL,
+    CONSTRAINT admin_interface_theme_logo_max_height_check CHECK ((logo_max_height >= 0)),
+    CONSTRAINT admin_interface_theme_logo_max_width_check CHECK ((logo_max_width >= 0))
+);
+
+
+ALTER TABLE public.admin_interface_theme OWNER TO postgres;
+
+--
+-- Name: admin_interface_theme_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.admin_interface_theme ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.admin_interface_theme_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: afi_est; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.afi_est (
+    afi_est_id integer NOT NULL,
+    afi_est_fecha_inicio date NOT NULL,
+    afi_est_fecha_fin date,
+    fk_afiliacion integer NOT NULL,
+    fk_estatus integer NOT NULL
+);
+
+
+ALTER TABLE public.afi_est OWNER TO postgres;
+
+--
+-- Name: afi_est_afi_est_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.afi_est ALTER COLUMN afi_est_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.afi_est_afi_est_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: afiliacion; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.afiliacion (
+    afi_id integer NOT NULL,
+    afi_nombre character varying(50) NOT NULL,
+    afi_monto integer NOT NULL,
+    fk_proveedor integer NOT NULL,
+    fk_tienda integer NOT NULL
+);
+
+
+ALTER TABLE public.afiliacion OWNER TO postgres;
+
+--
+-- Name: afiliacion_afi_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.afiliacion ALTER COLUMN afi_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.afiliacion_afi_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: almacen; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.almacen (
+    alm_id integer NOT NULL,
+    alm_nombre character varying(100) NOT NULL,
+    alm_descripcion text NOT NULL,
+    fk_tienda integer NOT NULL
+);
+
+
+ALTER TABLE public.almacen OWNER TO postgres;
+
+--
+-- Name: almacen_alm_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.almacen ALTER COLUMN alm_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.almacen_alm_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: anaquel; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.anaquel (
+    ana_id integer NOT NULL,
+    ana_numero integer NOT NULL,
+    fk_lugar_tienda integer NOT NULL
+);
+
+
+ALTER TABLE public.anaquel OWNER TO postgres;
+
+--
+-- Name: anaquel_ana_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.anaquel ALTER COLUMN ana_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.anaquel_ana_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: asistencia; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.asistencia (
+    asi_id integer NOT NULL,
+    asi_fecha_hora_inico timestamp with time zone NOT NULL,
+    asi_fecha_hora_fin timestamp with time zone,
+    fk_empleado integer NOT NULL
+);
+
+
+ALTER TABLE public.asistencia OWNER TO postgres;
+
+--
+-- Name: asistencia_asi_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.asistencia ALTER COLUMN asi_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.asistencia_asi_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: asistencia_evento; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.asistencia_evento (
+    asi_eve_id integer NOT NULL,
+    asi_eve_fecha_hora timestamp with time zone NOT NULL,
+    fk_cliente integer NOT NULL,
+    fk_evento integer NOT NULL,
+    fk_ven_bol_eve integer NOT NULL
+);
+
+
+ALTER TABLE public.asistencia_evento OWNER TO postgres;
+
+--
+-- Name: asistencia_evento_asi_eve_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.asistencia_evento ALTER COLUMN asi_eve_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.asistencia_evento_asi_eve_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: auth_group; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.auth_group (
+    id integer NOT NULL,
+    name character varying(150) NOT NULL
+);
+
+
+ALTER TABLE public.auth_group OWNER TO postgres;
+
+--
+-- Name: auth_group_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.auth_group ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.auth_group_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: auth_group_permissions; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.auth_group_permissions (
+    id bigint NOT NULL,
+    group_id integer NOT NULL,
+    permission_id integer NOT NULL
+);
+
+
+ALTER TABLE public.auth_group_permissions OWNER TO postgres;
+
+--
+-- Name: auth_group_permissions_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.auth_group_permissions ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.auth_group_permissions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: auth_permission; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.auth_permission (
+    id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    content_type_id integer NOT NULL,
+    codename character varying(100) NOT NULL
+);
+
+
+ALTER TABLE public.auth_permission OWNER TO postgres;
+
+--
+-- Name: auth_permission_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.auth_permission ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.auth_permission_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: car_tip_cer; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.car_tip_cer (
+    id bigint NOT NULL,
+    carac_tip_cer_valor character varying(255) NOT NULL,
+    fk_caracteristica integer NOT NULL,
+    fk_tipo_cerveza integer NOT NULL
+);
+
+
+ALTER TABLE public.car_tip_cer OWNER TO postgres;
+
+--
+-- Name: car_tip_cer_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.car_tip_cer ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.car_tip_cer_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: caracteristica; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.caracteristica (
+    car_id integer NOT NULL,
+    car_nombre character varying(255) NOT NULL,
+    car_descripcion character varying(255) NOT NULL
+);
+
+
+ALTER TABLE public.caracteristica OWNER TO postgres;
+
+--
+-- Name: caracteristica_car_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.caracteristica ALTER COLUMN car_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.caracteristica_car_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: cargo; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.cargo (
+    car_id integer NOT NULL,
+    car_nombre character varying(100) NOT NULL,
+    car_descripcion text NOT NULL,
+    car_salario integer NOT NULL
+);
+
+
+ALTER TABLE public.cargo OWNER TO postgres;
+
+--
+-- Name: cargo_car_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.cargo ALTER COLUMN car_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.cargo_car_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: cerv_car; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.cerv_car (
+    id bigint NOT NULL,
+    carac_cer_valor character varying(255) NOT NULL,
+    fk_caracteristica integer NOT NULL,
+    fk_cerveza integer NOT NULL
+);
+
+
+ALTER TABLE public.cerv_car OWNER TO postgres;
+
+--
+-- Name: cerv_car_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.cerv_car ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.cerv_car_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: cerveza; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.cerveza (
+    cer_id integer NOT NULL,
+    cer_nombre character varying(255) NOT NULL,
+    cer_descripcion character varying(255) NOT NULL,
+    cer_grado_alcohol numeric(5,2) NOT NULL,
+    fk_tipo_estilo_cerveza integer NOT NULL
+);
+
+
+ALTER TABLE public.cerveza OWNER TO postgres;
+
+--
+-- Name: cerveza_cer_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.cerveza ALTER COLUMN cer_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.cerveza_cer_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: cliente; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.cliente (
+    cli_id integer NOT NULL,
+    cli_rif character varying(12) NOT NULL,
+    cli_direccion_fisica character varying(255) NOT NULL,
+    cli_tipo_cliente character varying(10) NOT NULL,
+    cli_nat_ci character varying(12),
+    cli_nat_pnombre character varying(50),
+    cli_nat_snombre character varying(50),
+    cli_nat_papellido character varying(50),
+    cli_nat_sapellido character varying(50),
+    cli_nat_sexo character varying(1),
+    cli_jur_denom_comercial character varying(70),
+    cli_jur_razon_social character varying(70),
+    cli_jur_url_web character varying(255),
+    cli_jur_capital integer,
+    cli_jur_dir_fiscal character varying(255),
+    cli_cantidad_puntos integer,
+    fk_lugar integer NOT NULL
+);
+
+
+ALTER TABLE public.cliente OWNER TO postgres;
+
+--
+-- Name: cliente_cli_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.cliente ALTER COLUMN cli_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.cliente_cli_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: contacto_cliente; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.contacto_cliente (
+    con_cli_id integer NOT NULL,
+    con_cli_nombre character varying(50) NOT NULL,
+    con_cli_apellido character varying(50) NOT NULL,
+    fk_cliente integer NOT NULL
+);
+
+
+ALTER TABLE public.contacto_cliente OWNER TO postgres;
+
+--
+-- Name: contacto_cliente_con_cli_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.contacto_cliente ALTER COLUMN con_cli_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.contacto_cliente_con_cli_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: contacto_proveedor; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.contacto_proveedor (
+    con_pro_id integer NOT NULL,
+    con_pro_nombre character varying(50) NOT NULL,
+    con_pro_apellido character varying(50) NOT NULL,
+    fk_proveedor integer NOT NULL
+);
+
+
+ALTER TABLE public.contacto_proveedor OWNER TO postgres;
+
+--
+-- Name: contacto_proveedor_con_pro_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.contacto_proveedor ALTER COLUMN con_pro_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.contacto_proveedor_con_pro_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: correo_electronico; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.correo_electronico (
+    cor_ele_id integer NOT NULL,
+    cor_ele_direccion character varying(70) NOT NULL,
+    fk_cliente integer,
+    fk_contacto_cliente integer,
+    fk_contacto_proveedor integer,
+    fk_empleado integer,
+    fk_proveedor integer
+);
+
+
+ALTER TABLE public.correo_electronico OWNER TO postgres;
+
+--
+-- Name: correo_electronico_cor_ele_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.correo_electronico ALTER COLUMN cor_ele_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.correo_electronico_cor_ele_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: cuenta_punto; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.cuenta_punto (
+    cue_pun_id integer NOT NULL,
+    cue_pun_cantidad numeric(12,2) NOT NULL,
+    fk_venta_fisica integer NOT NULL,
+    fk_cliente integer NOT NULL
+);
+
+
+ALTER TABLE public.cuenta_punto OWNER TO postgres;
+
+--
+-- Name: cuenta_punto_cue_pun_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.cuenta_punto ALTER COLUMN cue_pun_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.cuenta_punto_cue_pun_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: dep_tie; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.dep_tie (
+    id bigint NOT NULL,
+    dep_tie_fecha_inicio date NOT NULL,
+    dep_tie_fecha_fin date,
+    fk_departamento integer NOT NULL,
+    fk_tienda integer NOT NULL
+);
+
+
+ALTER TABLE public.dep_tie OWNER TO postgres;
+
+--
+-- Name: dep_tie_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.dep_tie ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.dep_tie_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: departamento; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.departamento (
+    dep_id integer NOT NULL,
+    dep_nombre character varying(100) NOT NULL,
+    dep_descripcion text NOT NULL
+);
+
+
+ALTER TABLE public.departamento OWNER TO postgres;
+
+--
+-- Name: departamento_dep_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.departamento ALTER COLUMN dep_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.departamento_dep_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: detalle_compra; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.detalle_compra (
+    det_com_id integer NOT NULL,
+    det_com_cantidad integer NOT NULL,
+    det_com_precio_unitario numeric(10,2) NOT NULL,
+    fk_presentacion integer NOT NULL,
+    fk_sol_com integer NOT NULL
+);
+
+
+ALTER TABLE public.detalle_compra OWNER TO postgres;
+
+--
+-- Name: detalle_compra_det_com_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.detalle_compra ALTER COLUMN det_com_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.detalle_compra_det_com_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: detalle_venta_evento; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.detalle_venta_evento (
+    det_ven_eve_id integer NOT NULL,
+    det_ven_eve_cantidad integer NOT NULL,
+    det_ven_eve_precio_unitario numeric(10,2) NOT NULL,
+    fk_exi_eve integer NOT NULL,
+    fk_venta_evento integer NOT NULL
+);
+
+
+ALTER TABLE public.detalle_venta_evento OWNER TO postgres;
+
+--
+-- Name: detalle_venta_evento_det_ven_eve_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.detalle_venta_evento ALTER COLUMN det_ven_eve_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.detalle_venta_evento_det_ven_eve_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: detalle_venta_fisica; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.detalle_venta_fisica (
+    det_ven_fis_id integer NOT NULL,
+    det_ven_fis_cantidad integer NOT NULL,
+    det_ven_fis_precio_unitario numeric(10,2) NOT NULL,
+    fk_inventario integer NOT NULL,
+    fk_venta_fisica integer NOT NULL
+);
+
+
+ALTER TABLE public.detalle_venta_fisica OWNER TO postgres;
+
+--
+-- Name: detalle_venta_fisica_det_ven_fis_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.detalle_venta_fisica ALTER COLUMN det_ven_fis_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.detalle_venta_fisica_det_ven_fis_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: detalle_venta_online; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.detalle_venta_online (
+    det_ven_onl_id integer NOT NULL,
+    det_ven_onl_cantidad integer NOT NULL,
+    det_ven_onl_precio numeric(10,2) NOT NULL,
+    fk_pre_alm integer NOT NULL,
+    fk_venta_online integer NOT NULL
+);
+
+
+ALTER TABLE public.detalle_venta_online OWNER TO postgres;
+
+--
+-- Name: detalle_venta_online_det_ven_onl_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.detalle_venta_online ALTER COLUMN det_ven_onl_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.detalle_venta_online_det_ven_onl_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: django_admin_log; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.django_admin_log (
+    id integer NOT NULL,
+    action_time timestamp with time zone NOT NULL,
+    object_id text,
+    object_repr character varying(200) NOT NULL,
+    action_flag smallint NOT NULL,
+    change_message text NOT NULL,
+    content_type_id integer,
+    user_id bigint NOT NULL,
+    CONSTRAINT django_admin_log_action_flag_check CHECK ((action_flag >= 0))
+);
+
+
+ALTER TABLE public.django_admin_log OWNER TO postgres;
+
+--
+-- Name: django_admin_log_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.django_admin_log ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.django_admin_log_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: django_content_type; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.django_content_type (
+    id integer NOT NULL,
+    app_label character varying(100) NOT NULL,
+    model character varying(100) NOT NULL
+);
+
+
+ALTER TABLE public.django_content_type OWNER TO postgres;
+
+--
+-- Name: django_content_type_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.django_content_type ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.django_content_type_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: django_migrations; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.django_migrations (
+    id bigint NOT NULL,
+    app character varying(255) NOT NULL,
+    name character varying(255) NOT NULL,
+    applied timestamp with time zone NOT NULL
+);
+
+
+ALTER TABLE public.django_migrations OWNER TO postgres;
+
+--
+-- Name: django_migrations_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.django_migrations ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.django_migrations_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: django_session; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.django_session (
+    session_key character varying(40) NOT NULL,
+    session_data text NOT NULL,
+    expire_date timestamp with time zone NOT NULL
+);
+
+
+ALTER TABLE public.django_session OWNER TO postgres;
+
+--
+-- Name: emp_car; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.emp_car (
+    id integer NOT NULL,
+    fk_departamento integer NOT NULL,
+    fk_tienda integer NOT NULL,
+    emp_car_fecha_inicio date NOT NULL,
+    emp_car_fecha_fin date,
+    fk_cargo integer NOT NULL,
+    fk_empleado integer NOT NULL
+);
+
+
+ALTER TABLE public.emp_car OWNER TO postgres;
+
+--
+-- Name: emp_car_hor; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.emp_car_hor (
+    id bigint NOT NULL,
+    fk_cargo integer NOT NULL,
+    fk_departamento integer NOT NULL,
+    fk_empleado integer NOT NULL,
+    fk_horario integer NOT NULL,
+    fk_tienda integer NOT NULL
+);
+
+
+ALTER TABLE public.emp_car_hor OWNER TO postgres;
+
+--
+-- Name: emp_car_hor_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.emp_car_hor ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.emp_car_hor_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: emp_car_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.emp_car ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.emp_car_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: emp_tip_ben; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.emp_tip_ben (
+    id bigint NOT NULL,
+    emp_tip_ben_monto integer NOT NULL,
+    fk_empleado integer NOT NULL,
+    fk_tipo_beneficio integer NOT NULL
+);
+
+
+ALTER TABLE public.emp_tip_ben OWNER TO postgres;
+
+--
+-- Name: emp_tip_ben_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.emp_tip_ben ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.emp_tip_ben_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: empleado; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.empleado (
+    emp_id integer NOT NULL,
+    emp_ci character varying(12) NOT NULL,
+    emp_pnombre character varying(30) NOT NULL,
+    emp_snombre character varying(30),
+    emp_papellido character varying(30) NOT NULL,
+    emp_sapellido character varying(30),
+    emp_direccion character varying(70) NOT NULL,
+    emp_fecha_nacimiento date NOT NULL,
+    emp_sexo character varying(1) NOT NULL,
+    fk_lugar integer NOT NULL
+);
+
+
+ALTER TABLE public.empleado OWNER TO postgres;
+
+--
+-- Name: empleado_emp_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.empleado ALTER COLUMN emp_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.empleado_emp_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: estatus; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.estatus (
+    est_id integer NOT NULL,
+    est_tipo_estatus character varying(50) NOT NULL,
+    est_descripcion character varying(255) NOT NULL
+);
+
+
+ALTER TABLE public.estatus OWNER TO postgres;
+
+--
+-- Name: estatus_est_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.estatus ALTER COLUMN est_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.estatus_est_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: estilo_cerveza; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.estilo_cerveza (
+    est_cer_id integer NOT NULL,
+    est_cer_nombre character varying(255) NOT NULL,
+    est_cer_descripcion character varying(255) NOT NULL
+);
+
+
+ALTER TABLE public.estilo_cerveza OWNER TO postgres;
+
+--
+-- Name: estilo_cerveza_est_cer_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.estilo_cerveza ALTER COLUMN est_cer_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.estilo_cerveza_est_cer_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: eve_pro; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.eve_pro (
+    eve_pro_id integer NOT NULL,
+    fk_evento integer NOT NULL,
+    fk_proveedor integer NOT NULL
+);
+
+
+ALTER TABLE public.eve_pro OWNER TO postgres;
+
+--
+-- Name: eve_pro_eve_pro_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.eve_pro ALTER COLUMN eve_pro_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.eve_pro_eve_pro_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: evento; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.evento (
+    eve_id integer NOT NULL,
+    eve_nombre character varying(255) NOT NULL,
+    eve_descripcion character varying(255) NOT NULL,
+    eve_fecha_hora timestamp with time zone NOT NULL,
+    eve_nro_boletos integer NOT NULL,
+    fk_lugar integer NOT NULL,
+    fk_tip_eve integer NOT NULL
+);
+
+
+ALTER TABLE public.evento OWNER TO postgres;
+
+--
+-- Name: evento_eve_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.evento ALTER COLUMN eve_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.evento_eve_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: existencia_evento; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.existencia_evento (
+    exi_eve_id integer NOT NULL,
+    exi_eve_cantidad integer NOT NULL,
+    fk_evento_proveedor integer NOT NULL,
+    fk_presentacion integer NOT NULL
+);
+
+
+ALTER TABLE public.existencia_evento OWNER TO postgres;
+
+--
+-- Name: existencia_evento_exi_eve_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.existencia_evento ALTER COLUMN exi_eve_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.existencia_evento_exi_eve_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: historico_moneda; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.historico_moneda (
+    his_mon_id integer NOT NULL,
+    his_mon_fecha_hora timestamp with time zone NOT NULL,
+    his_valor_cambio numeric(12,2) NOT NULL,
+    fk_moneda integer NOT NULL
+);
+
+
+ALTER TABLE public.historico_moneda OWNER TO postgres;
+
+--
+-- Name: historico_moneda_his_mon_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.historico_moneda ALTER COLUMN his_mon_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.historico_moneda_his_mon_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: historico_precio_punto; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.historico_precio_punto (
+    his_pre_pun_id integer NOT NULL,
+    his_pre_pun_fecha_hora timestamp with time zone NOT NULL,
+    his_pre_pun_valor integer NOT NULL
+);
+
+
+ALTER TABLE public.historico_precio_punto OWNER TO postgres;
+
+--
+-- Name: historico_precio_punto_his_pre_pun_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.historico_precio_punto ALTER COLUMN his_pre_pun_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.historico_precio_punto_his_pre_pun_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: horario; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.horario (
+    hor_id integer NOT NULL,
+    hor_dia character varying(10) NOT NULL,
+    hor_hora_inicio time without time zone NOT NULL,
+    hor_hora_fin time without time zone NOT NULL
+);
+
+
+ALTER TABLE public.horario OWNER TO postgres;
+
+--
+-- Name: horario_hor_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.horario ALTER COLUMN hor_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.horario_hor_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: ingrediente; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.ingrediente (
+    ing_id integer NOT NULL,
+    ing_nombre character varying(255) NOT NULL,
+    ing_descripcion character varying(255) NOT NULL
+);
+
+
+ALTER TABLE public.ingrediente OWNER TO postgres;
+
+--
+-- Name: ingrediente_ing_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.ingrediente ALTER COLUMN ing_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.ingrediente_ing_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: instruccion; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.instruccion (
+    ins_id integer NOT NULL,
+    ins_descripcion character varying(1000) NOT NULL
+);
+
+
+ALTER TABLE public.instruccion OWNER TO postgres;
+
+--
+-- Name: instruccion_ins_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.instruccion ALTER COLUMN ins_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.instruccion_ins_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: inventario; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.inventario (
+    inv_id integer NOT NULL,
+    inv_cantidad integer NOT NULL,
+    fk_anaquel integer NOT NULL,
+    fk_oferta integer,
+    fk_presentacion integer NOT NULL
+);
+
+
+ALTER TABLE public.inventario OWNER TO postgres;
+
+--
+-- Name: inventario_inv_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.inventario ALTER COLUMN inv_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.inventario_inv_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: lugar; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.lugar (
+    lug_id integer NOT NULL,
+    lug_nombre character varying(90) NOT NULL,
+    lug_tipo character varying(20),
+    fk_lugar integer
+);
+
+
+ALTER TABLE public.lugar OWNER TO postgres;
+
+--
+-- Name: lugar_lug_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.lugar ALTER COLUMN lug_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.lugar_lug_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: lugar_tienda; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.lugar_tienda (
+    lug_tie_id integer NOT NULL,
+    lug_tie_nombre character varying(255) NOT NULL,
+    lug_tie_tipo character varying(255) NOT NULL,
+    fk_lugar_tienda integer,
+    fk_tienda integer NOT NULL
+);
+
+
+ALTER TABLE public.lugar_tienda OWNER TO postgres;
+
+--
+-- Name: lugar_tienda_lug_tie_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.lugar_tienda ALTER COLUMN lug_tie_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.lugar_tienda_lug_tie_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: metodo_pago; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.metodo_pago (
+    met_pag_id integer NOT NULL,
+    efe_denominacion integer,
+    che_num_cheque integer,
+    tar_deb_numero bigint,
+    tar_deb_vencimiento date,
+    tar_deb_banco character varying(50),
+    tar_cre_numero bigint,
+    tar_cre_vencimiento date,
+    met_pag_tipo_pago character varying(50) NOT NULL,
+    fk_his_pre_pun integer
+);
+
+
+ALTER TABLE public.metodo_pago OWNER TO postgres;
+
+--
+-- Name: metodo_pago_met_pag_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.metodo_pago ALTER COLUMN met_pag_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.metodo_pago_met_pag_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: moneda; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.moneda (
+    mon_id integer NOT NULL,
+    mon_tipo character varying(50) NOT NULL
+);
+
+
+ALTER TABLE public.moneda OWNER TO postgres;
+
+--
+-- Name: moneda_mon_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.moneda ALTER COLUMN mon_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.moneda_mon_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: oferta; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.oferta (
+    ofe_id integer NOT NULL,
+    ofe_nombre character varying(100) NOT NULL,
+    ofe_descripcion text NOT NULL,
+    ofe_fecha_inicio date NOT NULL,
+    ofe_fecha_fin date,
+    of_procentaje integer NOT NULL
+);
+
+
+ALTER TABLE public.oferta OWNER TO postgres;
+
+--
+-- Name: oferta_ofe_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.oferta ALTER COLUMN ofe_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.oferta_ofe_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: pago; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.pago (
+    pag_id integer NOT NULL,
+    pag_monto numeric(12,2) NOT NULL,
+    pag_fecha timestamp with time zone NOT NULL,
+    fk_afiliacion integer,
+    fk_metodo_pago integer NOT NULL,
+    fk_moneda integer NOT NULL,
+    fk_venta_evento integer,
+    fk_venta_fisica integer,
+    fk_venta_online integer
+);
+
+
+ALTER TABLE public.pago OWNER TO postgres;
+
+--
+-- Name: pago_efectivo; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.pago_efectivo (
+    pag_efe_id integer NOT NULL,
+    pag_efe_monto numeric(10,2) NOT NULL,
+    pag_efe_fecha timestamp with time zone NOT NULL,
+    fk_sol_com integer NOT NULL,
+    fk_metodo_pago integer NOT NULL
+);
+
+
+ALTER TABLE public.pago_efectivo OWNER TO postgres;
+
+--
+-- Name: pago_efectivo_pag_efe_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.pago_efectivo ALTER COLUMN pag_efe_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.pago_efectivo_pag_efe_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: pago_pag_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.pago ALTER COLUMN pag_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.pago_pag_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: pre_alm; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.pre_alm (
+    pre_alm_id integer NOT NULL,
+    pre_alm_precio numeric(10,2) NOT NULL,
+    pre_alm_cantidad integer NOT NULL,
+    fk_almacen integer NOT NULL,
+    fk_oferta integer,
+    fk_presentacion integer NOT NULL
+);
+
+
+ALTER TABLE public.pre_alm OWNER TO postgres;
+
+--
+-- Name: pre_alm_pre_alm_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.pre_alm ALTER COLUMN pre_alm_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.pre_alm_pre_alm_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: presentacion; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.presentacion (
+    prese_id integer NOT NULL,
+    prese_nombre character varying(100) NOT NULL,
+    prese_volumen numeric(10,2) NOT NULL,
+    prese_recipiente character varying(255) NOT NULL,
+    prese_imagen character varying(100),
+    prese_precio numeric(10,2) NOT NULL,
+    prese_alto numeric(10,2),
+    prese_ancho numeric(10,2),
+    fk_cerveza integer
+);
+
+
+ALTER TABLE public.presentacion OWNER TO postgres;
+
+--
+-- Name: presentacion_prese_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.presentacion ALTER COLUMN prese_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.presentacion_prese_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: proveedor; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.proveedor (
+    pro_id integer NOT NULL,
+    pro_rif character varying(12) NOT NULL,
+    pro_denominacion_comercial character varying(70),
+    pro_razon_social character varying(70),
+    pro_url_web character varying(255),
+    pro_direccion_fiscal character varying(255),
+    fk_lugar integer NOT NULL
+);
+
+
+ALTER TABLE public.proveedor OWNER TO postgres;
+
+--
+-- Name: proveedor_pro_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.proveedor ALTER COLUMN pro_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.proveedor_pro_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: rec_ing; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.rec_ing (
+    rec_ing_id integer NOT NULL,
+    rec_ing_cantidad numeric(10,3) NOT NULL,
+    fk_ingrediente integer NOT NULL,
+    fk_receta integer NOT NULL
+);
+
+
+ALTER TABLE public.rec_ing OWNER TO postgres;
+
+--
+-- Name: rec_ing_rec_ing_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.rec_ing ALTER COLUMN rec_ing_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.rec_ing_rec_ing_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: rec_ins; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.rec_ins (
+    rec_ins_id integer NOT NULL,
+    fk_instruccion integer NOT NULL,
+    fk_receta integer NOT NULL
+);
+
+
+ALTER TABLE public.rec_ins OWNER TO postgres;
+
+--
+-- Name: rec_ins_rec_ins_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.rec_ins ALTER COLUMN rec_ins_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.rec_ins_rec_ins_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: receta; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.receta (
+    rec_id integer NOT NULL,
+    rec_nombre character varying(255) NOT NULL,
+    rec_descripcion character varying(255) NOT NULL
+);
+
+
+ALTER TABLE public.receta OWNER TO postgres;
+
+--
+-- Name: receta_rec_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.receta ALTER COLUMN rec_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.receta_rec_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sol_com_est; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.sol_com_est (
+    sol_com_est_id integer NOT NULL,
+    sol_com_est_fecha_inicio date NOT NULL,
+    sol_com_est_fecha_fin date,
+    fk_estatus integer NOT NULL,
+    fk_sol_com integer NOT NULL
+);
+
+
+ALTER TABLE public.sol_com_est OWNER TO postgres;
+
+--
+-- Name: sol_com_est_sol_com_est_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.sol_com_est ALTER COLUMN sol_com_est_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sol_com_est_sol_com_est_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sol_rep_est; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.sol_rep_est (
+    sol_rep_est_id integer NOT NULL,
+    sol_rep_est_fecha_inicio date NOT NULL,
+    sol_rep_est_fecha_fin date,
+    fk_estatus integer NOT NULL,
+    fk_sol_rep integer NOT NULL
+);
+
+
+ALTER TABLE public.sol_rep_est OWNER TO postgres;
+
+--
+-- Name: sol_rep_est_sol_rep_est_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.sol_rep_est ALTER COLUMN sol_rep_est_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sol_rep_est_sol_rep_est_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: solicitud_compra; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.solicitud_compra (
+    sol_com_id integer NOT NULL,
+    sol_com_fecha timestamp with time zone NOT NULL,
+    sol_com_total numeric(10,2) NOT NULL,
+    fk_pre_alm integer NOT NULL,
+    fk_proveedor integer NOT NULL,
+    fk_usuario bigint
+);
+
+
+ALTER TABLE public.solicitud_compra OWNER TO postgres;
+
+--
+-- Name: solicitud_compra_sol_com_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.solicitud_compra ALTER COLUMN sol_com_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.solicitud_compra_sol_com_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: solicitud_reposicion; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.solicitud_reposicion (
+    sol_rep_id integer NOT NULL,
+    sol_rep_fecha_hora timestamp with time zone NOT NULL,
+    sol_rep_descripcion character varying(255) NOT NULL,
+    fk_inv integer NOT NULL,
+    fk_pre_alm integer NOT NULL,
+    fk_usuario bigint
+);
+
+
+ALTER TABLE public.solicitud_reposicion OWNER TO postgres;
+
+--
+-- Name: solicitud_reposicion_sol_rep_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.solicitud_reposicion ALTER COLUMN sol_rep_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.solicitud_reposicion_sol_rep_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: telefono; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.telefono (
+    tel_id integer NOT NULL,
+    tel_codigo_area character varying(30) NOT NULL,
+    tel_numero bigint NOT NULL,
+    fk_cliente integer,
+    fk_contacto_cliente integer,
+    fk_contacto_proveedor integer,
+    fk_empleado integer,
+    fk_proveedor integer
+);
+
+
+ALTER TABLE public.telefono OWNER TO postgres;
+
+--
+-- Name: telefono_tel_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.telefono ALTER COLUMN tel_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.telefono_tel_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: tienda; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.tienda (
+    tie_id integer NOT NULL,
+    tie_nombre character varying(150) NOT NULL,
+    tie_direccion character varying(255) NOT NULL,
+    tie_tipo character varying(20) NOT NULL,
+    fk_lugar integer NOT NULL
+);
+
+
+ALTER TABLE public.tienda OWNER TO postgres;
+
+--
+-- Name: tienda_tie_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.tienda ALTER COLUMN tie_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.tienda_tie_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: tipo_beneficio; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.tipo_beneficio (
+    tip_ben_id integer NOT NULL,
+    tip_ben_nombre character varying(255) NOT NULL,
+    tip_ben_descripcion text NOT NULL
+);
+
+
+ALTER TABLE public.tipo_beneficio OWNER TO postgres;
+
+--
+-- Name: tipo_beneficio_tip_ben_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.tipo_beneficio ALTER COLUMN tip_ben_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.tipo_beneficio_tip_ben_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: tipo_cerveza; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.tipo_cerveza (
+    tip_cer_id integer NOT NULL,
+    tip_cer_familia character varying(255) NOT NULL
+);
+
+
+ALTER TABLE public.tipo_cerveza OWNER TO postgres;
+
+--
+-- Name: tipo_cerveza_tip_cer_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.tipo_cerveza ALTER COLUMN tip_cer_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.tipo_cerveza_tip_cer_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: tipo_estilo_cerveza; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.tipo_estilo_cerveza (
+    tip_est_cer_id integer NOT NULL,
+    tip_est_cer_nombre character varying(255) NOT NULL,
+    tip_est_cer_descripcion character varying(255) NOT NULL,
+    fk_estilo_cerveza integer NOT NULL,
+    fk_tipo_cerveza integer NOT NULL
+);
+
+
+ALTER TABLE public.tipo_estilo_cerveza OWNER TO postgres;
+
+--
+-- Name: tipo_estilo_cerveza_tip_est_cer_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.tipo_estilo_cerveza ALTER COLUMN tip_est_cer_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.tipo_estilo_cerveza_tip_est_cer_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: tipo_evento; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.tipo_evento (
+    tip_eve_id integer NOT NULL,
+    tip_eve_nombre character varying(255) NOT NULL,
+    tip_eve_descripcion character varying(255) NOT NULL,
+    fk_tipo_evento integer
+);
+
+
+ALTER TABLE public.tipo_evento OWNER TO postgres;
+
+--
+-- Name: tipo_evento_tip_eve_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.tipo_evento ALTER COLUMN tip_eve_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.tipo_evento_tip_eve_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: usuario; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.usuario (
+    id bigint NOT NULL,
+    password character varying(128) NOT NULL,
+    last_login timestamp with time zone,
+    is_superuser boolean NOT NULL,
+    username character varying(150) NOT NULL,
+    first_name character varying(150) NOT NULL,
+    last_name character varying(150) NOT NULL,
+    email character varying(254) NOT NULL,
+    is_staff boolean NOT NULL,
+    is_active boolean NOT NULL,
+    date_joined timestamp with time zone NOT NULL,
+    fk_cliente integer,
+    fk_proveedor integer
+);
+
+
+ALTER TABLE public.usuario OWNER TO postgres;
+
+--
+-- Name: usuario_groups; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.usuario_groups (
+    id bigint NOT NULL,
+    usuario_id bigint NOT NULL,
+    group_id integer NOT NULL
+);
+
+
+ALTER TABLE public.usuario_groups OWNER TO postgres;
+
+--
+-- Name: usuario_groups_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.usuario_groups ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.usuario_groups_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: usuario_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.usuario ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.usuario_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: usuario_user_permissions; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.usuario_user_permissions (
+    id bigint NOT NULL,
+    usuario_id bigint NOT NULL,
+    permission_id integer NOT NULL
+);
+
+
+ALTER TABLE public.usuario_user_permissions OWNER TO postgres;
+
+--
+-- Name: usuario_user_permissions_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.usuario_user_permissions ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.usuario_user_permissions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: vacacion; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.vacacion (
+    vac_id integer NOT NULL,
+    vac_fecha_inicio date NOT NULL,
+    vac_fecha_fin date,
+    fk_empleado integer NOT NULL
+);
+
+
+ALTER TABLE public.vacacion OWNER TO postgres;
+
+--
+-- Name: vacacion_vac_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.vacacion ALTER COLUMN vac_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.vacacion_vac_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: ven_onl_est; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.ven_onl_est (
+    ven_onl_est_id integer NOT NULL,
+    ven_onl_est_fecha_inicio date NOT NULL,
+    ven_onl_est_fecha_fin date,
+    fk_estatus integer NOT NULL,
+    fk_venta_online integer NOT NULL
+);
+
+
+ALTER TABLE public.ven_onl_est OWNER TO postgres;
+
+--
+-- Name: ven_onl_est_ven_onl_est_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.ven_onl_est ALTER COLUMN ven_onl_est_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.ven_onl_est_ven_onl_est_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: venta_boleto_evento; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.venta_boleto_evento (
+    ven_bol_eve_id integer NOT NULL,
+    ven_bol_eve_fecha_hora timestamp with time zone NOT NULL,
+    ven_bol_eve_monto_total numeric(18,2) NOT NULL,
+    ven_bol_eve_descripcion character varying(255) NOT NULL
+);
+
+
+ALTER TABLE public.venta_boleto_evento OWNER TO postgres;
+
+--
+-- Name: venta_boleto_evento_ven_bol_eve_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.venta_boleto_evento ALTER COLUMN ven_bol_eve_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.venta_boleto_evento_ven_bol_eve_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: venta_evento; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.venta_evento (
+    ven_eve_id integer NOT NULL,
+    ven_eve_fecha_hora timestamp with time zone NOT NULL,
+    ven_eve_monto_total numeric(18,2) NOT NULL,
+    fk_cliente integer NOT NULL,
+    fk_evento integer NOT NULL
+);
+
+
+ALTER TABLE public.venta_evento OWNER TO postgres;
+
+--
+-- Name: venta_evento_ven_eve_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.venta_evento ALTER COLUMN ven_eve_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.venta_evento_ven_eve_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: venta_fisica; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.venta_fisica (
+    ven_fis_id integer NOT NULL,
+    ven_fis_fecha date NOT NULL,
+    ven_fis_total integer NOT NULL,
+    fk_cliente integer NOT NULL,
+    fk_oferta integer,
+    fk_tienda integer NOT NULL
+);
+
+
+ALTER TABLE public.venta_fisica OWNER TO postgres;
+
+--
+-- Name: venta_fisica_ven_fis_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.venta_fisica ALTER COLUMN ven_fis_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.venta_fisica_ven_fis_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: venta_online; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.venta_online (
+    ven_onl_id integer NOT NULL,
+    ven_onl_fecha date NOT NULL,
+    ven_onl_total integer NOT NULL,
+    fk_oferta integer,
+    fk_tienda integer NOT NULL,
+    fk_usuario bigint NOT NULL
+);
+
+
+ALTER TABLE public.venta_online OWNER TO postgres;
+
+--
+-- Name: venta_online_ven_onl_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.venta_online ALTER COLUMN ven_onl_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.venta_online_ven_onl_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: admin_interface_theme admin_interface_theme_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.admin_interface_theme
+    ADD CONSTRAINT admin_interface_theme_name_key UNIQUE (name);
+
+
+--
+-- Name: admin_interface_theme admin_interface_theme_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.admin_interface_theme
+    ADD CONSTRAINT admin_interface_theme_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: afi_est afi_est_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.afi_est
+    ADD CONSTRAINT afi_est_pkey PRIMARY KEY (afi_est_id);
+
+
+--
+-- Name: afiliacion afiliacion_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.afiliacion
+    ADD CONSTRAINT afiliacion_pkey PRIMARY KEY (afi_id);
+
+
+--
+-- Name: almacen almacen_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.almacen
+    ADD CONSTRAINT almacen_pkey PRIMARY KEY (alm_id);
+
+
+--
+-- Name: anaquel anaquel_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.anaquel
+    ADD CONSTRAINT anaquel_pkey PRIMARY KEY (ana_id);
+
+
+--
+-- Name: asistencia_evento asistencia_evento_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.asistencia_evento
+    ADD CONSTRAINT asistencia_evento_pkey PRIMARY KEY (asi_eve_id);
+
+
+--
+-- Name: asistencia asistencia_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.asistencia
+    ADD CONSTRAINT asistencia_pkey PRIMARY KEY (asi_id);
+
+
+--
+-- Name: auth_group auth_group_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.auth_group
+    ADD CONSTRAINT auth_group_name_key UNIQUE (name);
+
+
+--
+-- Name: auth_group_permissions auth_group_permissions_group_id_permission_id_0cd325b0_uniq; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.auth_group_permissions
+    ADD CONSTRAINT auth_group_permissions_group_id_permission_id_0cd325b0_uniq UNIQUE (group_id, permission_id);
+
+
+--
+-- Name: auth_group_permissions auth_group_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.auth_group_permissions
+    ADD CONSTRAINT auth_group_permissions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: auth_group auth_group_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.auth_group
+    ADD CONSTRAINT auth_group_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: auth_permission auth_permission_content_type_id_codename_01ab375a_uniq; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.auth_permission
+    ADD CONSTRAINT auth_permission_content_type_id_codename_01ab375a_uniq UNIQUE (content_type_id, codename);
+
+
+--
+-- Name: auth_permission auth_permission_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.auth_permission
+    ADD CONSTRAINT auth_permission_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: car_tip_cer car_tip_cer_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.car_tip_cer
+    ADD CONSTRAINT car_tip_cer_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: caracteristica caracteristica_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.caracteristica
+    ADD CONSTRAINT caracteristica_pkey PRIMARY KEY (car_id);
+
+
+--
+-- Name: cargo cargo_car_nombre_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cargo
+    ADD CONSTRAINT cargo_car_nombre_key UNIQUE (car_nombre);
+
+
+--
+-- Name: cargo cargo_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cargo
+    ADD CONSTRAINT cargo_pkey PRIMARY KEY (car_id);
+
+
+--
+-- Name: cerv_car cerv_car_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cerv_car
+    ADD CONSTRAINT cerv_car_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: cerveza cerveza_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cerveza
+    ADD CONSTRAINT cerveza_pkey PRIMARY KEY (cer_id);
+
+
+--
+-- Name: cliente cliente_cli_nat_ci_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cliente
+    ADD CONSTRAINT cliente_cli_nat_ci_key UNIQUE (cli_nat_ci);
+
+
+--
+-- Name: cliente cliente_cli_rif_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cliente
+    ADD CONSTRAINT cliente_cli_rif_key UNIQUE (cli_rif);
+
+
+--
+-- Name: cliente cliente_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cliente
+    ADD CONSTRAINT cliente_pkey PRIMARY KEY (cli_id);
+
+
+--
+-- Name: contacto_cliente contacto_cliente_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.contacto_cliente
+    ADD CONSTRAINT contacto_cliente_pkey PRIMARY KEY (con_cli_id);
+
+
+--
+-- Name: contacto_proveedor contacto_proveedor_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.contacto_proveedor
+    ADD CONSTRAINT contacto_proveedor_pkey PRIMARY KEY (con_pro_id);
+
+
+--
+-- Name: correo_electronico correo_electronico_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.correo_electronico
+    ADD CONSTRAINT correo_electronico_pkey PRIMARY KEY (cor_ele_id);
+
+
+--
+-- Name: cuenta_punto cuenta_punto_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cuenta_punto
+    ADD CONSTRAINT cuenta_punto_pkey PRIMARY KEY (cue_pun_id);
+
+
+--
+-- Name: dep_tie dep_tie_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.dep_tie
+    ADD CONSTRAINT dep_tie_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: departamento departamento_dep_nombre_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.departamento
+    ADD CONSTRAINT departamento_dep_nombre_key UNIQUE (dep_nombre);
+
+
+--
+-- Name: departamento departamento_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.departamento
+    ADD CONSTRAINT departamento_pkey PRIMARY KEY (dep_id);
+
+
+--
+-- Name: detalle_compra detalle_compra_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.detalle_compra
+    ADD CONSTRAINT detalle_compra_pkey PRIMARY KEY (det_com_id);
+
+
+--
+-- Name: detalle_venta_evento detalle_venta_evento_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.detalle_venta_evento
+    ADD CONSTRAINT detalle_venta_evento_pkey PRIMARY KEY (det_ven_eve_id);
+
+
+--
+-- Name: detalle_venta_fisica detalle_venta_fisica_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.detalle_venta_fisica
+    ADD CONSTRAINT detalle_venta_fisica_pkey PRIMARY KEY (det_ven_fis_id);
+
+
+--
+-- Name: detalle_venta_online detalle_venta_online_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.detalle_venta_online
+    ADD CONSTRAINT detalle_venta_online_pkey PRIMARY KEY (det_ven_onl_id);
+
+
+--
+-- Name: django_admin_log django_admin_log_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.django_admin_log
+    ADD CONSTRAINT django_admin_log_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: django_content_type django_content_type_app_label_model_76bd3d3b_uniq; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.django_content_type
+    ADD CONSTRAINT django_content_type_app_label_model_76bd3d3b_uniq UNIQUE (app_label, model);
+
+
+--
+-- Name: django_content_type django_content_type_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.django_content_type
+    ADD CONSTRAINT django_content_type_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: django_migrations django_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.django_migrations
+    ADD CONSTRAINT django_migrations_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: django_session django_session_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.django_session
+    ADD CONSTRAINT django_session_pkey PRIMARY KEY (session_key);
+
+
+--
+-- Name: emp_car emp_car_fk_empleado_fk_cargo_fk__7e690c0f_uniq; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.emp_car
+    ADD CONSTRAINT emp_car_fk_empleado_fk_cargo_fk__7e690c0f_uniq UNIQUE (fk_empleado, fk_cargo, fk_departamento, fk_tienda);
+
+
+--
+-- Name: emp_car_hor emp_car_hor_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.emp_car_hor
+    ADD CONSTRAINT emp_car_hor_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: emp_car emp_car_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.emp_car
+    ADD CONSTRAINT emp_car_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: emp_tip_ben emp_tip_ben_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.emp_tip_ben
+    ADD CONSTRAINT emp_tip_ben_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: empleado empleado_emp_ci_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.empleado
+    ADD CONSTRAINT empleado_emp_ci_key UNIQUE (emp_ci);
+
+
+--
+-- Name: empleado empleado_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.empleado
+    ADD CONSTRAINT empleado_pkey PRIMARY KEY (emp_id);
+
+
+--
+-- Name: estatus estatus_est_tipo_estatus_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.estatus
+    ADD CONSTRAINT estatus_est_tipo_estatus_key UNIQUE (est_tipo_estatus);
+
+
+--
+-- Name: estatus estatus_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.estatus
+    ADD CONSTRAINT estatus_pkey PRIMARY KEY (est_id);
+
+
+--
+-- Name: estilo_cerveza estilo_cerveza_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.estilo_cerveza
+    ADD CONSTRAINT estilo_cerveza_pkey PRIMARY KEY (est_cer_id);
+
+
+--
+-- Name: eve_pro eve_pro_fk_evento_fk_proveedor_d084f3e7_uniq; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.eve_pro
+    ADD CONSTRAINT eve_pro_fk_evento_fk_proveedor_d084f3e7_uniq UNIQUE (fk_evento, fk_proveedor);
+
+
+--
+-- Name: eve_pro eve_pro_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.eve_pro
+    ADD CONSTRAINT eve_pro_pkey PRIMARY KEY (eve_pro_id);
+
+
+--
+-- Name: evento evento_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.evento
+    ADD CONSTRAINT evento_pkey PRIMARY KEY (eve_id);
+
+
+--
+-- Name: existencia_evento existencia_evento_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.existencia_evento
+    ADD CONSTRAINT existencia_evento_pkey PRIMARY KEY (exi_eve_id);
+
+
+--
+-- Name: historico_moneda historico_moneda_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.historico_moneda
+    ADD CONSTRAINT historico_moneda_pkey PRIMARY KEY (his_mon_id);
+
+
+--
+-- Name: historico_precio_punto historico_precio_punto_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.historico_precio_punto
+    ADD CONSTRAINT historico_precio_punto_pkey PRIMARY KEY (his_pre_pun_id);
+
+
+--
+-- Name: horario horario_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.horario
+    ADD CONSTRAINT horario_pkey PRIMARY KEY (hor_id);
+
+
+--
+-- Name: ingrediente ingrediente_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.ingrediente
+    ADD CONSTRAINT ingrediente_pkey PRIMARY KEY (ing_id);
+
+
+--
+-- Name: instruccion instruccion_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.instruccion
+    ADD CONSTRAINT instruccion_pkey PRIMARY KEY (ins_id);
+
+
+--
+-- Name: inventario inventario_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.inventario
+    ADD CONSTRAINT inventario_pkey PRIMARY KEY (inv_id);
+
+
+--
+-- Name: lugar lugar_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lugar
+    ADD CONSTRAINT lugar_pkey PRIMARY KEY (lug_id);
+
+
+--
+-- Name: lugar_tienda lugar_tienda_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lugar_tienda
+    ADD CONSTRAINT lugar_tienda_pkey PRIMARY KEY (lug_tie_id);
+
+
+--
+-- Name: metodo_pago metodo_pago_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.metodo_pago
+    ADD CONSTRAINT metodo_pago_pkey PRIMARY KEY (met_pag_id);
+
+
+--
+-- Name: moneda moneda_mon_tipo_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.moneda
+    ADD CONSTRAINT moneda_mon_tipo_key UNIQUE (mon_tipo);
+
+
+--
+-- Name: moneda moneda_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.moneda
+    ADD CONSTRAINT moneda_pkey PRIMARY KEY (mon_id);
+
+
+--
+-- Name: oferta oferta_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.oferta
+    ADD CONSTRAINT oferta_pkey PRIMARY KEY (ofe_id);
+
+
+--
+-- Name: pago_efectivo pago_efectivo_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.pago_efectivo
+    ADD CONSTRAINT pago_efectivo_pkey PRIMARY KEY (pag_efe_id);
+
+
+--
+-- Name: pago pago_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.pago
+    ADD CONSTRAINT pago_pkey PRIMARY KEY (pag_id);
+
+
+--
+-- Name: pre_alm pre_alm_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.pre_alm
+    ADD CONSTRAINT pre_alm_pkey PRIMARY KEY (pre_alm_id);
+
+
+--
+-- Name: presentacion presentacion_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.presentacion
+    ADD CONSTRAINT presentacion_pkey PRIMARY KEY (prese_id);
+
+
+--
+-- Name: proveedor proveedor_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.proveedor
+    ADD CONSTRAINT proveedor_pkey PRIMARY KEY (pro_id);
+
+
+--
+-- Name: proveedor proveedor_pro_rif_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.proveedor
+    ADD CONSTRAINT proveedor_pro_rif_key UNIQUE (pro_rif);
+
+
+--
+-- Name: rec_ing rec_ing_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.rec_ing
+    ADD CONSTRAINT rec_ing_pkey PRIMARY KEY (rec_ing_id);
+
+
+--
+-- Name: rec_ins rec_ins_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.rec_ins
+    ADD CONSTRAINT rec_ins_pkey PRIMARY KEY (rec_ins_id);
+
+
+--
+-- Name: receta receta_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.receta
+    ADD CONSTRAINT receta_pkey PRIMARY KEY (rec_id);
+
+
+--
+-- Name: sol_com_est sol_com_est_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.sol_com_est
+    ADD CONSTRAINT sol_com_est_pkey PRIMARY KEY (sol_com_est_id);
+
+
+--
+-- Name: sol_rep_est sol_rep_est_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.sol_rep_est
+    ADD CONSTRAINT sol_rep_est_pkey PRIMARY KEY (sol_rep_est_id);
+
+
+--
+-- Name: solicitud_compra solicitud_compra_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.solicitud_compra
+    ADD CONSTRAINT solicitud_compra_pkey PRIMARY KEY (sol_com_id);
+
+
+--
+-- Name: solicitud_reposicion solicitud_reposicion_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.solicitud_reposicion
+    ADD CONSTRAINT solicitud_reposicion_pkey PRIMARY KEY (sol_rep_id);
+
+
+--
+-- Name: telefono telefono_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.telefono
+    ADD CONSTRAINT telefono_pkey PRIMARY KEY (tel_id);
+
+
+--
+-- Name: tienda tienda_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.tienda
+    ADD CONSTRAINT tienda_pkey PRIMARY KEY (tie_id);
+
+
+--
+-- Name: tipo_beneficio tipo_beneficio_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.tipo_beneficio
+    ADD CONSTRAINT tipo_beneficio_pkey PRIMARY KEY (tip_ben_id);
+
+
+--
+-- Name: tipo_beneficio tipo_beneficio_tip_ben_nombre_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.tipo_beneficio
+    ADD CONSTRAINT tipo_beneficio_tip_ben_nombre_key UNIQUE (tip_ben_nombre);
+
+
+--
+-- Name: tipo_cerveza tipo_cerveza_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.tipo_cerveza
+    ADD CONSTRAINT tipo_cerveza_pkey PRIMARY KEY (tip_cer_id);
+
+
+--
+-- Name: tipo_estilo_cerveza tipo_estilo_cerveza_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.tipo_estilo_cerveza
+    ADD CONSTRAINT tipo_estilo_cerveza_pkey PRIMARY KEY (tip_est_cer_id);
+
+
+--
+-- Name: tipo_evento tipo_evento_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.tipo_evento
+    ADD CONSTRAINT tipo_evento_pkey PRIMARY KEY (tip_eve_id);
+
+
+--
+-- Name: usuario_groups usuario_groups_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.usuario_groups
+    ADD CONSTRAINT usuario_groups_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: usuario_groups usuario_groups_usuario_id_group_id_2e3cd638_uniq; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.usuario_groups
+    ADD CONSTRAINT usuario_groups_usuario_id_group_id_2e3cd638_uniq UNIQUE (usuario_id, group_id);
+
+
+--
+-- Name: usuario usuario_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.usuario
+    ADD CONSTRAINT usuario_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: usuario_user_permissions usuario_user_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.usuario_user_permissions
+    ADD CONSTRAINT usuario_user_permissions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: usuario_user_permissions usuario_user_permissions_usuario_id_permission_id_3db58b8c_uniq; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.usuario_user_permissions
+    ADD CONSTRAINT usuario_user_permissions_usuario_id_permission_id_3db58b8c_uniq UNIQUE (usuario_id, permission_id);
+
+
+--
+-- Name: usuario usuario_username_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.usuario
+    ADD CONSTRAINT usuario_username_key UNIQUE (username);
+
+
+--
+-- Name: vacacion vacacion_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.vacacion
+    ADD CONSTRAINT vacacion_pkey PRIMARY KEY (vac_id);
+
+
+--
+-- Name: ven_onl_est ven_onl_est_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.ven_onl_est
+    ADD CONSTRAINT ven_onl_est_pkey PRIMARY KEY (ven_onl_est_id);
+
+
+--
+-- Name: venta_boleto_evento venta_boleto_evento_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.venta_boleto_evento
+    ADD CONSTRAINT venta_boleto_evento_pkey PRIMARY KEY (ven_bol_eve_id);
+
+
+--
+-- Name: venta_evento venta_evento_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.venta_evento
+    ADD CONSTRAINT venta_evento_pkey PRIMARY KEY (ven_eve_id);
+
+
+--
+-- Name: venta_fisica venta_fisica_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.venta_fisica
+    ADD CONSTRAINT venta_fisica_pkey PRIMARY KEY (ven_fis_id);
+
+
+--
+-- Name: venta_online venta_online_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.venta_online
+    ADD CONSTRAINT venta_online_pkey PRIMARY KEY (ven_onl_id);
+
+
+--
+-- Name: admin_interface_theme_name_30bda70f_like; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX admin_interface_theme_name_30bda70f_like ON public.admin_interface_theme USING btree (name varchar_pattern_ops);
+
+
+--
+-- Name: afi_est_fk_afiliacion_c96a58d5; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX afi_est_fk_afiliacion_c96a58d5 ON public.afi_est USING btree (fk_afiliacion);
+
+
+--
+-- Name: afi_est_fk_estatus_80c67bde; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX afi_est_fk_estatus_80c67bde ON public.afi_est USING btree (fk_estatus);
+
+
+--
+-- Name: afiliacion_fk_proveedor_138d21e9; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX afiliacion_fk_proveedor_138d21e9 ON public.afiliacion USING btree (fk_proveedor);
+
+
+--
+-- Name: afiliacion_fk_tienda_25a1ae33; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX afiliacion_fk_tienda_25a1ae33 ON public.afiliacion USING btree (fk_tienda);
+
+
+--
+-- Name: almacen_fk_tienda_182f6ff1; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX almacen_fk_tienda_182f6ff1 ON public.almacen USING btree (fk_tienda);
+
+
+--
+-- Name: anaquel_fk_lugar_tienda_b94218bd; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX anaquel_fk_lugar_tienda_b94218bd ON public.anaquel USING btree (fk_lugar_tienda);
+
+
+--
+-- Name: asistencia_evento_fk_cliente_d0dc47f6; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX asistencia_evento_fk_cliente_d0dc47f6 ON public.asistencia_evento USING btree (fk_cliente);
+
+
+--
+-- Name: asistencia_evento_fk_evento_4f0bf62d; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX asistencia_evento_fk_evento_4f0bf62d ON public.asistencia_evento USING btree (fk_evento);
+
+
+--
+-- Name: asistencia_evento_fk_ven_bol_eve_fd72f073; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX asistencia_evento_fk_ven_bol_eve_fd72f073 ON public.asistencia_evento USING btree (fk_ven_bol_eve);
+
+
+--
+-- Name: asistencia_fk_empleado_ad1a0f87; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX asistencia_fk_empleado_ad1a0f87 ON public.asistencia USING btree (fk_empleado);
+
+
+--
+-- Name: auth_group_name_a6ea08ec_like; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX auth_group_name_a6ea08ec_like ON public.auth_group USING btree (name varchar_pattern_ops);
+
+
+--
+-- Name: auth_group_permissions_group_id_b120cbf9; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX auth_group_permissions_group_id_b120cbf9 ON public.auth_group_permissions USING btree (group_id);
+
+
+--
+-- Name: auth_group_permissions_permission_id_84c5c92e; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX auth_group_permissions_permission_id_84c5c92e ON public.auth_group_permissions USING btree (permission_id);
+
+
+--
+-- Name: auth_permission_content_type_id_2f476e4b; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX auth_permission_content_type_id_2f476e4b ON public.auth_permission USING btree (content_type_id);
+
+
+--
+-- Name: car_tip_cer_fk_caracteristica_eb690ec0; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX car_tip_cer_fk_caracteristica_eb690ec0 ON public.car_tip_cer USING btree (fk_caracteristica);
+
+
+--
+-- Name: car_tip_cer_fk_tipo_cerveza_6206cb80; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX car_tip_cer_fk_tipo_cerveza_6206cb80 ON public.car_tip_cer USING btree (fk_tipo_cerveza);
+
+
+--
+-- Name: cargo_car_nombre_9cf4f9ee_like; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX cargo_car_nombre_9cf4f9ee_like ON public.cargo USING btree (car_nombre varchar_pattern_ops);
+
+
+--
+-- Name: cerv_car_fk_caracteristica_fdfb8a58; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX cerv_car_fk_caracteristica_fdfb8a58 ON public.cerv_car USING btree (fk_caracteristica);
+
+
+--
+-- Name: cerv_car_fk_cerveza_3e5952ac; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX cerv_car_fk_cerveza_3e5952ac ON public.cerv_car USING btree (fk_cerveza);
+
+
+--
+-- Name: cerveza_fk_tipo_estilo_cerveza_83d8a42a; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX cerveza_fk_tipo_estilo_cerveza_83d8a42a ON public.cerveza USING btree (fk_tipo_estilo_cerveza);
+
+
+--
+-- Name: cliente_cli_nat_ci_f109af57_like; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX cliente_cli_nat_ci_f109af57_like ON public.cliente USING btree (cli_nat_ci varchar_pattern_ops);
+
+
+--
+-- Name: cliente_cli_rif_41bae00a_like; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX cliente_cli_rif_41bae00a_like ON public.cliente USING btree (cli_rif varchar_pattern_ops);
+
+
+--
+-- Name: cliente_fk_lugar_d10f46fc; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX cliente_fk_lugar_d10f46fc ON public.cliente USING btree (fk_lugar);
+
+
+--
+-- Name: contacto_cliente_fk_cliente_d6d1ddfb; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX contacto_cliente_fk_cliente_d6d1ddfb ON public.contacto_cliente USING btree (fk_cliente);
+
+
+--
+-- Name: contacto_proveedor_fk_proveedor_bec82efc; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX contacto_proveedor_fk_proveedor_bec82efc ON public.contacto_proveedor USING btree (fk_proveedor);
+
+
+--
+-- Name: correo_electronico_fk_cliente_1675eca8; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX correo_electronico_fk_cliente_1675eca8 ON public.correo_electronico USING btree (fk_cliente);
+
+
+--
+-- Name: correo_electronico_fk_contacto_cliente_3a44c8ea; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX correo_electronico_fk_contacto_cliente_3a44c8ea ON public.correo_electronico USING btree (fk_contacto_cliente);
+
+
+--
+-- Name: correo_electronico_fk_contacto_proveedor_232a81da; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX correo_electronico_fk_contacto_proveedor_232a81da ON public.correo_electronico USING btree (fk_contacto_proveedor);
+
+
+--
+-- Name: correo_electronico_fk_empleado_9dd767b3; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX correo_electronico_fk_empleado_9dd767b3 ON public.correo_electronico USING btree (fk_empleado);
+
+
+--
+-- Name: correo_electronico_fk_proveedor_cfa4325b; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX correo_electronico_fk_proveedor_cfa4325b ON public.correo_electronico USING btree (fk_proveedor);
+
+
+--
+-- Name: cuenta_punto_fk_cliente_8a672568; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX cuenta_punto_fk_cliente_8a672568 ON public.cuenta_punto USING btree (fk_cliente);
+
+
+--
+-- Name: dep_tie_fk_departamento_b29b24bf; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX dep_tie_fk_departamento_b29b24bf ON public.dep_tie USING btree (fk_departamento);
+
+
+--
+-- Name: dep_tie_fk_tienda_8f8c75d7; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX dep_tie_fk_tienda_8f8c75d7 ON public.dep_tie USING btree (fk_tienda);
+
+
+--
+-- Name: departamento_dep_nombre_8a5d3481_like; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX departamento_dep_nombre_8a5d3481_like ON public.departamento USING btree (dep_nombre varchar_pattern_ops);
+
+
+--
+-- Name: detalle_compra_fk_presentacion_7fb10ea0; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX detalle_compra_fk_presentacion_7fb10ea0 ON public.detalle_compra USING btree (fk_presentacion);
+
+
+--
+-- Name: detalle_compra_fk_sol_com_217351a2; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX detalle_compra_fk_sol_com_217351a2 ON public.detalle_compra USING btree (fk_sol_com);
+
+
+--
+-- Name: detalle_venta_evento_fk_exi_eve_ad5084b0; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX detalle_venta_evento_fk_exi_eve_ad5084b0 ON public.detalle_venta_evento USING btree (fk_exi_eve);
+
+
+--
+-- Name: detalle_venta_evento_fk_venta_evento_3071707e; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX detalle_venta_evento_fk_venta_evento_3071707e ON public.detalle_venta_evento USING btree (fk_venta_evento);
+
+
+--
+-- Name: detalle_venta_fisica_fk_inventario_05904a18; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX detalle_venta_fisica_fk_inventario_05904a18 ON public.detalle_venta_fisica USING btree (fk_inventario);
+
+
+--
+-- Name: detalle_venta_fisica_fk_venta_fisica_21f2bec4; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX detalle_venta_fisica_fk_venta_fisica_21f2bec4 ON public.detalle_venta_fisica USING btree (fk_venta_fisica);
+
+
+--
+-- Name: detalle_venta_online_fk_pre_alm_96592db4; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX detalle_venta_online_fk_pre_alm_96592db4 ON public.detalle_venta_online USING btree (fk_pre_alm);
+
+
+--
+-- Name: detalle_venta_online_fk_venta_online_a472f874; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX detalle_venta_online_fk_venta_online_a472f874 ON public.detalle_venta_online USING btree (fk_venta_online);
+
+
+--
+-- Name: django_admin_log_content_type_id_c4bce8eb; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX django_admin_log_content_type_id_c4bce8eb ON public.django_admin_log USING btree (content_type_id);
+
+
+--
+-- Name: django_admin_log_user_id_c564eba6; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX django_admin_log_user_id_c564eba6 ON public.django_admin_log USING btree (user_id);
+
+
+--
+-- Name: django_session_expire_date_a5c62663; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX django_session_expire_date_a5c62663 ON public.django_session USING btree (expire_date);
+
+
+--
+-- Name: django_session_session_key_c0390e0f_like; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX django_session_session_key_c0390e0f_like ON public.django_session USING btree (session_key varchar_pattern_ops);
+
+
+--
+-- Name: emp_car_fk_cargo_0bf0fe73; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX emp_car_fk_cargo_0bf0fe73 ON public.emp_car USING btree (fk_cargo);
+
+
+--
+-- Name: emp_car_fk_empleado_60df61f4; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX emp_car_fk_empleado_60df61f4 ON public.emp_car USING btree (fk_empleado);
+
+
+--
+-- Name: emp_car_hor_fk_cargo_5f5dacf9; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX emp_car_hor_fk_cargo_5f5dacf9 ON public.emp_car_hor USING btree (fk_cargo);
+
+
+--
+-- Name: emp_car_hor_fk_departamento_d475f135; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX emp_car_hor_fk_departamento_d475f135 ON public.emp_car_hor USING btree (fk_departamento);
+
+
+--
+-- Name: emp_car_hor_fk_empleado_5d35073d; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX emp_car_hor_fk_empleado_5d35073d ON public.emp_car_hor USING btree (fk_empleado);
+
+
+--
+-- Name: emp_car_hor_fk_horario_fb352a17; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX emp_car_hor_fk_horario_fb352a17 ON public.emp_car_hor USING btree (fk_horario);
+
+
+--
+-- Name: emp_car_hor_fk_tienda_3fc5172f; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX emp_car_hor_fk_tienda_3fc5172f ON public.emp_car_hor USING btree (fk_tienda);
+
+
+--
+-- Name: emp_tip_ben_fk_empleado_6458ef81; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX emp_tip_ben_fk_empleado_6458ef81 ON public.emp_tip_ben USING btree (fk_empleado);
+
+
+--
+-- Name: emp_tip_ben_fk_tipo_beneficio_ae383219; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX emp_tip_ben_fk_tipo_beneficio_ae383219 ON public.emp_tip_ben USING btree (fk_tipo_beneficio);
+
+
+--
+-- Name: empleado_emp_ci_de9ccff4_like; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX empleado_emp_ci_de9ccff4_like ON public.empleado USING btree (emp_ci varchar_pattern_ops);
+
+
+--
+-- Name: empleado_fk_lugar_68df3593; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX empleado_fk_lugar_68df3593 ON public.empleado USING btree (fk_lugar);
+
+
+--
+-- Name: estatus_est_tipo_estatus_6b47eec1_like; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX estatus_est_tipo_estatus_6b47eec1_like ON public.estatus USING btree (est_tipo_estatus varchar_pattern_ops);
+
+
+--
+-- Name: eve_pro_fk_evento_e275f857; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX eve_pro_fk_evento_e275f857 ON public.eve_pro USING btree (fk_evento);
+
+
+--
+-- Name: eve_pro_fk_proveedor_f7e10495; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX eve_pro_fk_proveedor_f7e10495 ON public.eve_pro USING btree (fk_proveedor);
+
+
+--
+-- Name: evento_fk_lugar_7051b684; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX evento_fk_lugar_7051b684 ON public.evento USING btree (fk_lugar);
+
+
+--
+-- Name: evento_fk_tip_eve_c60c530e; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX evento_fk_tip_eve_c60c530e ON public.evento USING btree (fk_tip_eve);
+
+
+--
+-- Name: existencia_evento_fk_evento_proveedor_3ddb7e7f; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX existencia_evento_fk_evento_proveedor_3ddb7e7f ON public.existencia_evento USING btree (fk_evento_proveedor);
+
+
+--
+-- Name: existencia_evento_fk_presentacion_d7307eef; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX existencia_evento_fk_presentacion_d7307eef ON public.existencia_evento USING btree (fk_presentacion);
+
+
+--
+-- Name: historico_moneda_fk_moneda_f7a8a024; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX historico_moneda_fk_moneda_f7a8a024 ON public.historico_moneda USING btree (fk_moneda);
+
+
+--
+-- Name: inventario_fk_anaquel_340a6257; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX inventario_fk_anaquel_340a6257 ON public.inventario USING btree (fk_anaquel);
+
+
+--
+-- Name: inventario_fk_oferta_e57cd75c; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX inventario_fk_oferta_e57cd75c ON public.inventario USING btree (fk_oferta);
+
+
+--
+-- Name: inventario_fk_presentacion_b292e310; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX inventario_fk_presentacion_b292e310 ON public.inventario USING btree (fk_presentacion);
+
+
+--
+-- Name: lugar_fk_lugar_c34c3bbf; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lugar_fk_lugar_c34c3bbf ON public.lugar USING btree (fk_lugar);
+
+
+--
+-- Name: lugar_tienda_fk_lugar_tienda_fabc654c; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lugar_tienda_fk_lugar_tienda_fabc654c ON public.lugar_tienda USING btree (fk_lugar_tienda);
+
+
+--
+-- Name: lugar_tienda_fk_tienda_1b0e37d3; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lugar_tienda_fk_tienda_1b0e37d3 ON public.lugar_tienda USING btree (fk_tienda);
+
+
+--
+-- Name: metodo_pago_fk_his_pre_pun_ba04b391; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX metodo_pago_fk_his_pre_pun_ba04b391 ON public.metodo_pago USING btree (fk_his_pre_pun);
+
+
+--
+-- Name: moneda_mon_tipo_fb01df73_like; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX moneda_mon_tipo_fb01df73_like ON public.moneda USING btree (mon_tipo varchar_pattern_ops);
+
+
+--
+-- Name: pago_efectivo_fk_metodo_pago_5cfe4bc4; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX pago_efectivo_fk_metodo_pago_5cfe4bc4 ON public.pago_efectivo USING btree (fk_metodo_pago);
+
+
+--
+-- Name: pago_fk_afiliacion_5599c377; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX pago_fk_afiliacion_5599c377 ON public.pago USING btree (fk_afiliacion);
+
+
+--
+-- Name: pago_fk_metodo_pago_958fa9c8; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX pago_fk_metodo_pago_958fa9c8 ON public.pago USING btree (fk_metodo_pago);
+
+
+--
+-- Name: pago_fk_moneda_2704d165; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX pago_fk_moneda_2704d165 ON public.pago USING btree (fk_moneda);
+
+
+--
+-- Name: pago_fk_venta_evento_4bddf9fa; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX pago_fk_venta_evento_4bddf9fa ON public.pago USING btree (fk_venta_evento);
+
+
+--
+-- Name: pago_fk_venta_fisica_f58df627; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX pago_fk_venta_fisica_f58df627 ON public.pago USING btree (fk_venta_fisica);
+
+
+--
+-- Name: pago_fk_venta_online_4161ef78; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX pago_fk_venta_online_4161ef78 ON public.pago USING btree (fk_venta_online);
+
+
+--
+-- Name: pre_alm_fk_almacen_58bc2a80; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX pre_alm_fk_almacen_58bc2a80 ON public.pre_alm USING btree (fk_almacen);
+
+
+--
+-- Name: pre_alm_fk_oferta_310e972d; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX pre_alm_fk_oferta_310e972d ON public.pre_alm USING btree (fk_oferta);
+
+
+--
+-- Name: pre_alm_fk_presentacion_5791ab49; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX pre_alm_fk_presentacion_5791ab49 ON public.pre_alm USING btree (fk_presentacion);
+
+
+--
+-- Name: presentacion_fk_cerveza_fdd3f59d; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX presentacion_fk_cerveza_fdd3f59d ON public.presentacion USING btree (fk_cerveza);
+
+
+--
+-- Name: proveedor_fk_lugar_7459b24b; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX proveedor_fk_lugar_7459b24b ON public.proveedor USING btree (fk_lugar);
+
+
+--
+-- Name: proveedor_pro_rif_54ed4c71_like; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX proveedor_pro_rif_54ed4c71_like ON public.proveedor USING btree (pro_rif varchar_pattern_ops);
+
+
+--
+-- Name: rec_ing_fk_ingrediente_1752b53d; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX rec_ing_fk_ingrediente_1752b53d ON public.rec_ing USING btree (fk_ingrediente);
+
+
+--
+-- Name: rec_ing_fk_receta_eb1aef13; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX rec_ing_fk_receta_eb1aef13 ON public.rec_ing USING btree (fk_receta);
+
+
+--
+-- Name: rec_ins_fk_instruccion_5749ecf7; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX rec_ins_fk_instruccion_5749ecf7 ON public.rec_ins USING btree (fk_instruccion);
+
+
+--
+-- Name: rec_ins_fk_receta_775a9e30; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX rec_ins_fk_receta_775a9e30 ON public.rec_ins USING btree (fk_receta);
+
+
+--
+-- Name: sol_com_est_fk_estatus_3f65e504; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX sol_com_est_fk_estatus_3f65e504 ON public.sol_com_est USING btree (fk_estatus);
+
+
+--
+-- Name: sol_com_est_fk_sol_com_c02697c4; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX sol_com_est_fk_sol_com_c02697c4 ON public.sol_com_est USING btree (fk_sol_com);
+
+
+--
+-- Name: sol_rep_est_fk_estatus_400f4a62; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX sol_rep_est_fk_estatus_400f4a62 ON public.sol_rep_est USING btree (fk_estatus);
+
+
+--
+-- Name: sol_rep_est_fk_sol_rep_5131a8fa; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX sol_rep_est_fk_sol_rep_5131a8fa ON public.sol_rep_est USING btree (fk_sol_rep);
+
+
+--
+-- Name: solicitud_compra_fk_pre_alm_9c5c5847; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX solicitud_compra_fk_pre_alm_9c5c5847 ON public.solicitud_compra USING btree (fk_pre_alm);
+
+
+--
+-- Name: solicitud_compra_fk_proveedor_682536fa; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX solicitud_compra_fk_proveedor_682536fa ON public.solicitud_compra USING btree (fk_proveedor);
+
+
+--
+-- Name: solicitud_compra_fk_usuario_4a71efc5; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX solicitud_compra_fk_usuario_4a71efc5 ON public.solicitud_compra USING btree (fk_usuario);
+
+
+--
+-- Name: solicitud_reposicion_fk_inv_755d3938; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX solicitud_reposicion_fk_inv_755d3938 ON public.solicitud_reposicion USING btree (fk_inv);
+
+
+--
+-- Name: solicitud_reposicion_fk_pre_alm_a29cf191; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX solicitud_reposicion_fk_pre_alm_a29cf191 ON public.solicitud_reposicion USING btree (fk_pre_alm);
+
+
+--
+-- Name: solicitud_reposicion_fk_usuario_55e4cc27; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX solicitud_reposicion_fk_usuario_55e4cc27 ON public.solicitud_reposicion USING btree (fk_usuario);
+
+
+--
+-- Name: telefono_fk_cliente_b85c99d6; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX telefono_fk_cliente_b85c99d6 ON public.telefono USING btree (fk_cliente);
+
+
+--
+-- Name: telefono_fk_contacto_cliente_6bc5ba62; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX telefono_fk_contacto_cliente_6bc5ba62 ON public.telefono USING btree (fk_contacto_cliente);
+
+
+--
+-- Name: telefono_fk_contacto_proveedor_853fc0fc; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX telefono_fk_contacto_proveedor_853fc0fc ON public.telefono USING btree (fk_contacto_proveedor);
+
+
+--
+-- Name: telefono_fk_empleado_218ece5a; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX telefono_fk_empleado_218ece5a ON public.telefono USING btree (fk_empleado);
+
+
+--
+-- Name: telefono_fk_proveedor_e45ba6be; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX telefono_fk_proveedor_e45ba6be ON public.telefono USING btree (fk_proveedor);
+
+
+--
+-- Name: tienda_fk_lugar_a63cb22a; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX tienda_fk_lugar_a63cb22a ON public.tienda USING btree (fk_lugar);
+
+
+--
+-- Name: tipo_beneficio_tip_ben_nombre_7295c1da_like; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX tipo_beneficio_tip_ben_nombre_7295c1da_like ON public.tipo_beneficio USING btree (tip_ben_nombre varchar_pattern_ops);
+
+
+--
+-- Name: tipo_estilo_cerveza_fk_estilo_cerveza_6891c74a; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX tipo_estilo_cerveza_fk_estilo_cerveza_6891c74a ON public.tipo_estilo_cerveza USING btree (fk_estilo_cerveza);
+
+
+--
+-- Name: tipo_estilo_cerveza_fk_tipo_cerveza_ed8d1c70; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX tipo_estilo_cerveza_fk_tipo_cerveza_ed8d1c70 ON public.tipo_estilo_cerveza USING btree (fk_tipo_cerveza);
+
+
+--
+-- Name: tipo_evento_fk_tipo_evento_64e19139; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX tipo_evento_fk_tipo_evento_64e19139 ON public.tipo_evento USING btree (fk_tipo_evento);
+
+
+--
+-- Name: usuario_fk_cliente_4ae4519a; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX usuario_fk_cliente_4ae4519a ON public.usuario USING btree (fk_cliente);
+
+
+--
+-- Name: usuario_fk_proveedor_9b4f82fb; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX usuario_fk_proveedor_9b4f82fb ON public.usuario USING btree (fk_proveedor);
+
+
+--
+-- Name: usuario_groups_group_id_c67c8651; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX usuario_groups_group_id_c67c8651 ON public.usuario_groups USING btree (group_id);
+
+
+--
+-- Name: usuario_groups_usuario_id_161fc80c; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX usuario_groups_usuario_id_161fc80c ON public.usuario_groups USING btree (usuario_id);
+
+
+--
+-- Name: usuario_user_permissions_permission_id_a8893ce7; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX usuario_user_permissions_permission_id_a8893ce7 ON public.usuario_user_permissions USING btree (permission_id);
+
+
+--
+-- Name: usuario_user_permissions_usuario_id_693d9c50; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX usuario_user_permissions_usuario_id_693d9c50 ON public.usuario_user_permissions USING btree (usuario_id);
+
+
+--
+-- Name: usuario_username_7e1fc9dc_like; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX usuario_username_7e1fc9dc_like ON public.usuario USING btree (username varchar_pattern_ops);
+
+
+--
+-- Name: vacacion_fk_empleado_cb6959b7; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX vacacion_fk_empleado_cb6959b7 ON public.vacacion USING btree (fk_empleado);
+
+
+--
+-- Name: ven_onl_est_fk_estatus_2d259dbd; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ven_onl_est_fk_estatus_2d259dbd ON public.ven_onl_est USING btree (fk_estatus);
+
+
+--
+-- Name: ven_onl_est_fk_venta_online_a6c34bae; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ven_onl_est_fk_venta_online_a6c34bae ON public.ven_onl_est USING btree (fk_venta_online);
+
+
+--
+-- Name: venta_evento_fk_cliente_1a772f9f; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX venta_evento_fk_cliente_1a772f9f ON public.venta_evento USING btree (fk_cliente);
+
+
+--
+-- Name: venta_evento_fk_evento_259febf5; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX venta_evento_fk_evento_259febf5 ON public.venta_evento USING btree (fk_evento);
+
+
+--
+-- Name: venta_fisica_fk_cliente_6695bafa; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX venta_fisica_fk_cliente_6695bafa ON public.venta_fisica USING btree (fk_cliente);
+
+
+--
+-- Name: venta_fisica_fk_oferta_4e836443; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX venta_fisica_fk_oferta_4e836443 ON public.venta_fisica USING btree (fk_oferta);
+
+
+--
+-- Name: venta_fisica_fk_tienda_68b386cf; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX venta_fisica_fk_tienda_68b386cf ON public.venta_fisica USING btree (fk_tienda);
+
+
+--
+-- Name: venta_online_fk_oferta_ae68023f; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX venta_online_fk_oferta_ae68023f ON public.venta_online USING btree (fk_oferta);
+
+
+--
+-- Name: venta_online_fk_tienda_2b45db66; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX venta_online_fk_tienda_2b45db66 ON public.venta_online USING btree (fk_tienda);
+
+
+--
+-- Name: venta_online_fk_usuario_ff559976; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX venta_online_fk_usuario_ff559976 ON public.venta_online USING btree (fk_usuario);
+
+
+--
+-- Name: afi_est afi_est_fk_afiliacion_c96a58d5_fk_afiliacion_afi_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.afi_est
+    ADD CONSTRAINT afi_est_fk_afiliacion_c96a58d5_fk_afiliacion_afi_id FOREIGN KEY (fk_afiliacion) REFERENCES public.afiliacion(afi_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: afi_est afi_est_fk_estatus_80c67bde_fk_estatus_est_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.afi_est
+    ADD CONSTRAINT afi_est_fk_estatus_80c67bde_fk_estatus_est_id FOREIGN KEY (fk_estatus) REFERENCES public.estatus(est_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: afiliacion afiliacion_fk_proveedor_138d21e9_fk_proveedor_pro_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.afiliacion
+    ADD CONSTRAINT afiliacion_fk_proveedor_138d21e9_fk_proveedor_pro_id FOREIGN KEY (fk_proveedor) REFERENCES public.proveedor(pro_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: afiliacion afiliacion_fk_tienda_25a1ae33_fk_tienda_tie_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.afiliacion
+    ADD CONSTRAINT afiliacion_fk_tienda_25a1ae33_fk_tienda_tie_id FOREIGN KEY (fk_tienda) REFERENCES public.tienda(tie_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: almacen almacen_fk_tienda_182f6ff1_fk_tienda_tie_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.almacen
+    ADD CONSTRAINT almacen_fk_tienda_182f6ff1_fk_tienda_tie_id FOREIGN KEY (fk_tienda) REFERENCES public.tienda(tie_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: anaquel anaquel_fk_lugar_tienda_b94218bd_fk_lugar_tienda_lug_tie_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.anaquel
+    ADD CONSTRAINT anaquel_fk_lugar_tienda_b94218bd_fk_lugar_tienda_lug_tie_id FOREIGN KEY (fk_lugar_tienda) REFERENCES public.lugar_tienda(lug_tie_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: asistencia_evento asistencia_evento_fk_cliente_d0dc47f6_fk_cliente_cli_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.asistencia_evento
+    ADD CONSTRAINT asistencia_evento_fk_cliente_d0dc47f6_fk_cliente_cli_id FOREIGN KEY (fk_cliente) REFERENCES public.cliente(cli_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: asistencia_evento asistencia_evento_fk_evento_4f0bf62d_fk_evento_eve_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.asistencia_evento
+    ADD CONSTRAINT asistencia_evento_fk_evento_4f0bf62d_fk_evento_eve_id FOREIGN KEY (fk_evento) REFERENCES public.evento(eve_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: asistencia_evento asistencia_evento_fk_ven_bol_eve_fd72f073_fk_venta_bol; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.asistencia_evento
+    ADD CONSTRAINT asistencia_evento_fk_ven_bol_eve_fd72f073_fk_venta_bol FOREIGN KEY (fk_ven_bol_eve) REFERENCES public.venta_boleto_evento(ven_bol_eve_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: asistencia asistencia_fk_empleado_ad1a0f87_fk_empleado_emp_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.asistencia
+    ADD CONSTRAINT asistencia_fk_empleado_ad1a0f87_fk_empleado_emp_id FOREIGN KEY (fk_empleado) REFERENCES public.empleado(emp_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: auth_group_permissions auth_group_permissio_permission_id_84c5c92e_fk_auth_perm; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.auth_group_permissions
+    ADD CONSTRAINT auth_group_permissio_permission_id_84c5c92e_fk_auth_perm FOREIGN KEY (permission_id) REFERENCES public.auth_permission(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: auth_group_permissions auth_group_permissions_group_id_b120cbf9_fk_auth_group_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.auth_group_permissions
+    ADD CONSTRAINT auth_group_permissions_group_id_b120cbf9_fk_auth_group_id FOREIGN KEY (group_id) REFERENCES public.auth_group(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: auth_permission auth_permission_content_type_id_2f476e4b_fk_django_co; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.auth_permission
+    ADD CONSTRAINT auth_permission_content_type_id_2f476e4b_fk_django_co FOREIGN KEY (content_type_id) REFERENCES public.django_content_type(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: car_tip_cer car_tip_cer_fk_caracteristica_eb690ec0_fk_caracteristica_car_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.car_tip_cer
+    ADD CONSTRAINT car_tip_cer_fk_caracteristica_eb690ec0_fk_caracteristica_car_id FOREIGN KEY (fk_caracteristica) REFERENCES public.caracteristica(car_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: car_tip_cer car_tip_cer_fk_tipo_cerveza_6206cb80_fk_tipo_cerveza_tip_cer_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.car_tip_cer
+    ADD CONSTRAINT car_tip_cer_fk_tipo_cerveza_6206cb80_fk_tipo_cerveza_tip_cer_id FOREIGN KEY (fk_tipo_cerveza) REFERENCES public.tipo_cerveza(tip_cer_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: cerv_car cerv_car_fk_caracteristica_fdfb8a58_fk_caracteristica_car_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cerv_car
+    ADD CONSTRAINT cerv_car_fk_caracteristica_fdfb8a58_fk_caracteristica_car_id FOREIGN KEY (fk_caracteristica) REFERENCES public.caracteristica(car_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: cerv_car cerv_car_fk_cerveza_3e5952ac_fk_cerveza_cer_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cerv_car
+    ADD CONSTRAINT cerv_car_fk_cerveza_3e5952ac_fk_cerveza_cer_id FOREIGN KEY (fk_cerveza) REFERENCES public.cerveza(cer_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: cerveza cerveza_fk_tipo_estilo_cerve_83d8a42a_fk_tipo_esti; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cerveza
+    ADD CONSTRAINT cerveza_fk_tipo_estilo_cerve_83d8a42a_fk_tipo_esti FOREIGN KEY (fk_tipo_estilo_cerveza) REFERENCES public.tipo_estilo_cerveza(tip_est_cer_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: cliente cliente_fk_lugar_d10f46fc_fk_lugar_lug_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cliente
+    ADD CONSTRAINT cliente_fk_lugar_d10f46fc_fk_lugar_lug_id FOREIGN KEY (fk_lugar) REFERENCES public.lugar(lug_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: contacto_cliente contacto_cliente_fk_cliente_d6d1ddfb_fk_cliente_cli_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.contacto_cliente
+    ADD CONSTRAINT contacto_cliente_fk_cliente_d6d1ddfb_fk_cliente_cli_id FOREIGN KEY (fk_cliente) REFERENCES public.cliente(cli_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: contacto_proveedor contacto_proveedor_fk_proveedor_bec82efc_fk_proveedor_pro_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.contacto_proveedor
+    ADD CONSTRAINT contacto_proveedor_fk_proveedor_bec82efc_fk_proveedor_pro_id FOREIGN KEY (fk_proveedor) REFERENCES public.proveedor(pro_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: correo_electronico correo_electronico_fk_cliente_1675eca8_fk_cliente_cli_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.correo_electronico
+    ADD CONSTRAINT correo_electronico_fk_cliente_1675eca8_fk_cliente_cli_id FOREIGN KEY (fk_cliente) REFERENCES public.cliente(cli_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: correo_electronico correo_electronico_fk_contacto_cliente_3a44c8ea_fk_contacto_; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.correo_electronico
+    ADD CONSTRAINT correo_electronico_fk_contacto_cliente_3a44c8ea_fk_contacto_ FOREIGN KEY (fk_contacto_cliente) REFERENCES public.contacto_cliente(con_cli_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: correo_electronico correo_electronico_fk_contacto_proveedo_232a81da_fk_contacto_; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.correo_electronico
+    ADD CONSTRAINT correo_electronico_fk_contacto_proveedo_232a81da_fk_contacto_ FOREIGN KEY (fk_contacto_proveedor) REFERENCES public.contacto_proveedor(con_pro_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: correo_electronico correo_electronico_fk_empleado_9dd767b3_fk_empleado_emp_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.correo_electronico
+    ADD CONSTRAINT correo_electronico_fk_empleado_9dd767b3_fk_empleado_emp_id FOREIGN KEY (fk_empleado) REFERENCES public.empleado(emp_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: correo_electronico correo_electronico_fk_proveedor_cfa4325b_fk_proveedor_pro_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.correo_electronico
+    ADD CONSTRAINT correo_electronico_fk_proveedor_cfa4325b_fk_proveedor_pro_id FOREIGN KEY (fk_proveedor) REFERENCES public.proveedor(pro_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: cuenta_punto cuenta_punto_fk_cliente_8a672568_fk_cliente_cli_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cuenta_punto
+    ADD CONSTRAINT cuenta_punto_fk_cliente_8a672568_fk_cliente_cli_id FOREIGN KEY (fk_cliente) REFERENCES public.cliente(cli_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: dep_tie dep_tie_fk_departamento_b29b24bf_fk_departamento_dep_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.dep_tie
+    ADD CONSTRAINT dep_tie_fk_departamento_b29b24bf_fk_departamento_dep_id FOREIGN KEY (fk_departamento) REFERENCES public.departamento(dep_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: dep_tie dep_tie_fk_tienda_8f8c75d7_fk_tienda_tie_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.dep_tie
+    ADD CONSTRAINT dep_tie_fk_tienda_8f8c75d7_fk_tienda_tie_id FOREIGN KEY (fk_tienda) REFERENCES public.tienda(tie_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: detalle_compra detalle_compra_fk_presentacion_7fb10ea0_fk_presentac; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.detalle_compra
+    ADD CONSTRAINT detalle_compra_fk_presentacion_7fb10ea0_fk_presentac FOREIGN KEY (fk_presentacion) REFERENCES public.presentacion(prese_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: detalle_compra detalle_compra_fk_sol_com_217351a2_fk_solicitud; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.detalle_compra
+    ADD CONSTRAINT detalle_compra_fk_sol_com_217351a2_fk_solicitud FOREIGN KEY (fk_sol_com) REFERENCES public.solicitud_compra(sol_com_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: detalle_venta_evento detalle_venta_evento_fk_exi_eve_ad5084b0_fk_existenci; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.detalle_venta_evento
+    ADD CONSTRAINT detalle_venta_evento_fk_exi_eve_ad5084b0_fk_existenci FOREIGN KEY (fk_exi_eve) REFERENCES public.existencia_evento(exi_eve_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: detalle_venta_evento detalle_venta_evento_fk_venta_evento_3071707e_fk_venta_eve; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.detalle_venta_evento
+    ADD CONSTRAINT detalle_venta_evento_fk_venta_evento_3071707e_fk_venta_eve FOREIGN KEY (fk_venta_evento) REFERENCES public.venta_evento(ven_eve_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: detalle_venta_fisica detalle_venta_fisica_fk_inventario_05904a18_fk_inventari; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.detalle_venta_fisica
+    ADD CONSTRAINT detalle_venta_fisica_fk_inventario_05904a18_fk_inventari FOREIGN KEY (fk_inventario) REFERENCES public.inventario(inv_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: detalle_venta_fisica detalle_venta_fisica_fk_venta_fisica_21f2bec4_fk_venta_fis; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.detalle_venta_fisica
+    ADD CONSTRAINT detalle_venta_fisica_fk_venta_fisica_21f2bec4_fk_venta_fis FOREIGN KEY (fk_venta_fisica) REFERENCES public.venta_fisica(ven_fis_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: detalle_venta_online detalle_venta_online_fk_pre_alm_96592db4_fk_pre_alm_pre_alm_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.detalle_venta_online
+    ADD CONSTRAINT detalle_venta_online_fk_pre_alm_96592db4_fk_pre_alm_pre_alm_id FOREIGN KEY (fk_pre_alm) REFERENCES public.pre_alm(pre_alm_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: detalle_venta_online detalle_venta_online_fk_venta_online_a472f874_fk_venta_onl; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.detalle_venta_online
+    ADD CONSTRAINT detalle_venta_online_fk_venta_online_a472f874_fk_venta_onl FOREIGN KEY (fk_venta_online) REFERENCES public.venta_online(ven_onl_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: django_admin_log django_admin_log_content_type_id_c4bce8eb_fk_django_co; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.django_admin_log
+    ADD CONSTRAINT django_admin_log_content_type_id_c4bce8eb_fk_django_co FOREIGN KEY (content_type_id) REFERENCES public.django_content_type(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: django_admin_log django_admin_log_user_id_c564eba6_fk_usuario_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.django_admin_log
+    ADD CONSTRAINT django_admin_log_user_id_c564eba6_fk_usuario_id FOREIGN KEY (user_id) REFERENCES public.usuario(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: emp_car emp_car_fk_cargo_0bf0fe73_fk_cargo_car_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.emp_car
+    ADD CONSTRAINT emp_car_fk_cargo_0bf0fe73_fk_cargo_car_id FOREIGN KEY (fk_cargo) REFERENCES public.cargo(car_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: emp_car emp_car_fk_empleado_60df61f4_fk_empleado_emp_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.emp_car
+    ADD CONSTRAINT emp_car_fk_empleado_60df61f4_fk_empleado_emp_id FOREIGN KEY (fk_empleado) REFERENCES public.empleado(emp_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: emp_car_hor emp_car_hor_fk_cargo_5f5dacf9_fk_cargo_car_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.emp_car_hor
+    ADD CONSTRAINT emp_car_hor_fk_cargo_5f5dacf9_fk_cargo_car_id FOREIGN KEY (fk_cargo) REFERENCES public.cargo(car_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: emp_car_hor emp_car_hor_fk_departamento_d475f135_fk_departamento_dep_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.emp_car_hor
+    ADD CONSTRAINT emp_car_hor_fk_departamento_d475f135_fk_departamento_dep_id FOREIGN KEY (fk_departamento) REFERENCES public.departamento(dep_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: emp_car_hor emp_car_hor_fk_empleado_5d35073d_fk_empleado_emp_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.emp_car_hor
+    ADD CONSTRAINT emp_car_hor_fk_empleado_5d35073d_fk_empleado_emp_id FOREIGN KEY (fk_empleado) REFERENCES public.empleado(emp_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: emp_car_hor emp_car_hor_fk_horario_fb352a17_fk_horario_hor_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.emp_car_hor
+    ADD CONSTRAINT emp_car_hor_fk_horario_fb352a17_fk_horario_hor_id FOREIGN KEY (fk_horario) REFERENCES public.horario(hor_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: emp_car_hor emp_car_hor_fk_tienda_3fc5172f_fk_tienda_tie_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.emp_car_hor
+    ADD CONSTRAINT emp_car_hor_fk_tienda_3fc5172f_fk_tienda_tie_id FOREIGN KEY (fk_tienda) REFERENCES public.tienda(tie_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: emp_tip_ben emp_tip_ben_fk_empleado_6458ef81_fk_empleado_emp_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.emp_tip_ben
+    ADD CONSTRAINT emp_tip_ben_fk_empleado_6458ef81_fk_empleado_emp_id FOREIGN KEY (fk_empleado) REFERENCES public.empleado(emp_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: emp_tip_ben emp_tip_ben_fk_tipo_beneficio_ae383219_fk_tipo_bene; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.emp_tip_ben
+    ADD CONSTRAINT emp_tip_ben_fk_tipo_beneficio_ae383219_fk_tipo_bene FOREIGN KEY (fk_tipo_beneficio) REFERENCES public.tipo_beneficio(tip_ben_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: empleado empleado_fk_lugar_68df3593_fk_lugar_lug_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.empleado
+    ADD CONSTRAINT empleado_fk_lugar_68df3593_fk_lugar_lug_id FOREIGN KEY (fk_lugar) REFERENCES public.lugar(lug_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: eve_pro eve_pro_fk_evento_e275f857_fk_evento_eve_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.eve_pro
+    ADD CONSTRAINT eve_pro_fk_evento_e275f857_fk_evento_eve_id FOREIGN KEY (fk_evento) REFERENCES public.evento(eve_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: eve_pro eve_pro_fk_proveedor_f7e10495_fk_proveedor_pro_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.eve_pro
+    ADD CONSTRAINT eve_pro_fk_proveedor_f7e10495_fk_proveedor_pro_id FOREIGN KEY (fk_proveedor) REFERENCES public.proveedor(pro_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: evento evento_fk_lugar_7051b684_fk_lugar_lug_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.evento
+    ADD CONSTRAINT evento_fk_lugar_7051b684_fk_lugar_lug_id FOREIGN KEY (fk_lugar) REFERENCES public.lugar(lug_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: evento evento_fk_tip_eve_c60c530e_fk_tipo_evento_tip_eve_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.evento
+    ADD CONSTRAINT evento_fk_tip_eve_c60c530e_fk_tipo_evento_tip_eve_id FOREIGN KEY (fk_tip_eve) REFERENCES public.tipo_evento(tip_eve_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: existencia_evento existencia_evento_fk_evento_proveedor_3ddb7e7f_fk_eve_pro_e; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.existencia_evento
+    ADD CONSTRAINT existencia_evento_fk_evento_proveedor_3ddb7e7f_fk_eve_pro_e FOREIGN KEY (fk_evento_proveedor) REFERENCES public.eve_pro(eve_pro_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: existencia_evento existencia_evento_fk_presentacion_d7307eef_fk_presentac; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.existencia_evento
+    ADD CONSTRAINT existencia_evento_fk_presentacion_d7307eef_fk_presentac FOREIGN KEY (fk_presentacion) REFERENCES public.presentacion(prese_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: historico_moneda historico_moneda_fk_moneda_f7a8a024_fk_moneda_mon_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.historico_moneda
+    ADD CONSTRAINT historico_moneda_fk_moneda_f7a8a024_fk_moneda_mon_id FOREIGN KEY (fk_moneda) REFERENCES public.moneda(mon_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: inventario inventario_fk_anaquel_340a6257_fk_anaquel_ana_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.inventario
+    ADD CONSTRAINT inventario_fk_anaquel_340a6257_fk_anaquel_ana_id FOREIGN KEY (fk_anaquel) REFERENCES public.anaquel(ana_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: inventario inventario_fk_oferta_e57cd75c_fk_oferta_ofe_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.inventario
+    ADD CONSTRAINT inventario_fk_oferta_e57cd75c_fk_oferta_ofe_id FOREIGN KEY (fk_oferta) REFERENCES public.oferta(ofe_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: inventario inventario_fk_presentacion_b292e310_fk_presentacion_prese_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.inventario
+    ADD CONSTRAINT inventario_fk_presentacion_b292e310_fk_presentacion_prese_id FOREIGN KEY (fk_presentacion) REFERENCES public.presentacion(prese_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: lugar lugar_fk_lugar_c34c3bbf_fk_lugar_lug_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lugar
+    ADD CONSTRAINT lugar_fk_lugar_c34c3bbf_fk_lugar_lug_id FOREIGN KEY (fk_lugar) REFERENCES public.lugar(lug_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: lugar_tienda lugar_tienda_fk_lugar_tienda_fabc654c_fk_lugar_lug_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lugar_tienda
+    ADD CONSTRAINT lugar_tienda_fk_lugar_tienda_fabc654c_fk_lugar_lug_id FOREIGN KEY (fk_lugar_tienda) REFERENCES public.lugar(lug_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: lugar_tienda lugar_tienda_fk_tienda_1b0e37d3_fk_tienda_tie_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lugar_tienda
+    ADD CONSTRAINT lugar_tienda_fk_tienda_1b0e37d3_fk_tienda_tie_id FOREIGN KEY (fk_tienda) REFERENCES public.tienda(tie_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: metodo_pago metodo_pago_fk_his_pre_pun_ba04b391_fk_historico; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.metodo_pago
+    ADD CONSTRAINT metodo_pago_fk_his_pre_pun_ba04b391_fk_historico FOREIGN KEY (fk_his_pre_pun) REFERENCES public.historico_precio_punto(his_pre_pun_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: pago_efectivo pago_efectivo_fk_metodo_pago_5cfe4bc4_fk_metodo_pago_met_pag_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.pago_efectivo
+    ADD CONSTRAINT pago_efectivo_fk_metodo_pago_5cfe4bc4_fk_metodo_pago_met_pag_id FOREIGN KEY (fk_metodo_pago) REFERENCES public.metodo_pago(met_pag_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: pago pago_fk_afiliacion_5599c377_fk_afiliacion_afi_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.pago
+    ADD CONSTRAINT pago_fk_afiliacion_5599c377_fk_afiliacion_afi_id FOREIGN KEY (fk_afiliacion) REFERENCES public.afiliacion(afi_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: pago pago_fk_metodo_pago_958fa9c8_fk_metodo_pago_met_pag_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.pago
+    ADD CONSTRAINT pago_fk_metodo_pago_958fa9c8_fk_metodo_pago_met_pag_id FOREIGN KEY (fk_metodo_pago) REFERENCES public.metodo_pago(met_pag_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: pago pago_fk_moneda_2704d165_fk_moneda_mon_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.pago
+    ADD CONSTRAINT pago_fk_moneda_2704d165_fk_moneda_mon_id FOREIGN KEY (fk_moneda) REFERENCES public.moneda(mon_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: pago pago_fk_venta_evento_4bddf9fa_fk_venta_evento_ven_eve_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.pago
+    ADD CONSTRAINT pago_fk_venta_evento_4bddf9fa_fk_venta_evento_ven_eve_id FOREIGN KEY (fk_venta_evento) REFERENCES public.venta_evento(ven_eve_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: pago pago_fk_venta_fisica_f58df627_fk_venta_fisica_ven_fis_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.pago
+    ADD CONSTRAINT pago_fk_venta_fisica_f58df627_fk_venta_fisica_ven_fis_id FOREIGN KEY (fk_venta_fisica) REFERENCES public.venta_fisica(ven_fis_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: pago pago_fk_venta_online_4161ef78_fk_venta_online_ven_onl_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.pago
+    ADD CONSTRAINT pago_fk_venta_online_4161ef78_fk_venta_online_ven_onl_id FOREIGN KEY (fk_venta_online) REFERENCES public.venta_online(ven_onl_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: pre_alm pre_alm_fk_almacen_58bc2a80_fk_almacen_alm_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.pre_alm
+    ADD CONSTRAINT pre_alm_fk_almacen_58bc2a80_fk_almacen_alm_id FOREIGN KEY (fk_almacen) REFERENCES public.almacen(alm_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: pre_alm pre_alm_fk_oferta_310e972d_fk_oferta_ofe_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.pre_alm
+    ADD CONSTRAINT pre_alm_fk_oferta_310e972d_fk_oferta_ofe_id FOREIGN KEY (fk_oferta) REFERENCES public.oferta(ofe_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: pre_alm pre_alm_fk_presentacion_5791ab49_fk_presentacion_prese_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.pre_alm
+    ADD CONSTRAINT pre_alm_fk_presentacion_5791ab49_fk_presentacion_prese_id FOREIGN KEY (fk_presentacion) REFERENCES public.presentacion(prese_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: presentacion presentacion_fk_cerveza_fdd3f59d_fk_cerveza_cer_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.presentacion
+    ADD CONSTRAINT presentacion_fk_cerveza_fdd3f59d_fk_cerveza_cer_id FOREIGN KEY (fk_cerveza) REFERENCES public.cerveza(cer_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: proveedor proveedor_fk_lugar_7459b24b_fk_lugar_lug_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.proveedor
+    ADD CONSTRAINT proveedor_fk_lugar_7459b24b_fk_lugar_lug_id FOREIGN KEY (fk_lugar) REFERENCES public.lugar(lug_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: rec_ing rec_ing_fk_ingrediente_1752b53d_fk_ingrediente_ing_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.rec_ing
+    ADD CONSTRAINT rec_ing_fk_ingrediente_1752b53d_fk_ingrediente_ing_id FOREIGN KEY (fk_ingrediente) REFERENCES public.ingrediente(ing_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: rec_ing rec_ing_fk_receta_eb1aef13_fk_receta_rec_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.rec_ing
+    ADD CONSTRAINT rec_ing_fk_receta_eb1aef13_fk_receta_rec_id FOREIGN KEY (fk_receta) REFERENCES public.receta(rec_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: rec_ins rec_ins_fk_instruccion_5749ecf7_fk_instruccion_ins_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.rec_ins
+    ADD CONSTRAINT rec_ins_fk_instruccion_5749ecf7_fk_instruccion_ins_id FOREIGN KEY (fk_instruccion) REFERENCES public.instruccion(ins_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: rec_ins rec_ins_fk_receta_775a9e30_fk_receta_rec_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.rec_ins
+    ADD CONSTRAINT rec_ins_fk_receta_775a9e30_fk_receta_rec_id FOREIGN KEY (fk_receta) REFERENCES public.receta(rec_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: sol_com_est sol_com_est_fk_estatus_3f65e504_fk_estatus_est_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.sol_com_est
+    ADD CONSTRAINT sol_com_est_fk_estatus_3f65e504_fk_estatus_est_id FOREIGN KEY (fk_estatus) REFERENCES public.estatus(est_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: sol_com_est sol_com_est_fk_sol_com_c02697c4_fk_solicitud_compra_sol_com_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.sol_com_est
+    ADD CONSTRAINT sol_com_est_fk_sol_com_c02697c4_fk_solicitud_compra_sol_com_id FOREIGN KEY (fk_sol_com) REFERENCES public.solicitud_compra(sol_com_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: sol_rep_est sol_rep_est_fk_estatus_400f4a62_fk_estatus_est_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.sol_rep_est
+    ADD CONSTRAINT sol_rep_est_fk_estatus_400f4a62_fk_estatus_est_id FOREIGN KEY (fk_estatus) REFERENCES public.estatus(est_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: sol_rep_est sol_rep_est_fk_sol_rep_5131a8fa_fk_solicitud; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.sol_rep_est
+    ADD CONSTRAINT sol_rep_est_fk_sol_rep_5131a8fa_fk_solicitud FOREIGN KEY (fk_sol_rep) REFERENCES public.solicitud_reposicion(sol_rep_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: solicitud_compra solicitud_compra_fk_pre_alm_9c5c5847_fk_pre_alm_pre_alm_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.solicitud_compra
+    ADD CONSTRAINT solicitud_compra_fk_pre_alm_9c5c5847_fk_pre_alm_pre_alm_id FOREIGN KEY (fk_pre_alm) REFERENCES public.pre_alm(pre_alm_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: solicitud_compra solicitud_compra_fk_proveedor_682536fa_fk_proveedor_pro_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.solicitud_compra
+    ADD CONSTRAINT solicitud_compra_fk_proveedor_682536fa_fk_proveedor_pro_id FOREIGN KEY (fk_proveedor) REFERENCES public.proveedor(pro_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: solicitud_compra solicitud_compra_fk_usuario_4a71efc5_fk_usuario_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.solicitud_compra
+    ADD CONSTRAINT solicitud_compra_fk_usuario_4a71efc5_fk_usuario_id FOREIGN KEY (fk_usuario) REFERENCES public.usuario(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: solicitud_reposicion solicitud_reposicion_fk_inv_755d3938_fk_inventario_inv_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.solicitud_reposicion
+    ADD CONSTRAINT solicitud_reposicion_fk_inv_755d3938_fk_inventario_inv_id FOREIGN KEY (fk_inv) REFERENCES public.inventario(inv_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: solicitud_reposicion solicitud_reposicion_fk_pre_alm_a29cf191_fk_pre_alm_pre_alm_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.solicitud_reposicion
+    ADD CONSTRAINT solicitud_reposicion_fk_pre_alm_a29cf191_fk_pre_alm_pre_alm_id FOREIGN KEY (fk_pre_alm) REFERENCES public.pre_alm(pre_alm_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: solicitud_reposicion solicitud_reposicion_fk_usuario_55e4cc27_fk_usuario_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.solicitud_reposicion
+    ADD CONSTRAINT solicitud_reposicion_fk_usuario_55e4cc27_fk_usuario_id FOREIGN KEY (fk_usuario) REFERENCES public.usuario(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: telefono telefono_fk_cliente_b85c99d6_fk_cliente_cli_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.telefono
+    ADD CONSTRAINT telefono_fk_cliente_b85c99d6_fk_cliente_cli_id FOREIGN KEY (fk_cliente) REFERENCES public.cliente(cli_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: telefono telefono_fk_contacto_cliente_6bc5ba62_fk_contacto_; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.telefono
+    ADD CONSTRAINT telefono_fk_contacto_cliente_6bc5ba62_fk_contacto_ FOREIGN KEY (fk_contacto_cliente) REFERENCES public.contacto_cliente(con_cli_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: telefono telefono_fk_contacto_proveedo_853fc0fc_fk_contacto_; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.telefono
+    ADD CONSTRAINT telefono_fk_contacto_proveedo_853fc0fc_fk_contacto_ FOREIGN KEY (fk_contacto_proveedor) REFERENCES public.contacto_proveedor(con_pro_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: telefono telefono_fk_empleado_218ece5a_fk_empleado_emp_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.telefono
+    ADD CONSTRAINT telefono_fk_empleado_218ece5a_fk_empleado_emp_id FOREIGN KEY (fk_empleado) REFERENCES public.empleado(emp_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: telefono telefono_fk_proveedor_e45ba6be_fk_proveedor_pro_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.telefono
+    ADD CONSTRAINT telefono_fk_proveedor_e45ba6be_fk_proveedor_pro_id FOREIGN KEY (fk_proveedor) REFERENCES public.proveedor(pro_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: tienda tienda_fk_lugar_a63cb22a_fk_lugar_lug_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.tienda
+    ADD CONSTRAINT tienda_fk_lugar_a63cb22a_fk_lugar_lug_id FOREIGN KEY (fk_lugar) REFERENCES public.lugar(lug_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: tipo_estilo_cerveza tipo_estilo_cerveza_fk_estilo_cerveza_6891c74a_fk_estilo_ce; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.tipo_estilo_cerveza
+    ADD CONSTRAINT tipo_estilo_cerveza_fk_estilo_cerveza_6891c74a_fk_estilo_ce FOREIGN KEY (fk_estilo_cerveza) REFERENCES public.estilo_cerveza(est_cer_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: tipo_estilo_cerveza tipo_estilo_cerveza_fk_tipo_cerveza_ed8d1c70_fk_tipo_cerv; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.tipo_estilo_cerveza
+    ADD CONSTRAINT tipo_estilo_cerveza_fk_tipo_cerveza_ed8d1c70_fk_tipo_cerv FOREIGN KEY (fk_tipo_cerveza) REFERENCES public.tipo_cerveza(tip_cer_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: tipo_evento tipo_evento_fk_tipo_evento_64e19139_fk_tipo_evento_tip_eve_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.tipo_evento
+    ADD CONSTRAINT tipo_evento_fk_tipo_evento_64e19139_fk_tipo_evento_tip_eve_id FOREIGN KEY (fk_tipo_evento) REFERENCES public.tipo_evento(tip_eve_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: usuario usuario_fk_cliente_4ae4519a_fk_cliente_cli_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.usuario
+    ADD CONSTRAINT usuario_fk_cliente_4ae4519a_fk_cliente_cli_id FOREIGN KEY (fk_cliente) REFERENCES public.cliente(cli_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: usuario usuario_fk_proveedor_9b4f82fb_fk_proveedor_pro_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.usuario
+    ADD CONSTRAINT usuario_fk_proveedor_9b4f82fb_fk_proveedor_pro_id FOREIGN KEY (fk_proveedor) REFERENCES public.proveedor(pro_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: usuario_groups usuario_groups_group_id_c67c8651_fk_auth_group_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.usuario_groups
+    ADD CONSTRAINT usuario_groups_group_id_c67c8651_fk_auth_group_id FOREIGN KEY (group_id) REFERENCES public.auth_group(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: usuario_groups usuario_groups_usuario_id_161fc80c_fk_usuario_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.usuario_groups
+    ADD CONSTRAINT usuario_groups_usuario_id_161fc80c_fk_usuario_id FOREIGN KEY (usuario_id) REFERENCES public.usuario(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: usuario_user_permissions usuario_user_permiss_permission_id_a8893ce7_fk_auth_perm; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.usuario_user_permissions
+    ADD CONSTRAINT usuario_user_permiss_permission_id_a8893ce7_fk_auth_perm FOREIGN KEY (permission_id) REFERENCES public.auth_permission(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: usuario_user_permissions usuario_user_permissions_usuario_id_693d9c50_fk_usuario_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.usuario_user_permissions
+    ADD CONSTRAINT usuario_user_permissions_usuario_id_693d9c50_fk_usuario_id FOREIGN KEY (usuario_id) REFERENCES public.usuario(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: vacacion vacacion_fk_empleado_cb6959b7_fk_empleado_emp_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.vacacion
+    ADD CONSTRAINT vacacion_fk_empleado_cb6959b7_fk_empleado_emp_id FOREIGN KEY (fk_empleado) REFERENCES public.empleado(emp_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: ven_onl_est ven_onl_est_fk_estatus_2d259dbd_fk_estatus_est_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.ven_onl_est
+    ADD CONSTRAINT ven_onl_est_fk_estatus_2d259dbd_fk_estatus_est_id FOREIGN KEY (fk_estatus) REFERENCES public.estatus(est_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: ven_onl_est ven_onl_est_fk_venta_online_a6c34bae_fk_venta_online_ven_onl_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.ven_onl_est
+    ADD CONSTRAINT ven_onl_est_fk_venta_online_a6c34bae_fk_venta_online_ven_onl_id FOREIGN KEY (fk_venta_online) REFERENCES public.venta_online(ven_onl_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: venta_evento venta_evento_fk_cliente_1a772f9f_fk_cliente_cli_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.venta_evento
+    ADD CONSTRAINT venta_evento_fk_cliente_1a772f9f_fk_cliente_cli_id FOREIGN KEY (fk_cliente) REFERENCES public.cliente(cli_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: venta_evento venta_evento_fk_evento_259febf5_fk_evento_eve_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.venta_evento
+    ADD CONSTRAINT venta_evento_fk_evento_259febf5_fk_evento_eve_id FOREIGN KEY (fk_evento) REFERENCES public.evento(eve_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: venta_fisica venta_fisica_fk_cliente_6695bafa_fk_cliente_cli_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.venta_fisica
+    ADD CONSTRAINT venta_fisica_fk_cliente_6695bafa_fk_cliente_cli_id FOREIGN KEY (fk_cliente) REFERENCES public.cliente(cli_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: venta_fisica venta_fisica_fk_oferta_4e836443_fk_oferta_ofe_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.venta_fisica
+    ADD CONSTRAINT venta_fisica_fk_oferta_4e836443_fk_oferta_ofe_id FOREIGN KEY (fk_oferta) REFERENCES public.oferta(ofe_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: venta_fisica venta_fisica_fk_tienda_68b386cf_fk_tienda_tie_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.venta_fisica
+    ADD CONSTRAINT venta_fisica_fk_tienda_68b386cf_fk_tienda_tie_id FOREIGN KEY (fk_tienda) REFERENCES public.tienda(tie_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: venta_online venta_online_fk_oferta_ae68023f_fk_oferta_ofe_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.venta_online
+    ADD CONSTRAINT venta_online_fk_oferta_ae68023f_fk_oferta_ofe_id FOREIGN KEY (fk_oferta) REFERENCES public.oferta(ofe_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: venta_online venta_online_fk_tienda_2b45db66_fk_tienda_tie_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.venta_online
+    ADD CONSTRAINT venta_online_fk_tienda_2b45db66_fk_tienda_tie_id FOREIGN KEY (fk_tienda) REFERENCES public.tienda(tie_id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: venta_online venta_online_fk_usuario_ff559976_fk_usuario_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.venta_online
+    ADD CONSTRAINT venta_online_fk_usuario_ff559976_fk_usuario_id FOREIGN KEY (fk_usuario) REFERENCES public.usuario(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- PostgreSQL database dump complete
+--
+
