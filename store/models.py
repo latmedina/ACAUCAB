@@ -127,6 +127,9 @@ class cerveza(models.Model):
         managed = True
         db_table = 'cerveza'
 
+    def __str__(self):
+        return self.cer_nombre
+
 
 class cliente(models.Model):
     cli_id = models.AutoField(primary_key=True)
