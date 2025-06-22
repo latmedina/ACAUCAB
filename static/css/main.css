@@ -1,117 +1,30 @@
-body{
-	background-color: hsl(0, 0%, 98%);
-}
+/* ==========================================================================
+   MAIN CSS - Archivo principal que importa todos los módulos
+   ========================================================================== */
 
-h1,h2,h3,h4,h5,h6{
-	color:hsl(0, 0%, 30%);
-}
+/* Importar todos los módulos CSS */
+@import url('base.css');
+@import url('layout.css');
+@import url('navigation.css');
+@import url('products.css');
+@import url('cart.css');
+@import url('buttons.css');
+@import url('search.css');
+@import url('payment.css');
 
-.box-element{
-	box-shadow:hsl(0, 0%, 80%) 0 0 16px;
-	background-color: #fff;
-	border-radius: 4px;
-	padding: 10px;
-}
-
-.thumbnail{
-	width: 100%;
-	height: auto;
-	object-fit: contain;
-	max-height: 200px;
-	-webkit-box-shadow: -1px -3px 5px -2px rgba(214,214,214,1);
-    -moz-box-shadow: -1px -3px 5px -2px rgba(214,214,214,1);
-    box-shadow: -1px -3px 5px -2px rgba(214,214,214,1);
-}
-
-.product{
-	border-radius: 0 0 4px 4px;
-}
-
-.bg-dark{
-	background-color: #4f868c!important;
-}
-
-#cart-icon {
-    width: 25px;
-    display: inline-block;
-    margin-left: 15px;
-    vertical-align: middle;
-}
-
-#cart-total {
-    display: inline-block;
-    text-align: center;
-    color: #fff;
-    background-color: red;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    font-size: 14px;
-    margin-left: 5px;
-    vertical-align: middle;
-}
-
-
-.col-lg-4, .col-lg-6, .col-lg-8, .col-lg-12{
-	margin-top: 10px;
-}
-
-.btn{
-	border-radius: 0;
-}
-
-.row-image{
-	width: 100px;
-}
-
-.form-field{
-	width:250px;
-	display: inline-block;
-	padding: 5px;
-}
-
-.cart-row{
-	display: flex;
-    align-items: flex-stretch;
-    padding-bottom: 10px;
-    margin-bottom: 10px;
-    border-bottom: 1px solid #ececec;
-
-}
-
-.quantity{
-	display: inline-block;
-	font-weight: 700;
-	padding-right:10px;
-	
-
-}
-
-.chg-quantity{
-	width: 12px;
-	cursor: pointer;
-	display: block;
-	margin-top: 5px;
-	transition:.1s;
-}
-
-.chg-quantity:hover{
-	opacity: .6;
-}
-
-
-.hidden{
-	display: none!important;
-}
-
-.navbar-brand{
-	font-size: 1.5rem;
-	font-weight: 700;
-	color: #fff;
-	text-decoration: none;
-	margin-left: 1000px;
-}
-
-.navbar{
-	background-color: #302b2b!important;
-}
+/* ==========================================================================
+   NOTAS SOBRE LA ORGANIZACIÓN:
+   
+   - base.css: Estilos globales y básicos del sitio
+   - layout.css: Grid, espaciado y estructura general
+   - navigation.css: Navbar y elementos de navegación
+   - products.css: Productos, thumbnails y animaciones
+   - cart.css: Carrito de compras y elementos relacionados
+   - buttons.css: Botones y sus diferentes estados
+   - search.css: Barra de búsqueda y funcionalidad de búsqueda
+   - payment.css: Formularios de método de pago y procesamiento
+   
+   Para agregar nuevos estilos, considera crear un nuevo módulo si
+   es una funcionalidad completamente nueva, o agregar al módulo
+   correspondiente si es una extensión de funcionalidad existente.
+   ========================================================================== */

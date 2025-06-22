@@ -1,24 +1,58 @@
 {% extends "main.html" %}
 {% block content %}
-<div class="row">
+
+<!-- Barra de búsqueda -->
+<div class="row mb-4">
+    <div class="col-lg-12">
+        <div class="search-container">
+            <input type="text" id="search-input" class="form-control" placeholder="Buscar productos por nombre..." autocomplete="off">
+            <div id="search-results-count" class="mt-2 text-muted"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Contenedor de productos -->
+<div class="row" id="products-container">
     {% for product in products %}
-    <div class="col-lg-4">
+    <div class="col-lg-4 product-item" data-product-name="{{ product.prese_nombre|lower }}">
         {% if product.prese_imagen %}
         <img class="thumbnail" src="{{ product.prese_imagen.url }}">
         {% endif %}
         <div class="box-element product">
             <h6><strong>{{ product.prese_nombre }}</strong></h6>
-            <hr>
-            <button data-product="{{ product.prese_id }}" data-action="add" class="btn btn-outline-secondary update-cart">Agregar al carrito</button>
-            {% if product.get_precio_actual %}
-                <h4 style="float: right"><strong>${{ product.get_precio_actual }}</strong></h4>
+            {% if product.disponible %}
+                <div class="button-container">
+                    <button data-product="{{ product.prese_id }}" data-action="add" class="btn btn-outline-secondary update-cart">Agregar al carrito</button>
+                </div>
+                <div class="price-container">
+                    <h4><strong>${{ product.precio_usd|floatformat:2 }} USD</strong></h4>
+                    <small class="text-muted">{{ product.precio_bs|floatformat:2 }} Bs</small>
+                </div>
             {% else %}
-                <h4 style="float: right"><strong>No disponible</strong></h4>
+                <div class="button-container">
+                    <button class="btn btn-outline-secondary" disabled>No disponible</button>
+                </div>
+                <div class="price-container">
+                    <h4><strong>No disponible</strong></h4>
+                </div>
             {% endif %}
         </div>
     </div>
     {% empty %}
-    <p>No hay productos disponibles.</p>
+    <div class="col-lg-12">
+        <p>No hay productos disponibles.</p>
+    </div>
     {% endfor %}
 </div>
+
+<!-- Mensaje cuando no hay resultados de búsqueda -->
+<div id="no-results" class="row" style="display: none;">
+    <div class="col-lg-12">
+        <div class="alert alert-info text-center">
+            <h5>No se encontraron productos</h5>
+            <p>No hay productos que coincidan con tu búsqueda. Intenta con otros términos.</p>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

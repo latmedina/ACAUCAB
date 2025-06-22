@@ -1,0 +1,61 @@
+/* ==========================================================================
+   SEARCH STYLES - Barra de búsqueda y funcionalidad de búsqueda
+   ========================================================================== */
+
+.search-container {
+	background-color: #fff;
+	padding: 25px 30px;
+	border-radius: 12px;
+	box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+	margin-bottom: 25px;
+}
+
+#search-input {
+	border: 3px solid #e9ecef;
+	border-radius: 30px;
+	padding: 18px 25px;
+	font-size: 20px;
+	font-weight: 500;
+	transition: all 0.3s ease;
+	height: 60px;
+}
+
+#search-input:focus {
+	border-color: #4f868c;
+	box-shadow: 0 0 0 0.3rem rgba(79, 134, 140, 0.25);
+	outline: none;
+}
+
+#search-input::placeholder {
+	font-size: 18px;
+	color: #6c757d;
+	font-weight: 400;
+}
+
+#search-results-count {
+	font-size: 18px;
+	font-weight: 600;
+	margin-top: 15px;
+	padding: 8px 0;
+}
+
+/* Estilos para el mensaje de no resultados */
+#no-results .alert {
+	border: none;
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	color: white;
+	border-radius: 15px;
+	font-size: 18px;
+	padding: 25px;
+}
+
+#no-results .alert h5 {
+	font-size: 24px;
+	font-weight: 700;
+	margin-bottom: 10px;
+}
+
+#no-results .alert p {
+	font-size: 16px;
+	margin-bottom: 0;
+} 

@@ -1,0 +1,229 @@
+/* ==========================================================================
+   PAYMENT CSS - Estilos para formularios de método de pago
+   ========================================================================== */
+
+/* Contenedor principal del formulario de pago */
+.payment-form-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Campos de método de pago */
+.payment-fields {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 15px;
+    transition: all 0.3s ease;
+}
+
+.payment-fields h5 {
+    color: #495057;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+/* Estilos para el selector de tipo de pago */
+#tipo_pago {
+    font-size: 16px;
+    padding: 12px;
+    border: 2px solid #ced4da;
+    border-radius: 6px;
+    transition: border-color 0.3s ease;
+}
+
+#tipo_pago:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Inputs del formulario de pago */
+.payment-fields .form-control {
+    margin-bottom: 15px;
+    padding: 12px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.payment-fields .form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Labels del formulario */
+.payment-fields label {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 5px;
+    display: block;
+}
+
+/* Resumen de compra */
+.purchase-summary {
+    background-color: #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.purchase-summary h5 {
+    color: #495057;
+    margin-bottom: 15px;
+}
+
+.purchase-summary p {
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.purchase-summary strong {
+    color: #212529;
+}
+
+/* Conversión de moneda */
+#converted-amount {
+    min-height: 80px;
+    padding: 10px;
+    border-radius: 6px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+}
+
+#converted-amount p {
+    margin-bottom: 5px;
+}
+
+#converted-amount strong {
+    color: #28a745;
+    font-size: 16px;
+}
+
+#converted-amount small {
+    color: #6c757d;
+    font-size: 12px;
+}
+
+/* Selector de moneda */
+#moneda_select {
+    font-size: 14px;
+    padding: 12px;
+    border: 2px solid #ced4da;
+    border-radius: 6px;
+    transition: border-color 0.3s ease;
+}
+
+#moneda_select:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+#moneda_select option {
+    padding: 8px;
+}
+
+/* Botones del formulario de pago */
+.payment-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.payment-buttons .btn {
+    padding: 12px 30px;
+    font-weight: 500;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.payment-buttons .btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+.payment-buttons .btn-secondary:hover {
+    background-color: #5a6268;
+    border-color: #545b62;
+}
+
+.payment-buttons .btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.payment-buttons .btn-success:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+
+.payment-buttons .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Animaciones para mostrar/ocultar campos */
+.payment-fields {
+    animation: slideIn 0.3s ease-in-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Estilos específicos para tarjetas */
+.card-input {
+    font-family: 'Courier New', monospace;
+    letter-spacing: 1px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .payment-form-container {
+        padding: 15px;
+    }
+    
+    .payment-fields {
+        padding: 15px;
+    }
+    
+    .payment-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .payment-buttons .btn {
+        width: 100%;
+    }
+}
+
+/* Estados de validación */
+.form-control.is-valid {
+    border-color: #28a745;
+}
+
+.form-control.is-invalid {
+    border-color: #dc3545;
+}
+
+.invalid-feedback {
+    color: #dc3545;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.valid-feedback {
+    color: #28a745;
+    font-size: 12px;
+    margin-top: 5px;
+} 
