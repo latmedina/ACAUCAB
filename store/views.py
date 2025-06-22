@@ -2,17 +2,94 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse
 import json
 from django.utils import timezone
-from django.contrib.auth.models import Group
-from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib.auth.models import User, Group
-from .models import presentacion, venta_online, detalle_venta_online, pre_alm, metodo_pago, pago, moneda, historico_moneda
+from .models import (
+    presentacion, venta_online, detalle_venta_online, pre_alm, 
+    metodo_pago, pago, moneda, historico_moneda, tienda, 
+    inventario, venta_fisica, detalle_venta_fisica
+)
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.views.decorators.csrf import csrf_exempt
-from store.models import tienda
 from decimal import Decimal
-from datetime import datetime
+from datetime import datetime, date
+
+
+def validate_expiration_date(exp_date_str):
+    """Valida que la fecha de vencimiento no sea anterior a la actual"""
+    try:
+        exp_date = datetime.strptime(exp_date_str, '%Y-%m-%d').date()
+        today = date.today()
+        
+        # Comparar año y mes (ignorar el día)
+        if exp_date.year < today.year:
+            return False
+        if exp_date.year == today.year and exp_date.month < today.month:
+            return False
+        
+        return True
+    except (ValueError, TypeError):
+        return False
+
+def validate_payment_data(tipo_pago, data):
+    """Valida los datos del método de pago"""
+    errors = []
+    
+    if tipo_pago == 'efectivo':
+        denominacion = data.get('denominacion')
+        if not denominacion:
+            errors.append('Denominación requerida para efectivo')
+        else:
+            try:
+                denom_int = int(denominacion)
+                if denom_int <= 0:
+                    errors.append('La denominación debe ser mayor a 0')
+            except (ValueError, TypeError):
+                errors.append('Denominación inválida')
+                
+    elif tipo_pago == 'cheque':
+        num_cheque = data.get('num_cheque')
+        if not num_cheque:
+            errors.append('Número de cheque requerido')
+        else:
+            try:
+                cheque_int = int(num_cheque)
+                if cheque_int <= 0:
+                    errors.append('El número de cheque debe ser mayor a 0')
+            except (ValueError, TypeError):
+                errors.append('Número de cheque inválido')
+                
+    elif tipo_pago == 'tarjeta_debito':
+        numero = data.get('numero', '').replace(' ', '')
+        vencimiento = data.get('vencimiento')
+        banco = data.get('banco', '').strip()
+        
+        if not numero:
+            errors.append('Número de tarjeta de débito requerido')
+
+            
+        if not vencimiento:
+            errors.append('Fecha de vencimiento requerida para tarjeta de débito')
+        elif not validate_expiration_date(vencimiento):
+            errors.append('La fecha de vencimiento de la tarjeta de débito no puede ser anterior a la fecha actual')
+            
+        if not banco or len(banco) < 2:
+            errors.append('Nombre del banco requerido para tarjeta de débito')
+            
+    elif tipo_pago == 'tarjeta_credito':
+        numero = data.get('numero', '').replace(' ', '')
+        vencimiento = data.get('vencimiento')
+        
+        if not numero:
+            errors.append('Número de tarjeta de crédito requerido')
+            
+        if not vencimiento:
+            errors.append('Fecha de vencimiento requerida para tarjeta de crédito')
+        elif not validate_expiration_date(vencimiento):
+            errors.append('La fecha de vencimiento de la tarjeta de crédito no puede ser anterior a la fecha actual')
+    
+    return errors
 
 # FUNCIÓN AUXILIAR PARA OBTENER TASA DE CAMBIO DEL DÓLAR
 def get_dollar_exchange_rate():
@@ -34,78 +111,67 @@ def convert_price_to_bolivars(price_usd):
     dollar_rate = get_dollar_exchange_rate()
     return price_usd * dollar_rate
 
-# VISTAS DE TIENDA
-def store(request):
-    data = cartData(request)
-    cartItems = data['cartItems']
-    order = data['order']
-    items = data['items']
-
-    products = presentacion.objects.all()
-    
-    # Los precios ya están en dólares, convertir a bolívares para mostrar ambos
-    for product in products:
-        prealm = pre_alm.objects.filter(fk_presentacion=product).first()
-        if prealm:
-            product.precio_usd = prealm.pre_alm_precio  # Precio original en dólares
-            product.precio_bs = convert_price_to_bolivars(prealm.pre_alm_precio)  # Precio en bolívares
-            product.disponible = prealm.pre_alm_cantidad > 0
-        else:
-            product.precio_usd = 0
-            product.precio_bs = 0
-            product.disponible = False
-    
-    context = {
-        'products': products, 
-        'cartItems': cartItems,
-        'dollar_rate': get_dollar_exchange_rate()
-    }
-    return render(request, 'store.html', context)
-
-@csrf_exempt
-def update_cart(request):
-    data = json.loads(request.body)
-    product_id = str(data.get('productId', '')).strip()
-    action = data.get('action')
-
-    # Validación: ID debe ser numérico y no vacío
-    if not product_id or not product_id.isdigit():
-        return JsonResponse({'status': 'error', 'message': 'ID inválido'}, status=400)
-
-    cart = request.session.get('cart', {})
-
-    if action == 'add':
-        cart[product_id] = cart.get(product_id, 0) + 1
-    elif action == 'remove':
-        if cart.get(product_id):
-            cart[product_id] -= 1
-            if cart[product_id] <= 0:
-                del cart[product_id]
-
-    request.session['cart'] = cart
-    total_items = sum(quantity for pid, quantity in cart.items() if pid.strip().isdigit())
-    return JsonResponse({'status': 'ok', 'cartItems': total_items})
-
+# FUNCIÓN AUXILIAR PARA DATOS DEL CARRITO (VERSIÓN ORIGINAL)
 def cartData(request):
+    """Función original para carrito básico"""
     cart = request.session.get('cart', {})
     items = []
     total_usd = 0  # Total en dólares (base)
     total_items = 0
     dollar_rate = get_dollar_exchange_rate()
 
-from .models import (
-    presentacion, venta_online, detalle_venta_online,
-    venta_fisica, detalle_venta_fisica, pre_alm, tienda,inventario
-)
+    for product_id, quantity in cart.items():
+        try:
+            product = presentacion.objects.get(prese_id=int(product_id))
+            prealm = pre_alm.objects.filter(fk_presentacion=product).first()
+            if not prealm:
+                continue
 
-def redirect_store(request):
-    return redirect('store', tipo='online')
+            precio_usd = prealm.pre_alm_precio  # Precio en dólares (base en BD)
+            precio_bs = convert_price_to_bolivars(precio_usd)  # Precio en bolívares para mostrar
+            subtotal_usd = precio_usd * quantity  # Subtotal en dólares (para cálculos internos)
+            subtotal_bs = precio_bs * quantity  # Subtotal en bolívares (para mostrar)
 
-# FUNCION AUXILIAR GENERALIZADA
+            item = {
+                'product': product,
+                'quantity': quantity,
+                'get_total': subtotal_usd,  # Total en dólares (base)
+                'get_total_bs': subtotal_bs,  # Total en bolívares para mostrar
+                'precio_unitario': precio_usd,  # Precio unitario en dólares
+                'precio_unitario_bs': precio_bs,  # Precio unitario en bolívares
+                'precio_unitario_usd': precio_usd,  # Para compatibilidad con templates
+            }
+            items.append(item)
+            total_usd += subtotal_usd  # Total en dólares para cálculos internos
+            total_items += quantity
+        except presentacion.DoesNotExist:
+            continue
+
+    # Convertir el total de dólares a bolívares
+    total_bs = convert_price_to_bolivars(total_usd)
+
+    order = {
+        'get_cart_total': total_usd,  # Total en dólares (base)
+        'get_cart_total_usd': total_usd,  # Total en dólares
+        'get_cart_total_bs': total_bs,  # Total en bolívares para mostrar
+        'get_cart_items': total_items,
+        'shipping': False,
+        'dollar_rate': dollar_rate
+    }
+
+    return {
+        'items': items,
+        'order': order,
+        'cartItems': total_items,
+    }
+
+# FUNCIÓN AUXILIAR GENERALIZADA PARA CARRITO (NUEVA VERSIÓN)
 def cart_data(request, tipo='online'):
+    """Función generalizada para carrito físico y online"""
     cart_key = 'cart_fisica' if tipo == 'fisica' else 'cart'
     cart = request.session.get(cart_key, {})
-    items, total, total_items = [], 0, 0
+    items, total_usd, total_items = [], 0, 0
+    dollar_rate = get_dollar_exchange_rate()
 
     for product_id, quantity in cart.items():
         try:
@@ -147,41 +213,95 @@ def cart_data(request, tipo='online'):
 
     return {
         'items': items,
-        'order': {
-            'get_cart_total': total,
-            'get_cart_items': total_items,
-            'shipping': False
-        },
+        'order': order,
         'cartItems': total_items
     }
 
-def cart_view(request, tipo='online'):
-    data = cart_data(request, tipo)
-    return render(request, 'cart.html', {
-        'items': data['items'],
-        'order': data['order'],
-        'cartItems': data['cartItems'],
-        'tipo': tipo,  # ⚠️ muy importante para los botones y URLs dinámicas
-    })
+# VISTAS DE TIENDA
+def redirect_store(request):
+    """Redirecciona a la tienda online por defecto"""
+    return redirect('store_view', tipo='online')
 
-# VISTA GENERAL DE TIENDA
+def store(request):
+    """Vista de tienda básica (original)"""
+    data = cartData(request)
+    cartItems = data['cartItems']
+    order = data['order']
+    items = data['items']
+
+    products = presentacion.objects.all()
+    
+    # Los precios ya están en dólares, convertir a bolívares para mostrar ambos
+    for product in products:
+        prealm = pre_alm.objects.filter(fk_presentacion=product).first()
+        if prealm:
+            product.precio_usd = prealm.pre_alm_precio  # Precio original en dólares
+            product.precio_bs = convert_price_to_bolivars(prealm.pre_alm_precio)  # Precio en bolívares
+            product.disponible = prealm.pre_alm_cantidad > 0
+        else:
+            product.precio_usd = 0
+            product.precio_bs = 0
+            product.disponible = False
+    
+    context = {
+        'products': products, 
+        'cartItems': cartItems,
+        'dollar_rate': get_dollar_exchange_rate()
+    }
+    return render(request, 'store.html', context)
+
 def store_view(request, tipo='online'):
+    """Vista general de tienda (física/online)"""
     data = cart_data(request, tipo)
     productos = presentacion.objects.all()
     for p in productos:
         prealm = pre_alm.objects.filter(fk_presentacion=p).first()
-        p.get_precio_actual = prealm.pre_alm_precio if prealm else None
+        if prealm:
+            p.precio_usd = prealm.pre_alm_precio
+            p.precio_bs = convert_price_to_bolivars(prealm.pre_alm_precio)
+            p.disponible = prealm.pre_alm_cantidad > 0
+        else:
+            p.precio_usd = 0
+            p.precio_bs = 0
+            p.disponible = False
 
     template = 'tienda_fisica.html' if tipo == 'fisica' else 'store.html'
     return render(request, template, {
         'products': productos,
         'cartItems': data['cartItems'],
         'tipo': tipo,
+        'dollar_rate': get_dollar_exchange_rate()
     })
 
 # ACTUALIZAR CARRITO
 @csrf_exempt
-def update_cart_view(request, tipo):  # 👈 Agrega "tipo" aquí
+def update_cart(request):
+    """Actualizar carrito básico"""
+    data = json.loads(request.body)
+    product_id = str(data.get('productId', '')).strip()
+    action = data.get('action')
+
+    # Validación: ID debe ser numérico y no vacío
+    if not product_id or not product_id.isdigit():
+        return JsonResponse({'status': 'error', 'message': 'ID inválido'}, status=400)
+
+    cart = request.session.get('cart', {})
+
+    if action == 'add':
+        cart[product_id] = cart.get(product_id, 0) + 1
+    elif action == 'remove':
+        if cart.get(product_id):
+            cart[product_id] -= 1
+            if cart[product_id] <= 0:
+                del cart[product_id]
+
+    request.session['cart'] = cart
+    total_items = sum(quantity for pid, quantity in cart.items() if pid.strip().isdigit())
+    return JsonResponse({'status': 'ok', 'cartItems': total_items})
+
+@csrf_exempt
+def update_cart_view(request, tipo):
+    """Actualizar carrito generalizado (física/online)"""
     data = json.loads(request.body)
     product_id = str(data.get('productId', '')).strip()
     action = data.get('action')
@@ -200,89 +320,90 @@ def update_cart_view(request, tipo):  # 👈 Agrega "tipo" aquí
     total_items = sum(q for _, q in cart.items() if str(q).isdigit())
     return JsonResponse({'status': 'ok', 'cartItems': total_items})
 
-# CHECKOUT
-def checkout_view(request, tipo='online'):
+# VISTAS DE CARRITO
+def cart_view(request, tipo='online'):
+    """Vista de carrito generalizada"""
     data = cart_data(request, tipo)
-    contexto = {
+    return render(request, 'cart.html', {
+        'items': data['items'],
+        'order': data['order'],
+        'cartItems': data['cartItems'],
+        'tipo': tipo,
     })
 
+# CHECKOUT
 def checkout(request):
+    """Vista de checkout básica"""
     data = cartData(request)
     return render(request, 'checkout.html', {
         'items': data['items'],
         'order': data['order'],
         'cartItems': data['cartItems'],
+    })
+
+def checkout_view(request, tipo='online'):
+    """Vista de checkout generalizada"""
+    data = cart_data(request, tipo)
+    return render(request, 'checkout.html', {
+        'items': data['items'],
+        'order': data['order'],
+        'cartItems': data['cartItems'],
         'tipo': tipo,
-    }
+    })
 
-    return render(request, 'checkout.html', contexto)
-
-# PROCESAR ORDEN GENERALIZADA
-@csrf_exempt
-def process_order_view(request, tipo):
-    if request.method != 'POST':
-        return JsonResponse({'status': 'error'}, status=400)
-
+# PROCESAR ÓRDENES
+def processOrder(request):
+    """Procesar orden básica (original)"""
     data = json.loads(request.body)
-    tipo = data.get('tipo', 'online')
-    cart_key = 'cart_fisica' if tipo == 'fisica' else 'cart'
-    cart = request.session.get(cart_key, {})
+    cart = request.session.get('cart', {})
 
-    detalles, total_venta = [], 0
-    for pid, cantidad in cart.items():
+    if not cart:
+        return JsonResponse({'status': 'error', 'message': 'Carrito vacío'}, status=400)
+
+    total_venta = 0
+    detalles = []
+
+    for product_id, cantidad in cart.items():
         try:
-            producto = presentacion.objects.get(pk=int(pid))
+            producto = presentacion.objects.get(prese_id=int(product_id))
             prealm = pre_alm.objects.filter(fk_presentacion=producto).first()
-            inventario_obj = inventario.objects.filter(fk_presentacion=producto).first()
-            if not prealm or not inventario_obj:
+            if not prealm:
                 continue
-            subtotal = prealm.pre_alm_precio * cantidad
-            total_venta += subtotal
-            detalles.append({'producto': producto, 'prealm': prealm,'inventario': inventario_obj, 'cantidad': cantidad})
+            precio_unitario = prealm.pre_alm_precio or 0
+            total_venta += precio_unitario * cantidad
+            detalles.append({
+                'producto': producto,
+                'cantidad': cantidad,
+                'precio_unitario': precio_unitario,
+                'prealm': prealm
+            })
         except presentacion.DoesNotExist:
             continue
 
-    if total_venta <= 0:
-        return JsonResponse({'status': 'error', 'message': 'Venta inválida'}, status=400)
-
     tienda_obj = tienda.objects.first()
+    if total_venta <= 0:
+        return JsonResponse({'status': 'error', 'message': 'Total de la venta inválido'}, status=400)
+        
+    venta = venta_online.objects.create(
+        ven_onl_fecha=timezone.now(),
+        ven_onl_total=total_venta,
+        fk_usuario=request.user,
+        fk_tienda=tienda_obj
+    )
 
-    if tipo == 'fisica':
-        cliente_obj = getattr(request.user, 'fk_cliente', None)
-        if not cliente_obj:
-            return JsonResponse({'status': 'error', 'message': 'Este usuario no tiene un cliente asignado'}, status=400)
-        venta = venta_fisica.objects.create(
-            ven_fis_fecha=timezone.now(),
-            ven_fis_total=total_venta,
-            fk_tienda=tienda_obj,
-            fk_cliente=cliente_obj
+    for item in detalles:
+        detalle_venta_online.objects.create(
+            fk_venta_online=venta,
+            fk_pre_alm=item['prealm'],
+            det_ven_onl_cantidad=item['cantidad'],
+            det_ven_onl_precio=item['precio_unitario']
         )
-        for d in detalles:
-            detalle_venta_fisica.objects.create(
-                fk_venta_fisica=venta,
-                fk_inventario=d['inventario'],
-                det_ven_fis_cantidad=d['cantidad'],
-                det_ven_fis_precio_unitario=d['prealm'].pre_alm_precio
-            )
-    else:
-        venta = venta_online.objects.create(
-            ven_onl_fecha=timezone.now(),
-            ven_onl_total=total_venta,
-            fk_usuario=request.user,
-            fk_tienda=tienda_obj
-        )
-        for d in detalles:
-            detalle_venta_online.objects.create(
-                fk_venta_online=venta,
-                fk_pre_alm=d['prealm'],
-                det_ven_onl_cantidad=d['cantidad'],
-                det_ven_onl_precio=d['prealm'].pre_alm_precio
-            )
 
     # Guardar el ID de venta en la sesión para usar en el método de pago
     request.session['pending_venta_id'] = venta.ven_onl_id
     request.session['pending_total'] = float(total_venta)
-    request.session['cart'] = {}
+    request.session['pending_tipo'] = 'online'  # Tipo por defecto para compatibilidad
+    # NO limpiar el carrito aquí - se limpiará después del pago exitoso
 
     return JsonResponse({
         'status': 'ok', 
@@ -291,14 +412,81 @@ def process_order_view(request, tipo):
         'redirect_to_payment': True
     })
 
+@csrf_exempt
+def process_order_view(request, tipo):
+    """Procesar orden generalizada (física/online) - Ambas funcionan igual ahora"""
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error'}, status=400)
+
+    data = json.loads(request.body)
+    tipo = data.get('tipo', tipo)
+    cart_key = 'cart_fisica' if tipo == 'fisica' else 'cart'
+    cart = request.session.get(cart_key, {})
+
+    detalles, total_venta = [], 0
+    for pid, cantidad in cart.items():
+        try:
+            producto = presentacion.objects.get(pk=int(pid))
+            prealm = pre_alm.objects.filter(fk_presentacion=producto).first()
+            if not prealm:
+                continue
+            
+            detalles.append({
+                'producto': producto, 
+                'prealm': prealm,
+                'cantidad': cantidad
+            })
+            
+            subtotal = prealm.pre_alm_precio * cantidad
+            total_venta += subtotal
+        except presentacion.DoesNotExist:
+            continue
+
+    if total_venta <= 0:
+        return JsonResponse({'status': 'error', 'message': 'Venta inválida'}, status=400)
+
+    tienda_obj = tienda.objects.first()
+
+    # Tratar tanto física como online igual - crear venta online y redirigir a método de pago
+    venta = venta_online.objects.create(
+        ven_onl_fecha=timezone.now(),
+        ven_onl_total=total_venta,
+        fk_usuario=request.user,
+        fk_tienda=tienda_obj
+    )
+    
+    for d in detalles:
+        detalle_venta_online.objects.create(
+            fk_venta_online=venta,
+            fk_pre_alm=d['prealm'],
+            det_ven_onl_cantidad=d['cantidad'],
+            det_ven_onl_precio=d['prealm'].pre_alm_precio
+        )
+
+    # Guardar el ID de venta en la sesión para usar en el método de pago
+    request.session['pending_venta_id'] = venta.ven_onl_id
+    request.session['pending_total'] = float(total_venta)
+    request.session['pending_tipo'] = tipo  # Guardar el tipo para referencia
+    # NO limpiar el carrito aquí - se limpiará después del pago exitoso
+
+    return JsonResponse({
+        'status': 'ok', 
+        'message': 'Venta registrada', 
+        'venta_id': venta.ven_onl_id,
+        'redirect_to_payment': True
+    })
+
+# MÉTODOS DE PAGO
 @login_required
 def payment_method_view(request):
     """Vista para seleccionar y configurar el método de pago"""
     venta_id = request.session.get('pending_venta_id')
     total = request.session.get('pending_total')
+    pending_tipo = request.session.get('pending_tipo', 'online')
     
     if not venta_id or not total:
-        return redirect('checkout')
+        # Redirigir al checkout del tipo correcto
+        return redirect('checkout_view', tipo=pending_tipo)
     
     # Obtener todas las monedas disponibles con su último valor de cambio
     monedas_disponibles = []
@@ -365,6 +553,14 @@ def process_payment_method(request):
         if not moneda_id:
             return JsonResponse({'status': 'error', 'message': 'Debe seleccionar una moneda'}, status=400)
         
+        if not tipo_pago:
+            return JsonResponse({'status': 'error', 'message': 'Debe seleccionar un tipo de pago'}, status=400)
+        
+        # Validar datos del método de pago
+        validation_errors = validate_payment_data(tipo_pago, data)
+        if validation_errors:
+            return JsonResponse({'status': 'error', 'message': '; '.join(validation_errors)}, status=400)
+        
         # Obtener la moneda seleccionada
         try:
             moneda_obj = moneda.objects.get(mon_id=moneda_id)
@@ -396,43 +592,34 @@ def process_payment_method(request):
             'met_pag_tipo_pago': tipo_pago
         }
         
-        if tipo_pago == 'efectivo':
-            denominacion = data.get('denominacion')
-            if not denominacion:
-                return JsonResponse({'status': 'error', 'message': 'Denominación requerida para efectivo'}, status=400)
-            metodo_pago_data['efe_denominacion'] = int(denominacion)
-            
-        elif tipo_pago == 'cheque':
-            num_cheque = data.get('num_cheque')
-            if not num_cheque:
-                return JsonResponse({'status': 'error', 'message': 'Número de cheque requerido'}, status=400)
-            metodo_pago_data['che_num_cheque'] = int(num_cheque)
-            
-        elif tipo_pago == 'tarjeta_debito':
-            numero = data.get('numero')
-            vencimiento = data.get('vencimiento')
-            banco = data.get('banco')
-            
-            if not all([numero, vencimiento, banco]):
-                return JsonResponse({'status': 'error', 'message': 'Todos los campos son requeridos para tarjeta de débito'}, status=400)
-            
-            metodo_pago_data.update({
-                'tar_deb_numero': int(numero),
-                'tar_deb_vencimiento': datetime.strptime(vencimiento, '%Y-%m-%d').date(),
-                'tar_deb_banco': banco
-            })
-            
-        elif tipo_pago == 'tarjeta_credito':
-            numero = data.get('numero')
-            vencimiento = data.get('vencimiento')
-            
-            if not all([numero, vencimiento]):
-                return JsonResponse({'status': 'error', 'message': 'Número y vencimiento son requeridos para tarjeta de crédito'}, status=400)
-            
-            metodo_pago_data.update({
-                'tar_cre_numero': int(numero),
-                'tar_cre_vencimiento': datetime.strptime(vencimiento, '%Y-%m-%d').date()
-            })
+        try:
+            if tipo_pago == 'efectivo':
+                metodo_pago_data['efe_denominacion'] = int(data.get('denominacion'))
+                
+            elif tipo_pago == 'cheque':
+                metodo_pago_data['che_num_cheque'] = int(data.get('num_cheque'))
+                
+            elif tipo_pago == 'tarjeta_debito':
+                numero = data.get('numero', '').replace(' ', '')
+                vencimiento = data.get('vencimiento')
+                banco = data.get('banco', '').strip()
+                
+                metodo_pago_data.update({
+                    'tar_deb_numero': int(numero),
+                    'tar_deb_vencimiento': datetime.strptime(vencimiento, '%Y-%m-%d').date(),
+                    'tar_deb_banco': banco
+                })
+                
+            elif tipo_pago == 'tarjeta_credito':
+                numero = data.get('numero', '').replace(' ', '')
+                vencimiento = data.get('vencimiento')
+                
+                metodo_pago_data.update({
+                    'tar_cre_numero': int(numero),
+                    'tar_cre_vencimiento': datetime.strptime(vencimiento, '%Y-%m-%d').date()
+                })
+        except (ValueError, TypeError) as e:
+            return JsonResponse({'status': 'error', 'message': f'Error en los datos del método de pago: {str(e)}'}, status=400)
         
         # Crear el método de pago
         metodo_pago_obj = metodo_pago.objects.create(**metodo_pago_data)
@@ -446,9 +633,14 @@ def process_payment_method(request):
             fk_moneda=moneda_obj
         )
         
-        # Limpiar la sesión
+        # Limpiar la sesión - incluir el carrito ahora que el pago fue exitoso
+        pending_tipo = request.session.get('pending_tipo', 'online')
+        cart_key = 'cart_fisica' if pending_tipo == 'fisica' else 'cart'
+        
         request.session.pop('pending_venta_id', None)
         request.session.pop('pending_total', None)
+        request.session.pop('pending_tipo', None)
+        request.session[cart_key] = {}  # Limpiar el carrito SOLO después del pago exitoso
         
         return JsonResponse({
             'status': 'success',
@@ -457,7 +649,8 @@ def process_payment_method(request):
             'monto_original': float(total_decimal),
             'monto_convertido': float(monto_convertido),
             'moneda': moneda_obj.mon_tipo,
-            'tasa_cambio': float(ultimo_historico.his_valor_cambio)
+            'tasa_cambio': float(ultimo_historico.his_valor_cambio),
+            'redirect_url': f'/store/{pending_tipo}/'  # Redirigir de vuelta al tipo de tienda correcto
         })
         
     except Exception as e:
@@ -487,11 +680,7 @@ def currency_rates_view(request):
     
     return render(request, 'currency_rates.html', context)
 
-# LOGIN / LOGOUT
-    request.session[cart_key] = {}
-    return JsonResponse({'status': 'ok', 'message': 'Venta registrada'})
-
-# LOGIN
+# AUTENTICACIÓN
 def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -499,17 +688,19 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user:
             login(request, user)
+            # Redirigir al checkout si viene desde el carrito
+            next_url = request.GET.get('next')
+            if next_url:
+                return redirect(next_url)
             return redirect('home')
         else:
             return render(request, 'login.html', {'error': 'Credenciales inválidas'})
     return render(request, 'login.html')
 
-# LOGOUT
 def logout_view(request):
     logout(request)
     return redirect('login')
 
-# REGISTRO
 def registro(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)

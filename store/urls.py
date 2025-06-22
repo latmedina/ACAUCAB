@@ -2,16 +2,22 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    # Redirección raíz a tienda online
+    # Redirección y tienda principal
     path('', views.redirect_store, name='redirect_store'),
-
-    # Tienda general (física / online)
-    path('store/<str:tipo>/', views.store_view, name='store'),
-    path('cart/<str:tipo>/', views.cart_view, name='cart'),  # Puedes ajustar si tienes vista específica
-    path('update_cart/<str:tipo>/', views.update_cart_view, name='update_cart'),
-    path('checkout/<str:tipo>/', views.checkout_view, name='checkout'),
-    path('process_order/<str:tipo>/', views.process_order_view, name='process_order'),
-
+    path('store/', views.store, name='store'),  # Vista básica original
+    
+    # Tienda generalizada (física/online)
+    path('store/<str:tipo>/', views.store_view, name='store_view'),
+    path('cart/<str:tipo>/', views.cart_view, name='cart_view'),
+    path('update_cart/<str:tipo>/', views.update_cart_view, name='update_cart_view'),
+    path('checkout/<str:tipo>/', views.checkout_view, name='checkout_view'),
+    path('process_order/<str:tipo>/', views.process_order_view, name='process_order_view'),
+    
+    # Rutas básicas (compatibilidad)
+    path('cart/', views.cart_view, {'tipo': 'online'}, name='cart'),
+    path('update_cart/', views.update_cart, name='update_cart'),
+    path('checkout/', views.checkout, name='checkout'),
+    path('process_order/', views.processOrder, name='process_order'),
 
     # Métodos de pago
     path('payment-method/', views.payment_method_view, name='payment_method'),

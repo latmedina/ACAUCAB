@@ -209,20 +209,70 @@ document.addEventListener('DOMContentLoaded', function() {
     formatCardNumber(document.getElementById('numero_debito'));
     formatCardNumber(document.getElementById('numero_credito'));
     
+    // Función para validar fecha de vencimiento
+    function validateExpirationDate(dateString) {
+        if (!dateString) return false;
+        
+        const expirationDate = new Date(dateString);
+        const today = new Date();
+        
+        // Comparar solo año y mes (ignorar día)
+        const expYear = expirationDate.getFullYear();
+        const expMonth = expirationDate.getMonth();
+        const currentYear = today.getFullYear();
+        const currentMonth = today.getMonth();
+        
+        if (expYear < currentYear) {
+            return false;
+        }
+        
+        if (expYear === currentYear && expMonth < currentMonth) {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    // Función para mostrar errores
+    function showError(message) {
+        // Remover error anterior si existe
+        const existingError = document.querySelector('.payment-error');
+        if (existingError) {
+            existingError.remove();
+        }
+        
+        // Crear nuevo mensaje de error
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'alert alert-danger payment-error';
+        errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
+        
+        // Insertar antes del formulario
+        form.parentNode.insertBefore(errorDiv, form);
+        
+        // Scroll hacia el error
+        errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    
     // Procesar formulario
     form.addEventListener('submit', function(e) {
         e.preventDefault();
+        
+        // Remover errores anteriores
+        const existingError = document.querySelector('.payment-error');
+        if (existingError) {
+            existingError.remove();
+        }
         
         const monedaId = monedaSelect.value;
         const tipoPago = tipoSelect.value;
         
         if (!monedaId) {
-            alert('Por favor seleccione una moneda');
+            showError('Por favor seleccione una moneda');
             return;
         }
         
         if (!tipoPago) {
-            alert('Por favor seleccione un método de pago');
+            showError('Por favor seleccione un método de pago');
             return;
         }
         
@@ -231,11 +281,11 @@ document.addEventListener('DOMContentLoaded', function() {
             tipo_pago: tipoPago
         };
         
-        // Recopilar datos según el tipo de pago
+        // Recopilar y validar datos según el tipo de pago
         if (tipoPago === 'efectivo') {
             const denominacion = document.getElementById('denominacion').value;
             if (!denominacion) {
-                alert('Por favor seleccione una denominación');
+                showError('Por favor seleccione una denominación para el pago en efectivo');
                 return;
             }
             paymentData.denominacion = denominacion;
@@ -243,7 +293,11 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (tipoPago === 'cheque') {
             const numCheque = document.getElementById('num_cheque').value;
             if (!numCheque) {
-                alert('Por favor ingrese el número de cheque');
+                showError('Por favor ingrese el número de cheque');
+                return;
+            }
+            if (numCheque <= 0) {
+                showError('El número de cheque debe ser mayor a 0');
                 return;
             }
             paymentData.num_cheque = numCheque;
@@ -251,10 +305,20 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (tipoPago === 'tarjeta_debito') {
             const numero = document.getElementById('numero_debito').value.replace(/\s/g, '');
             const vencimiento = document.getElementById('vencimiento_debito').value;
-            const banco = document.getElementById('banco').value;
+            const banco = document.getElementById('banco').value.trim();
             
             if (!numero || !vencimiento || !banco) {
-                alert('Por favor complete todos los campos de la tarjeta de débito');
+                showError('Por favor complete todos los campos de la tarjeta de débito');
+                return;
+            }
+            
+            if (!validateExpirationDate(vencimiento)) {
+                showError('La fecha de vencimiento de la tarjeta de débito no puede ser anterior a la fecha actual');
+                return;
+            }
+            
+            if (banco.length < 2) {
+                showError('Por favor ingrese un nombre de banco válido');
                 return;
             }
             
@@ -267,7 +331,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const vencimiento = document.getElementById('vencimiento_credito').value;
             
             if (!numero || !vencimiento) {
-                alert('Por favor complete todos los campos de la tarjeta de crédito');
+                showError('Por favor complete todos los campos de la tarjeta de crédito');
+                return;
+            }
+            
+            if (!validateExpirationDate(vencimiento)) {
+                showError('La fecha de vencimiento de la tarjeta de crédito no puede ser anterior a la fecha actual');
                 return;
             }
             
@@ -296,7 +365,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     `Monto pagado: ${data.monto_convertido.toFixed(4)} ${data.moneda}\n` +
                     `Tasa de cambio: ${data.tasa_cambio.toFixed(4)}`;
                 alert(mensaje);
-                window.location.href = '{% url "store" %}';
+                // Usar la URL de redirección proporcionada por el backend
+                window.location.href = data.redirect_url || '{% url "store_view" "online" %}';
             } else {
                 alert('Error: ' + data.message);
                 processBtn.disabled = false;
