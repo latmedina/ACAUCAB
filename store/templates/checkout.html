@@ -5,7 +5,7 @@
     <div class="row justify-content-center align-items-center h-100">
         <div class="col-lg-6">
             <div class="box-element mb-4">
-                <a class="btn btn-outline-dark" href="{% url 'cart' tipo %}">&#x2190; Volver al Carrito</a>
+                <a class="btn btn-outline-dark" href="{% url 'cart_view' tipo %}">&#x2190; Volver al Carrito</a>
                 <hr>
                 <h3 class="text-center">Resumen de la Orden</h3>
                 <hr>
@@ -13,7 +13,7 @@
                 <div class="cart-row d-flex align-items-center mb-3">
                     <div style="flex:2">
                         {% if item.product.prese_imagen %}
-                            <img class="row-image" src="{{ item.product.prese_imagen.url }}">
+                            <img class="row-image" src="{{ item.product.prese_imagen.url }}" style="width: 50px; height: 50px; object-fit: cover;">
                         {% endif %}
                     </div>
                     <div style="flex:2"><p>{{ item.product.prese_nombre }}</p></div>
@@ -24,34 +24,22 @@
                     <div style="flex:1"><p>x{{ item.quantity }}</p></div>
                 </div>
                 {% endfor %}
+                <hr>
                 <h5 class="text-right">Items: {{order.get_cart_items}}</h5>
                 <h5 class="text-right">Total: ${{order.get_cart_total_usd|floatformat:2}} USD</h5>
                 <p class="text-right text-muted">{{order.get_cart_total_bs|floatformat:2}} Bs</p>
-                <form id="form">
-                    <div id="user-info"></div>
-                    <div id="shipping-info"></div>
-                    <div id="form-wrapper">
-                        <hr>
-                        <input id="form-button" class="btn btn-success btn-block" type="submit" value="Continue">
-                    </div>
-                </form>
-            </div>
-
-            <!-- Sección de pago -->
-            <div class="box-element text-center" id="payment-info" style="margin-top: 20px;">
+                
                 {% if user.is_authenticated %}
-                    <button id="make-payment" class="btn btn-primary">Make Payment</button>
+                    <div class="text-center mt-4">
+                        <button id="continue-button" class="btn btn-success btn-lg">Continue</button>
+                    </div>
                 {% else %}
-                    <p class="text-danger mt-2">
-                        Debes <a href="{% url 'login' %}">iniciar sesión</a> para completar la compra.
-                    </p>
+                    <div class="text-center mt-4">
+                        <p class="text-danger">
+                            Debes <a href="{% url 'login' %}?next={% url 'checkout_view' tipo %}">iniciar sesión</a> para completar la compra.
+                        </p>
+                    </div>
                 {% endif %}
-                <h5 class="text-right">Items: {{ order.get_cart_items }}</h5>
-                <h5 class="text-right">Total: ${{ order.get_cart_total|floatformat:2 }}</h5>
-
-                <div class="text-center">
-                    <button id="make-payment" class="btn btn-primary mt-3">Realizar Pago</button>
-                </div>
             </div>
         </div>
     </div>
@@ -60,25 +48,44 @@
 <script type="text/javascript">
     document.addEventListener('DOMContentLoaded', function () {
         const tipo = "{{ tipo }}";
+        const continueButton = document.getElementById('continue-button');
+        
+        if (continueButton) {
+            continueButton.addEventListener('click', function () {
+                const csrftoken = getCookie('csrftoken');
+                let payload = { tipo: tipo };
 
-        document.getElementById('make-payment').addEventListener('click', function () {
-            const csrftoken = getCookie('csrftoken');
-            let payload = { tipo: tipo };
+                // Mostrar indicador de carga
+                continueButton.disabled = true;
+                continueButton.innerHTML = 'Procesando...';
 
-            fetch(`/process_order/${tipo}/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken,
-                },
-                body: JSON.stringify(payload)
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert('Transacción completada');
-                window.location.href = `/store/${tipo}/`;
+                fetch(`/process_order/${tipo}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken,
+                    },
+                    body: JSON.stringify(payload)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'ok' && data.redirect_to_payment) {
+                        // Redirigir a la página de método de pago
+                        window.location.href = "{% url 'payment_method' %}";
+                    } else {
+                        alert('Error procesando la orden: ' + (data.message || 'Error desconocido'));
+                        continueButton.disabled = false;
+                        continueButton.innerHTML = 'Continue';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error de conexión. Por favor, intenta de nuevo.');
+                    continueButton.disabled = false;
+                    continueButton.innerHTML = 'Continue';
+                });
             });
-        });
+        }
 
         function getCookie(name) {
             let cookieValue = null;
@@ -93,24 +100,6 @@
                 }
             }
             return cookieValue;
-                body: JSON.stringify({
-                    'form': userFormData,
-                    'shipping': shippingData
-                }),
-            })
-            .then((response) => response.json())
-            .then((data) => {
-                console.log('Success:', data);
-                if (data.status === 'ok' && data.redirect_to_payment) {
-                    // Redirigir a la página de método de pago
-                    window.location.href = "{% url 'payment_method' %}";
-                } else {
-                    alert('Transaction completed');
-                    cart = {};
-                    document.cookie = 'cart=' + JSON.stringify(cart) + ";domain=;path=/";
-                    window.location.href = "{% url 'store' %}";
-                }
-            });
         }
     });
 </script>
