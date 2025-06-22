@@ -22,7 +22,7 @@
             <h6><strong>{{ product.prese_nombre }}</strong></h6>
             {% if product.disponible %}
                 <div class="button-container">
-                    <button data-product="{{ product.prese_id }}" data-action="add" class="btn btn-outline-secondary update-cart">Agregar al carrito</button>
+                    <button data-product="{{ product.prese_id }}" data-action="add" data-tipo="{{ tipo }}" class="btn btn-outline-secondary update-cart">Agregar al carrito</button>
                 </div>
                 <div class="price-container">
                     <h4><strong>${{ product.precio_usd|floatformat:2 }} USD</strong></h4>
@@ -33,7 +33,7 @@
                     <button class="btn btn-outline-secondary" disabled>No disponible</button>
                 </div>
                 <div class="price-container">
-                    <h4><strong>No disponible</strong></h4>
+                    <h7><strong>No disponible</strong></h7>
                 </div>
             {% endif %}
         </div>

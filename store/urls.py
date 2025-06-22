@@ -2,13 +2,16 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    # Vistas de la tienda
-    path('', views.store, name='store'),
-    path('update_cart/', views.update_cart, name='update_cart'),
-    path('checkout/', views.checkout, name='checkout'),
-    path('update_item/', views.updateItem, name='update_item'),
-    path('process_order/', views.processOrder, name='process_order'),
-    path('cart/', views.cart_view, name='cart'),
+    # Redirección raíz a tienda online
+    path('', views.redirect_store, name='redirect_store'),
+
+    # Tienda general (física / online)
+    path('store/<str:tipo>/', views.store_view, name='store'),
+    path('cart/<str:tipo>/', views.cart_view, name='cart'),  # Puedes ajustar si tienes vista específica
+    path('update_cart/<str:tipo>/', views.update_cart_view, name='update_cart'),
+    path('checkout/<str:tipo>/', views.checkout_view, name='checkout'),
+    path('process_order/<str:tipo>/', views.process_order_view, name='process_order'),
+
 
     # Métodos de pago
     path('payment-method/', views.payment_method_view, name='payment_method'),
