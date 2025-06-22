@@ -3198,6 +3198,438 @@ INSERT INTO public.detalle_venta_fisica VALUES (18, 1, 14.80, 9, 2);
 INSERT INTO public.detalle_venta_fisica VALUES (19, 2, 30.00, 8, 2);
 INSERT INTO public.detalle_venta_fisica VALUES (20, 1, 26.00, 1, 2);
 
+-- Inserts faltantes para DETALLE_VENTA_FISICA
+-- Generados a partir de BD/Inserts.sql para completar la tabla
+-- Se agregan los registros del 21 al 400 que faltan en BD/insert.sql
+
+-- Registros del 21 al 30 (para las ventas físicas 3 a 10 - completando 10 productos por venta)
+INSERT INTO public.detalle_venta_fisica VALUES (21, 3, 8.50, 1, 3);
+INSERT INTO public.detalle_venta_fisica VALUES (22, 2, 12.00, 2, 3);
+INSERT INTO public.detalle_venta_fisica VALUES (23, 2, 15.50, 3, 3);
+INSERT INTO public.detalle_venta_fisica VALUES (24, 2, 22.00, 4, 3);
+INSERT INTO public.detalle_venta_fisica VALUES (25, 1, 25.50, 5, 3);
+INSERT INTO public.detalle_venta_fisica VALUES (26, 1, 18.75, 6, 3);
+INSERT INTO public.detalle_venta_fisica VALUES (27, 4, 6.75, 7, 3);
+INSERT INTO public.detalle_venta_fisica VALUES (28, 1, 30.00, 8, 3);
+INSERT INTO public.detalle_venta_fisica VALUES (29, 2, 14.80, 9, 3);
+INSERT INTO public.detalle_venta_fisica VALUES (30, 2, 33.00, 10, 3);
+
+INSERT INTO public.detalle_venta_fisica VALUES (31, 2, 8.50, 1, 4);
+INSERT INTO public.detalle_venta_fisica VALUES (32, 3, 12.00, 2, 4);
+INSERT INTO public.detalle_venta_fisica VALUES (33, 1, 15.50, 3, 4);
+INSERT INTO public.detalle_venta_fisica VALUES (34, 3, 22.00, 4, 4);
+INSERT INTO public.detalle_venta_fisica VALUES (35, 2, 25.50, 5, 4);
+INSERT INTO public.detalle_venta_fisica VALUES (36, 2, 18.75, 6, 4);
+INSERT INTO public.detalle_venta_fisica VALUES (37, 2, 6.75, 7, 4);
+INSERT INTO public.detalle_venta_fisica VALUES (38, 2, 30.00, 8, 4);
+INSERT INTO public.detalle_venta_fisica VALUES (39, 1, 14.80, 9, 4);
+INSERT INTO public.detalle_venta_fisica VALUES (40, 2, 33.00, 10, 4);
+
+INSERT INTO public.detalle_venta_fisica VALUES (41, 2, 8.50, 1, 5);
+INSERT INTO public.detalle_venta_fisica VALUES (42, 1, 12.00, 2, 5);
+INSERT INTO public.detalle_venta_fisica VALUES (43, 3, 15.50, 3, 5);
+INSERT INTO public.detalle_venta_fisica VALUES (44, 1, 22.00, 4, 5);
+INSERT INTO public.detalle_venta_fisica VALUES (45, 1, 25.50, 5, 5);
+INSERT INTO public.detalle_venta_fisica VALUES (46, 2, 18.75, 6, 5);
+INSERT INTO public.detalle_venta_fisica VALUES (47, 3, 6.75, 7, 5);
+INSERT INTO public.detalle_venta_fisica VALUES (48, 1, 30.00, 8, 5);
+INSERT INTO public.detalle_venta_fisica VALUES (49, 2, 14.80, 9, 5);
+INSERT INTO public.detalle_venta_fisica VALUES (50, 1, 26.00, 1, 5);
+
+INSERT INTO public.detalle_venta_fisica VALUES (51, 3, 8.50, 1, 6);
+INSERT INTO public.detalle_venta_fisica VALUES (52, 2, 12.00, 2, 6);
+INSERT INTO public.detalle_venta_fisica VALUES (53, 2, 15.50, 3, 6);
+INSERT INTO public.detalle_venta_fisica VALUES (54, 2, 22.00, 4, 6);
+INSERT INTO public.detalle_venta_fisica VALUES (55, 2, 25.50, 5, 6);
+INSERT INTO public.detalle_venta_fisica VALUES (56, 1, 18.75, 6, 6);
+INSERT INTO public.detalle_venta_fisica VALUES (57, 2, 6.75, 7, 6);
+INSERT INTO public.detalle_venta_fisica VALUES (58, 2, 30.00, 8, 6);
+INSERT INTO public.detalle_venta_fisica VALUES (59, 2, 14.80, 9, 6);
+INSERT INTO public.detalle_venta_fisica VALUES (60, 2, 33.00, 10, 6);
+
+INSERT INTO public.detalle_venta_fisica VALUES (61, 4, 8.50, 1, 7);
+INSERT INTO public.detalle_venta_fisica VALUES (62, 3, 12.00, 2, 7);
+INSERT INTO public.detalle_venta_fisica VALUES (63, 2, 15.50, 3, 7);
+INSERT INTO public.detalle_venta_fisica VALUES (64, 3, 22.00, 4, 7);
+INSERT INTO public.detalle_venta_fisica VALUES (65, 2, 25.50, 5, 7);
+INSERT INTO public.detalle_venta_fisica VALUES (66, 2, 18.75, 6, 7);
+INSERT INTO public.detalle_venta_fisica VALUES (67, 3, 6.75, 7, 7);
+INSERT INTO public.detalle_venta_fisica VALUES (68, 2, 30.00, 8, 7);
+INSERT INTO public.detalle_venta_fisica VALUES (69, 2, 14.80, 9, 7);
+INSERT INTO public.detalle_venta_fisica VALUES (70, 3, 33.00, 10, 7);
+
+INSERT INTO public.detalle_venta_fisica VALUES (71, 2, 8.50, 1, 8);
+INSERT INTO public.detalle_venta_fisica VALUES (72, 2, 12.00, 2, 8);
+INSERT INTO public.detalle_venta_fisica VALUES (73, 3, 15.50, 3, 8);
+INSERT INTO public.detalle_venta_fisica VALUES (74, 2, 22.00, 4, 8);
+INSERT INTO public.detalle_venta_fisica VALUES (75, 1, 25.50, 5, 8);
+INSERT INTO public.detalle_venta_fisica VALUES (76, 2, 18.75, 6, 8);
+INSERT INTO public.detalle_venta_fisica VALUES (77, 2, 6.75, 7, 8);
+INSERT INTO public.detalle_venta_fisica VALUES (78, 1, 30.00, 8, 8);
+INSERT INTO public.detalle_venta_fisica VALUES (79, 3, 14.80, 9, 8);
+INSERT INTO public.detalle_venta_fisica VALUES (80, 2, 26.00, 1, 8);
+
+INSERT INTO public.detalle_venta_fisica VALUES (81, 1, 8.50, 1, 9);
+INSERT INTO public.detalle_venta_fisica VALUES (82, 3, 12.00, 2, 9);
+INSERT INTO public.detalle_venta_fisica VALUES (83, 2, 15.50, 3, 9);
+INSERT INTO public.detalle_venta_fisica VALUES (84, 1, 22.00, 4, 9);
+INSERT INTO public.detalle_venta_fisica VALUES (85, 2, 25.50, 5, 9);
+INSERT INTO public.detalle_venta_fisica VALUES (86, 2, 18.75, 6, 9);
+INSERT INTO public.detalle_venta_fisica VALUES (87, 2, 6.75, 7, 9);
+INSERT INTO public.detalle_venta_fisica VALUES (88, 1, 30.00, 8, 9);
+INSERT INTO public.detalle_venta_fisica VALUES (89, 2, 14.80, 9, 9);
+INSERT INTO public.detalle_venta_fisica VALUES (90, 1, 33.00, 10, 9);
+
+INSERT INTO public.detalle_venta_fisica VALUES (91, 3, 8.50, 1, 10);
+INSERT INTO public.detalle_venta_fisica VALUES (92, 2, 12.00, 2, 10);
+INSERT INTO public.detalle_venta_fisica VALUES (93, 3, 15.50, 3, 10);
+INSERT INTO public.detalle_venta_fisica VALUES (94, 2, 22.00, 4, 10);
+INSERT INTO public.detalle_venta_fisica VALUES (95, 2, 25.50, 5, 10);
+INSERT INTO public.detalle_venta_fisica VALUES (96, 1, 18.75, 6, 10);
+INSERT INTO public.detalle_venta_fisica VALUES (97, 3, 6.75, 7, 10);
+INSERT INTO public.detalle_venta_fisica VALUES (98, 2, 30.00, 8, 10);
+INSERT INTO public.detalle_venta_fisica VALUES (99, 2, 14.80, 9, 10);
+INSERT INTO public.detalle_venta_fisica VALUES (100, 2, 33.00, 10, 10);
+
+-- Ventas 11-20 (Clientes 11-20)
+INSERT INTO public.detalle_venta_fisica VALUES (101, 2, 8.50, 1, 11);
+INSERT INTO public.detalle_venta_fisica VALUES (102, 1, 12.00, 2, 11);
+INSERT INTO public.detalle_venta_fisica VALUES (103, 2, 15.50, 3, 11);
+INSERT INTO public.detalle_venta_fisica VALUES (104, 3, 22.00, 4, 11);
+INSERT INTO public.detalle_venta_fisica VALUES (105, 1, 25.50, 5, 11);
+INSERT INTO public.detalle_venta_fisica VALUES (106, 2, 18.75, 6, 11);
+INSERT INTO public.detalle_venta_fisica VALUES (107, 2, 6.75, 7, 11);
+INSERT INTO public.detalle_venta_fisica VALUES (108, 1, 30.00, 8, 11);
+INSERT INTO public.detalle_venta_fisica VALUES (109, 3, 14.80, 9, 11);
+INSERT INTO public.detalle_venta_fisica VALUES (110, 1, 33.00, 10, 11);
+
+INSERT INTO public.detalle_venta_fisica VALUES (111, 1, 8.50, 1, 12);
+INSERT INTO public.detalle_venta_fisica VALUES (112, 2, 12.00, 2, 12);
+INSERT INTO public.detalle_venta_fisica VALUES (113, 1, 15.50, 3, 12);
+INSERT INTO public.detalle_venta_fisica VALUES (114, 2, 22.00, 4, 12);
+INSERT INTO public.detalle_venta_fisica VALUES (115, 3, 25.50, 5, 12);
+INSERT INTO public.detalle_venta_fisica VALUES (116, 1, 18.75, 6, 12);
+INSERT INTO public.detalle_venta_fisica VALUES (117, 2, 6.75, 7, 12);
+INSERT INTO public.detalle_venta_fisica VALUES (118, 2, 30.00, 8, 12);
+INSERT INTO public.detalle_venta_fisica VALUES (119, 1, 14.80, 9, 12);
+INSERT INTO public.detalle_venta_fisica VALUES (120, 2, 33.00, 10, 12);
+
+INSERT INTO public.detalle_venta_fisica VALUES (121, 3, 8.50, 1, 13);
+INSERT INTO public.detalle_venta_fisica VALUES (122, 2, 12.00, 2, 13);
+INSERT INTO public.detalle_venta_fisica VALUES (123, 1, 15.50, 3, 13);
+INSERT INTO public.detalle_venta_fisica VALUES (124, 2, 22.00, 4, 13);
+INSERT INTO public.detalle_venta_fisica VALUES (125, 1, 6.75, 5, 13);
+INSERT INTO public.detalle_venta_fisica VALUES (126, 3, 10.25, 6, 13);
+INSERT INTO public.detalle_venta_fisica VALUES (127, 2, 18.75, 7, 13);
+INSERT INTO public.detalle_venta_fisica VALUES (128, 1, 25.50, 8, 13);
+INSERT INTO public.detalle_venta_fisica VALUES (129, 2, 30.00, 9, 13);
+INSERT INTO public.detalle_venta_fisica VALUES (130, 1, 14.80, 10, 13);
+
+INSERT INTO public.detalle_venta_fisica VALUES (131, 1, 8.50, 1, 14);
+INSERT INTO public.detalle_venta_fisica VALUES (132, 3, 12.00, 2, 14);
+INSERT INTO public.detalle_venta_fisica VALUES (133, 2, 15.50, 3, 14);
+INSERT INTO public.detalle_venta_fisica VALUES (134, 1, 22.00, 4, 14);
+INSERT INTO public.detalle_venta_fisica VALUES (135, 2, 6.75, 5, 14);
+INSERT INTO public.detalle_venta_fisica VALUES (136, 1, 10.25, 6, 14);
+INSERT INTO public.detalle_venta_fisica VALUES (137, 2, 18.75, 7, 14);
+INSERT INTO public.detalle_venta_fisica VALUES (138, 3, 25.50, 8, 14);
+INSERT INTO public.detalle_venta_fisica VALUES (139, 1, 30.00, 9, 14);
+INSERT INTO public.detalle_venta_fisica VALUES (140, 2, 14.80, 10, 14);
+
+INSERT INTO public.detalle_venta_fisica VALUES (141, 2, 8.50, 1, 15);
+INSERT INTO public.detalle_venta_fisica VALUES (142, 1, 12.00, 2, 15);
+INSERT INTO public.detalle_venta_fisica VALUES (143, 3, 15.50, 3, 15);
+INSERT INTO public.detalle_venta_fisica VALUES (144, 2, 22.00, 4, 15);
+INSERT INTO public.detalle_venta_fisica VALUES (145, 1, 6.75, 5, 15);
+INSERT INTO public.detalle_venta_fisica VALUES (146, 2, 10.25, 6, 15);
+INSERT INTO public.detalle_venta_fisica VALUES (147, 1, 18.75, 7, 15);
+INSERT INTO public.detalle_venta_fisica VALUES (148, 1, 25.50, 8, 15);
+INSERT INTO public.detalle_venta_fisica VALUES (149, 3, 30.00, 9, 15);
+INSERT INTO public.detalle_venta_fisica VALUES (150, 2, 14.80, 10, 15);
+
+INSERT INTO public.detalle_venta_fisica VALUES (151, 3, 8.50, 1, 16);
+INSERT INTO public.detalle_venta_fisica VALUES (152, 2, 12.00, 2, 16);
+INSERT INTO public.detalle_venta_fisica VALUES (153, 1, 15.50, 3, 16);
+INSERT INTO public.detalle_venta_fisica VALUES (154, 3, 22.00, 4, 16);
+INSERT INTO public.detalle_venta_fisica VALUES (155, 2, 6.75, 5, 16);
+INSERT INTO public.detalle_venta_fisica VALUES (156, 1, 10.25, 6, 16);
+INSERT INTO public.detalle_venta_fisica VALUES (157, 2, 18.75, 7, 16);
+INSERT INTO public.detalle_venta_fisica VALUES (158, 2, 25.50, 8, 16);
+INSERT INTO public.detalle_venta_fisica VALUES (159, 1, 30.00, 9, 16);
+INSERT INTO public.detalle_venta_fisica VALUES (160, 2, 14.80, 10, 16);
+
+INSERT INTO public.detalle_venta_fisica VALUES (161, 1, 8.50, 1, 17);
+INSERT INTO public.detalle_venta_fisica VALUES (162, 2, 12.00, 2, 17);
+INSERT INTO public.detalle_venta_fisica VALUES (163, 2, 15.50, 3, 17);
+INSERT INTO public.detalle_venta_fisica VALUES (164, 1, 22.00, 4, 17);
+INSERT INTO public.detalle_venta_fisica VALUES (165, 3, 6.75, 5, 17);
+INSERT INTO public.detalle_venta_fisica VALUES (166, 1, 10.25, 6, 17);
+INSERT INTO public.detalle_venta_fisica VALUES (167, 3, 18.75, 7, 17);
+INSERT INTO public.detalle_venta_fisica VALUES (168, 1, 25.50, 8, 17);
+INSERT INTO public.detalle_venta_fisica VALUES (169, 2, 30.00, 9, 17);
+INSERT INTO public.detalle_venta_fisica VALUES (170, 2, 14.80, 10, 17);
+
+INSERT INTO public.detalle_venta_fisica VALUES (171, 2, 8.50, 1, 18);
+INSERT INTO public.detalle_venta_fisica VALUES (172, 3, 12.00, 2, 18);
+INSERT INTO public.detalle_venta_fisica VALUES (173, 1, 15.50, 3, 18);
+INSERT INTO public.detalle_venta_fisica VALUES (174, 2, 22.00, 4, 18);
+INSERT INTO public.detalle_venta_fisica VALUES (175, 1, 6.75, 5, 18);
+INSERT INTO public.detalle_venta_fisica VALUES (176, 2, 10.25, 6, 18);
+INSERT INTO public.detalle_venta_fisica VALUES (177, 1, 18.75, 7, 18);
+INSERT INTO public.detalle_venta_fisica VALUES (178, 3, 25.50, 8, 18);
+INSERT INTO public.detalle_venta_fisica VALUES (179, 2, 30.00, 9, 18);
+INSERT INTO public.detalle_venta_fisica VALUES (180, 1, 14.80, 10, 18);
+
+INSERT INTO public.detalle_venta_fisica VALUES (181, 3, 8.50, 1, 19);
+INSERT INTO public.detalle_venta_fisica VALUES (182, 1, 12.00, 2, 19);
+INSERT INTO public.detalle_venta_fisica VALUES (183, 2, 15.50, 3, 19);
+INSERT INTO public.detalle_venta_fisica VALUES (184, 3, 22.00, 4, 19);
+INSERT INTO public.detalle_venta_fisica VALUES (185, 2, 6.75, 5, 19);
+INSERT INTO public.detalle_venta_fisica VALUES (186, 1, 10.25, 6, 19);
+INSERT INTO public.detalle_venta_fisica VALUES (187, 2, 18.75, 7, 19);
+INSERT INTO public.detalle_venta_fisica VALUES (188, 1, 25.50, 8, 19);
+INSERT INTO public.detalle_venta_fisica VALUES (189, 1, 30.00, 9, 19);
+INSERT INTO public.detalle_venta_fisica VALUES (190, 3, 14.80, 10, 19);
+
+INSERT INTO public.detalle_venta_fisica VALUES (191, 1, 8.50, 1, 20);
+INSERT INTO public.detalle_venta_fisica VALUES (192, 2, 12.00, 2, 20);
+INSERT INTO public.detalle_venta_fisica VALUES (193, 3, 15.50, 3, 20);
+INSERT INTO public.detalle_venta_fisica VALUES (194, 1, 22.00, 4, 20);
+INSERT INTO public.detalle_venta_fisica VALUES (195, 2, 6.75, 5, 20);
+INSERT INTO public.detalle_venta_fisica VALUES (196, 3, 10.25, 6, 20);
+INSERT INTO public.detalle_venta_fisica VALUES (197, 1, 18.75, 7, 20);
+INSERT INTO public.detalle_venta_fisica VALUES (198, 2, 25.50, 8, 20);
+INSERT INTO public.detalle_venta_fisica VALUES (199, 2, 30.00, 9, 20);
+INSERT INTO public.detalle_venta_fisica VALUES (200, 1, 14.80, 10, 20);
+
+-- Ventas 21-30 (Clientes Jurídicos 21-30)
+INSERT INTO public.detalle_venta_fisica VALUES (201, 5, 8.50, 1, 21);
+INSERT INTO public.detalle_venta_fisica VALUES (202, 4, 12.00, 2, 21);
+INSERT INTO public.detalle_venta_fisica VALUES (203, 3, 15.50, 3, 21);
+INSERT INTO public.detalle_venta_fisica VALUES (204, 5, 22.00, 4, 21);
+INSERT INTO public.detalle_venta_fisica VALUES (205, 3, 25.50, 5, 21);
+INSERT INTO public.detalle_venta_fisica VALUES (206, 4, 18.75, 6, 21);
+INSERT INTO public.detalle_venta_fisica VALUES (207, 5, 6.75, 7, 21);
+INSERT INTO public.detalle_venta_fisica VALUES (208, 3, 30.00, 8, 21);
+INSERT INTO public.detalle_venta_fisica VALUES (209, 4, 14.80, 9, 21);
+INSERT INTO public.detalle_venta_fisica VALUES (210, 5, 33.00, 10, 21);
+
+INSERT INTO public.detalle_venta_fisica VALUES (211, 6, 8.50, 1, 22);
+INSERT INTO public.detalle_venta_fisica VALUES (212, 5, 12.00, 2, 22);
+INSERT INTO public.detalle_venta_fisica VALUES (213, 4, 15.50, 3, 22);
+INSERT INTO public.detalle_venta_fisica VALUES (214, 6, 22.00, 4, 22);
+INSERT INTO public.detalle_venta_fisica VALUES (215, 4, 25.50, 5, 22);
+INSERT INTO public.detalle_venta_fisica VALUES (216, 5, 18.75, 6, 22);
+INSERT INTO public.detalle_venta_fisica VALUES (217, 6, 6.75, 7, 22);
+INSERT INTO public.detalle_venta_fisica VALUES (218, 4, 30.00, 8, 22);
+INSERT INTO public.detalle_venta_fisica VALUES (219, 5, 14.80, 9, 22);
+INSERT INTO public.detalle_venta_fisica VALUES (220, 6, 33.00, 10, 22);
+
+INSERT INTO public.detalle_venta_fisica VALUES (221, 3, 8.50, 1, 23);
+INSERT INTO public.detalle_venta_fisica VALUES (222, 4, 12.00, 2, 23);
+INSERT INTO public.detalle_venta_fisica VALUES (223, 5, 15.50, 3, 23);
+INSERT INTO public.detalle_venta_fisica VALUES (224, 3, 22.00, 4, 23);
+INSERT INTO public.detalle_venta_fisica VALUES (225, 4, 25.50, 5, 23);
+INSERT INTO public.detalle_venta_fisica VALUES (226, 3, 18.75, 6, 23);
+INSERT INTO public.detalle_venta_fisica VALUES (227, 5, 6.75, 7, 23);
+INSERT INTO public.detalle_venta_fisica VALUES (228, 4, 30.00, 8, 23);
+INSERT INTO public.detalle_venta_fisica VALUES (229, 3, 14.80, 9, 23);
+INSERT INTO public.detalle_venta_fisica VALUES (230, 4, 33.00, 10, 23);
+
+INSERT INTO public.detalle_venta_fisica VALUES (231, 7, 8.50, 1, 24);
+INSERT INTO public.detalle_venta_fisica VALUES (232, 6, 12.00, 2, 24);
+INSERT INTO public.detalle_venta_fisica VALUES (233, 5, 15.50, 3, 24);
+INSERT INTO public.detalle_venta_fisica VALUES (234, 7, 22.00, 4, 24);
+INSERT INTO public.detalle_venta_fisica VALUES (235, 5, 25.50, 5, 24);
+INSERT INTO public.detalle_venta_fisica VALUES (236, 6, 18.75, 6, 24);
+INSERT INTO public.detalle_venta_fisica VALUES (237, 7, 6.75, 7, 24);
+INSERT INTO public.detalle_venta_fisica VALUES (238, 5, 30.00, 8, 24);
+INSERT INTO public.detalle_venta_fisica VALUES (239, 6, 14.80, 9, 24);
+INSERT INTO public.detalle_venta_fisica VALUES (240, 7, 33.00, 10, 24);
+
+INSERT INTO public.detalle_venta_fisica VALUES (241, 4, 8.50, 1, 25);
+INSERT INTO public.detalle_venta_fisica VALUES (242, 3, 12.00, 2, 25);
+INSERT INTO public.detalle_venta_fisica VALUES (243, 4, 15.50, 3, 25);
+INSERT INTO public.detalle_venta_fisica VALUES (244, 3, 22.00, 4, 25);
+INSERT INTO public.detalle_venta_fisica VALUES (245, 4, 25.50, 5, 25);
+INSERT INTO public.detalle_venta_fisica VALUES (246, 3, 18.75, 6, 25);
+INSERT INTO public.detalle_venta_fisica VALUES (247, 4, 6.75, 7, 25);
+INSERT INTO public.detalle_venta_fisica VALUES (248, 3, 30.00, 8, 25);
+INSERT INTO public.detalle_venta_fisica VALUES (249, 4, 14.80, 9, 25);
+INSERT INTO public.detalle_venta_fisica VALUES (250, 3, 33.00, 10, 25);
+
+INSERT INTO public.detalle_venta_fisica VALUES (251, 5, 8.50, 1, 26);
+INSERT INTO public.detalle_venta_fisica VALUES (252, 6, 12.00, 2, 26);
+INSERT INTO public.detalle_venta_fisica VALUES (253, 4, 15.50, 3, 26);
+INSERT INTO public.detalle_venta_fisica VALUES (254, 5, 22.00, 4, 26);
+INSERT INTO public.detalle_venta_fisica VALUES (255, 6, 25.50, 5, 26);
+INSERT INTO public.detalle_venta_fisica VALUES (256, 4, 18.75, 6, 26);
+INSERT INTO public.detalle_venta_fisica VALUES (257, 5, 6.75, 7, 26);
+INSERT INTO public.detalle_venta_fisica VALUES (258, 6, 30.00, 8, 26);
+INSERT INTO public.detalle_venta_fisica VALUES (259, 4, 14.80, 9, 26);
+INSERT INTO public.detalle_venta_fisica VALUES (260, 5, 33.00, 10, 26);
+
+INSERT INTO public.detalle_venta_fisica VALUES (261, 4, 8.50, 1, 27);
+INSERT INTO public.detalle_venta_fisica VALUES (262, 5, 12.00, 2, 27);
+INSERT INTO public.detalle_venta_fisica VALUES (263, 3, 15.50, 3, 27);
+INSERT INTO public.detalle_venta_fisica VALUES (264, 4, 22.00, 4, 27);
+INSERT INTO public.detalle_venta_fisica VALUES (265, 5, 25.50, 5, 27);
+INSERT INTO public.detalle_venta_fisica VALUES (266, 3, 18.75, 6, 27);
+INSERT INTO public.detalle_venta_fisica VALUES (267, 4, 6.75, 7, 27);
+INSERT INTO public.detalle_venta_fisica VALUES (268, 5, 30.00, 8, 27);
+INSERT INTO public.detalle_venta_fisica VALUES (269, 3, 14.80, 9, 27);
+INSERT INTO public.detalle_venta_fisica VALUES (270, 4, 33.00, 10, 27);
+
+INSERT INTO public.detalle_venta_fisica VALUES (271, 6, 8.50, 1, 28);
+INSERT INTO public.detalle_venta_fisica VALUES (272, 5, 12.00, 2, 28);
+INSERT INTO public.detalle_venta_fisica VALUES (273, 6, 15.50, 3, 28);
+INSERT INTO public.detalle_venta_fisica VALUES (274, 5, 22.00, 4, 28);
+INSERT INTO public.detalle_venta_fisica VALUES (275, 6, 25.50, 5, 28);
+INSERT INTO public.detalle_venta_fisica VALUES (276, 5, 18.75, 6, 28);
+INSERT INTO public.detalle_venta_fisica VALUES (277, 6, 6.75, 7, 28);
+INSERT INTO public.detalle_venta_fisica VALUES (278, 5, 30.00, 8, 28);
+INSERT INTO public.detalle_venta_fisica VALUES (279, 6, 14.80, 9, 28);
+INSERT INTO public.detalle_venta_fisica VALUES (280, 5, 33.00, 10, 28);
+
+INSERT INTO public.detalle_venta_fisica VALUES (281, 3, 8.50, 1, 29);
+INSERT INTO public.detalle_venta_fisica VALUES (282, 4, 12.00, 2, 29);
+INSERT INTO public.detalle_venta_fisica VALUES (283, 3, 15.50, 3, 29);
+INSERT INTO public.detalle_venta_fisica VALUES (284, 4, 22.00, 4, 29);
+INSERT INTO public.detalle_venta_fisica VALUES (285, 3, 25.50, 5, 29);
+INSERT INTO public.detalle_venta_fisica VALUES (286, 4, 18.75, 6, 29);
+INSERT INTO public.detalle_venta_fisica VALUES (287, 3, 6.75, 7, 29);
+INSERT INTO public.detalle_venta_fisica VALUES (288, 4, 30.00, 8, 29);
+INSERT INTO public.detalle_venta_fisica VALUES (289, 3, 14.80, 9, 29);
+INSERT INTO public.detalle_venta_fisica VALUES (290, 4, 33.00, 10, 29);
+
+INSERT INTO public.detalle_venta_fisica VALUES (291, 5, 8.50, 1, 30);
+INSERT INTO public.detalle_venta_fisica VALUES (292, 4, 12.00, 2, 30);
+INSERT INTO public.detalle_venta_fisica VALUES (293, 5, 15.50, 3, 30);
+INSERT INTO public.detalle_venta_fisica VALUES (294, 4, 22.00, 4, 30);
+INSERT INTO public.detalle_venta_fisica VALUES (295, 5, 25.50, 5, 30);
+INSERT INTO public.detalle_venta_fisica VALUES (296, 4, 18.75, 6, 30);
+INSERT INTO public.detalle_venta_fisica VALUES (297, 5, 6.75, 7, 30);
+INSERT INTO public.detalle_venta_fisica VALUES (298, 4, 30.00, 8, 30);
+INSERT INTO public.detalle_venta_fisica VALUES (299, 5, 14.80, 9, 30);
+INSERT INTO public.detalle_venta_fisica VALUES (300, 4, 33.00, 10, 30);
+
+-- Ventas 31-40 (Clientes Jurídicos 31-40)
+INSERT INTO public.detalle_venta_fisica VALUES (301, 4, 8.50, 1, 31);
+INSERT INTO public.detalle_venta_fisica VALUES (302, 5, 12.00, 2, 31);
+INSERT INTO public.detalle_venta_fisica VALUES (303, 4, 15.50, 3, 31);
+INSERT INTO public.detalle_venta_fisica VALUES (304, 5, 22.00, 4, 31);
+INSERT INTO public.detalle_venta_fisica VALUES (305, 4, 25.50, 5, 31);
+INSERT INTO public.detalle_venta_fisica VALUES (306, 5, 18.75, 6, 31);
+INSERT INTO public.detalle_venta_fisica VALUES (307, 4, 6.75, 7, 31);
+INSERT INTO public.detalle_venta_fisica VALUES (308, 5, 30.00, 8, 31);
+INSERT INTO public.detalle_venta_fisica VALUES (309, 4, 14.80, 9, 31);
+INSERT INTO public.detalle_venta_fisica VALUES (310, 5, 33.00, 10, 31);
+
+INSERT INTO public.detalle_venta_fisica VALUES (311, 6, 8.50, 1, 32);
+INSERT INTO public.detalle_venta_fisica VALUES (312, 7, 12.00, 2, 32);
+INSERT INTO public.detalle_venta_fisica VALUES (313, 5, 15.50, 3, 32);
+INSERT INTO public.detalle_venta_fisica VALUES (314, 6, 22.00, 4, 32);
+INSERT INTO public.detalle_venta_fisica VALUES (315, 7, 25.50, 5, 32);
+INSERT INTO public.detalle_venta_fisica VALUES (316, 5, 18.75, 6, 32);
+INSERT INTO public.detalle_venta_fisica VALUES (317, 6, 6.75, 7, 32);
+INSERT INTO public.detalle_venta_fisica VALUES (318, 7, 30.00, 8, 32);
+INSERT INTO public.detalle_venta_fisica VALUES (319, 5, 14.80, 9, 32);
+INSERT INTO public.detalle_venta_fisica VALUES (320, 6, 33.00, 10, 32);
+
+INSERT INTO public.detalle_venta_fisica VALUES (321, 3, 8.50, 1, 33);
+INSERT INTO public.detalle_venta_fisica VALUES (322, 4, 12.00, 2, 33);
+INSERT INTO public.detalle_venta_fisica VALUES (323, 3, 15.50, 3, 33);
+INSERT INTO public.detalle_venta_fisica VALUES (324, 4, 22.00, 4, 33);
+INSERT INTO public.detalle_venta_fisica VALUES (325, 3, 25.50, 5, 33);
+INSERT INTO public.detalle_venta_fisica VALUES (326, 4, 18.75, 6, 33);
+INSERT INTO public.detalle_venta_fisica VALUES (327, 3, 6.75, 7, 33);
+INSERT INTO public.detalle_venta_fisica VALUES (328, 4, 30.00, 8, 33);
+INSERT INTO public.detalle_venta_fisica VALUES (329, 3, 14.80, 9, 33);
+INSERT INTO public.detalle_venta_fisica VALUES (330, 4, 33.00, 10, 33);
+
+INSERT INTO public.detalle_venta_fisica VALUES (331, 5, 8.50, 1, 34);
+INSERT INTO public.detalle_venta_fisica VALUES (332, 4, 12.00, 2, 34);
+INSERT INTO public.detalle_venta_fisica VALUES (333, 5, 15.50, 3, 34);
+INSERT INTO public.detalle_venta_fisica VALUES (334, 4, 22.00, 4, 34);
+INSERT INTO public.detalle_venta_fisica VALUES (335, 5, 25.50, 5, 34);
+INSERT INTO public.detalle_venta_fisica VALUES (336, 4, 18.75, 6, 34);
+INSERT INTO public.detalle_venta_fisica VALUES (337, 5, 6.75, 7, 34);
+INSERT INTO public.detalle_venta_fisica VALUES (338, 4, 30.00, 8, 34);
+INSERT INTO public.detalle_venta_fisica VALUES (339, 5, 14.80, 9, 34);
+INSERT INTO public.detalle_venta_fisica VALUES (340, 4, 33.00, 10, 34);
+
+INSERT INTO public.detalle_venta_fisica VALUES (341, 6, 8.50, 1, 35);
+INSERT INTO public.detalle_venta_fisica VALUES (342, 5, 12.00, 2, 35);
+INSERT INTO public.detalle_venta_fisica VALUES (343, 6, 15.50, 3, 35);
+INSERT INTO public.detalle_venta_fisica VALUES (344, 5, 22.00, 4, 35);
+INSERT INTO public.detalle_venta_fisica VALUES (345, 6, 25.50, 5, 35);
+INSERT INTO public.detalle_venta_fisica VALUES (346, 5, 18.75, 6, 35);
+INSERT INTO public.detalle_venta_fisica VALUES (347, 6, 6.75, 7, 35);
+INSERT INTO public.detalle_venta_fisica VALUES (348, 5, 30.00, 8, 35);
+INSERT INTO public.detalle_venta_fisica VALUES (349, 6, 14.80, 9, 35);
+INSERT INTO public.detalle_venta_fisica VALUES (350, 5, 33.00, 10, 35);
+
+INSERT INTO public.detalle_venta_fisica VALUES (351, 4, 8.50, 1, 36);
+INSERT INTO public.detalle_venta_fisica VALUES (352, 3, 12.00, 2, 36);
+INSERT INTO public.detalle_venta_fisica VALUES (353, 4, 15.50, 3, 36);
+INSERT INTO public.detalle_venta_fisica VALUES (354, 3, 22.00, 4, 36);
+INSERT INTO public.detalle_venta_fisica VALUES (355, 4, 25.50, 5, 36);
+INSERT INTO public.detalle_venta_fisica VALUES (356, 3, 18.75, 6, 36);
+INSERT INTO public.detalle_venta_fisica VALUES (357, 4, 6.75, 7, 36);
+INSERT INTO public.detalle_venta_fisica VALUES (358, 3, 30.00, 8, 36);
+INSERT INTO public.detalle_venta_fisica VALUES (359, 4, 14.80, 9, 36);
+INSERT INTO public.detalle_venta_fisica VALUES (360, 3, 33.00, 10, 36);
+
+INSERT INTO public.detalle_venta_fisica VALUES (361, 5, 8.50, 1, 37);
+INSERT INTO public.detalle_venta_fisica VALUES (362, 4, 12.00, 2, 37);
+INSERT INTO public.detalle_venta_fisica VALUES (363, 3, 15.50, 3, 37);
+INSERT INTO public.detalle_venta_fisica VALUES (364, 5, 22.00, 4, 37);
+INSERT INTO public.detalle_venta_fisica VALUES (365, 4, 25.50, 5, 37);
+INSERT INTO public.detalle_venta_fisica VALUES (366, 3, 18.75, 6, 37);
+INSERT INTO public.detalle_venta_fisica VALUES (367, 5, 6.75, 7, 37);
+INSERT INTO public.detalle_venta_fisica VALUES (368, 4, 30.00, 8, 37);
+INSERT INTO public.detalle_venta_fisica VALUES (369, 3, 14.80, 9, 37);
+INSERT INTO public.detalle_venta_fisica VALUES (370, 5, 33.00, 10, 37);
+
+INSERT INTO public.detalle_venta_fisica VALUES (371, 6, 8.50, 1, 38);
+INSERT INTO public.detalle_venta_fisica VALUES (372, 5, 12.00, 2, 38);
+INSERT INTO public.detalle_venta_fisica VALUES (373, 6, 15.50, 3, 38);
+INSERT INTO public.detalle_venta_fisica VALUES (374, 5, 22.00, 4, 38);
+INSERT INTO public.detalle_venta_fisica VALUES (375, 6, 25.50, 5, 38);
+INSERT INTO public.detalle_venta_fisica VALUES (376, 5, 18.75, 6, 38);
+INSERT INTO public.detalle_venta_fisica VALUES (377, 6, 6.75, 7, 38);
+INSERT INTO public.detalle_venta_fisica VALUES (378, 5, 30.00, 8, 38);
+INSERT INTO public.detalle_venta_fisica VALUES (379, 6, 14.80, 9, 38);
+INSERT INTO public.detalle_venta_fisica VALUES (380, 5, 33.00, 10, 38);
+
+INSERT INTO public.detalle_venta_fisica VALUES (381, 4, 8.50, 1, 39);
+INSERT INTO public.detalle_venta_fisica VALUES (382, 3, 12.00, 2, 39);
+INSERT INTO public.detalle_venta_fisica VALUES (383, 4, 15.50, 3, 39);
+INSERT INTO public.detalle_venta_fisica VALUES (384, 3, 22.00, 4, 39);
+INSERT INTO public.detalle_venta_fisica VALUES (385, 4, 25.50, 5, 39);
+INSERT INTO public.detalle_venta_fisica VALUES (386, 3, 18.75, 6, 39);
+INSERT INTO public.detalle_venta_fisica VALUES (387, 4, 6.75, 7, 39);
+INSERT INTO public.detalle_venta_fisica VALUES (388, 3, 30.00, 8, 39);
+INSERT INTO public.detalle_venta_fisica VALUES (389, 4, 14.80, 9, 39);
+INSERT INTO public.detalle_venta_fisica VALUES (390, 3, 33.00, 10, 39);
+
+INSERT INTO public.detalle_venta_fisica VALUES (391, 5, 8.50, 1, 40);
+INSERT INTO public.detalle_venta_fisica VALUES (392, 6, 12.00, 2, 40);
+INSERT INTO public.detalle_venta_fisica VALUES (393, 4, 15.50, 3, 40);
+INSERT INTO public.detalle_venta_fisica VALUES (394, 5, 22.00, 4, 40);
+INSERT INTO public.detalle_venta_fisica VALUES (395, 6, 25.50, 5, 40);
+INSERT INTO public.detalle_venta_fisica VALUES (396, 4, 18.75, 6, 40);
+INSERT INTO public.detalle_venta_fisica VALUES (397, 5, 6.75, 7, 40);
+INSERT INTO public.detalle_venta_fisica VALUES (398, 6, 30.00, 8, 40);
+INSERT INTO public.detalle_venta_fisica VALUES (399, 4, 14.80, 9, 40);
+INSERT INTO public.detalle_venta_fisica VALUES (400, 5, 33.00, 10, 40);
+
+-- FIN DE LOS INSERTS FALTANTES PARA DETALLE_VENTA_FISICA
+-- Total: 380 inserts adicionales (del 21 al 400)
+-- Patrón: 10 productos por venta física (40 ventas × 10 productos = 400 registros totales)
+-- Ya existían: 20 registros (del 1 al 20)
+-- Se agregan: 380 registros (del 21 al 400) 
+
 
 --
 -- Data for Name: venta_online; Type: TABLE DATA; Schema: public; Owner: postgres
@@ -3810,26 +4242,29 @@ INSERT INTO public.historico_moneda VALUES (13, '2023-12-31 20:00:00-04', 46.20,
 INSERT INTO public.historico_moneda VALUES (14, '2024-05-31 20:00:00-04', 48.10, 5);
 INSERT INTO public.historico_moneda VALUES (15, '2024-11-30 20:00:00-04', 50.25, 5);
 
-INSERT INTO public.historico_moneda VALUES (16, '2023-12-31 20:00:00-04', 0.95, 6);
-INSERT INTO public.historico_moneda VALUES (17, '2024-05-31 20:00:00-04', 0.98, 6);
-INSERT INTO public.historico_moneda VALUES (18, '2024-11-30 20:00:00-04', 1.02, 6);
 
-INSERT INTO public.historico_moneda VALUES (19, '2023-12-31 20:00:00-04', 20.00, 7);
-INSERT INTO public.historico_moneda VALUES (20, '2024-05-31 20:00:00-04', 21.50, 7);
-INSERT INTO public.historico_moneda VALUES (21, '2024-11-30 20:00:00-04', 22.75, 7);
 
-INSERT INTO public.historico_moneda VALUES (22, '2023-12-31 20:00:00-04', 5.10, 8);
-INSERT INTO public.historico_moneda VALUES (23, '2024-05-31 20:00:00-04', 5.25, 8);
-INSERT INTO public.historico_moneda VALUES (24, '2024-11-30 20:00:00-04', 5.40, 8);
+INSERT INTO public.historico_moneda VALUES (16, '2023-12-31 20:00:00-04', 38.50, 6);
+INSERT INTO public.historico_moneda VALUES (17, '2024-05-31 20:00:00-04', 40.20, 6);
+INSERT INTO public.historico_moneda VALUES (18, '2024-11-30 20:00:00-04', 42.10, 6);
 
-INSERT INTO public.historico_moneda VALUES (25, '2023-12-31 20:00:00-04', 800.00, 9);
-INSERT INTO public.historico_moneda VALUES (26, '2024-05-31 20:00:00-04', 950.00, 9);
-INSERT INTO public.historico_moneda VALUES (27, '2024-11-30 20:00:00-04', 1100.00, 9);
+INSERT INTO public.historico_moneda VALUES (19, '2023-12-31 20:00:00-04', 2.20, 7);
+INSERT INTO public.historico_moneda VALUES (20, '2024-05-31 20:00:00-04', 2.45, 7);
+INSERT INTO public.historico_moneda VALUES (21, '2024-11-30 20:00:00-04', 2.70, 7);
 
-INSERT INTO public.historico_moneda VALUES (28, '2023-12-31 20:00:00-04', 82.00, 10);
-INSERT INTO public.historico_moneda VALUES (29, '2024-05-31 20:00:00-04', 83.50, 10);
-INSERT INTO public.historico_moneda VALUES (30, '2024-11-30 20:00:00-04', 85.00, 10);
 
+INSERT INTO public.historico_moneda VALUES (22, '2023-12-31 20:00:00-04', 7.50, 8);
+INSERT INTO public.historico_moneda VALUES (23, '2024-05-31 20:00:00-04', 8.00, 8);
+INSERT INTO public.historico_moneda VALUES (24, '2024-11-30 20:00:00-04', 8.50, 8);
+
+INSERT INTO public.historico_moneda VALUES (25, '2023-12-31 20:00:00-04', 0.0040, 9); 
+INSERT INTO public.historico_moneda VALUES (26, '2024-05-31 20:00:00-04', 0.0045, 9); 
+INSERT INTO public.historico_moneda VALUES (27, '2024-11-30 20:00:00-04', 0.0050, 9); 
+
+
+INSERT INTO public.historico_moneda VALUES (28, '2023-12-31 20:00:00-04', 0.40, 10);
+INSERT INTO public.historico_moneda VALUES (29, '2024-05-31 20:00:00-04', 0.42, 10);
+INSERT INTO public.historico_moneda VALUES (30, '2024-11-30 20:00:00-04', 0.44, 10);
 
 --
 -- Data for Name: historico_precio_punto; Type: TABLE DATA; Schema: public; Owner: postgres
