@@ -2,6 +2,11 @@ let updateBtns = document.getElementsByClassName('update-cart');
 
 for (let i = 0; i < updateBtns.length; i++) {
     updateBtns[i].addEventListener('click', function () {
+        // Verificar si el botón está deshabilitado
+        if (this.disabled) {
+            return; // No hacer nada si el botón está deshabilitado
+        }
+
         let productId = this.dataset.product;
         let action = this.dataset.action;
 

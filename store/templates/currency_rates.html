@@ -1,0 +1,149 @@
+{% extends 'main.html' %}
+{% load static %}
+{% block content %}
+<div class="container" style="min-height: 100vh; padding-top: 20px;">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="box-element">
+                <h3 class="text-center mb-4">Tasas de Cambio Actuales</h3>
+                <hr>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p class="text-muted">
+                            <i class="fas fa-info-circle"></i>
+                            Todas las tasas están expresadas con respecto al Bolívar (Bs) como moneda base.
+                        </p>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <button class="btn btn-sm btn-outline-primary" onclick="window.location.reload()">
+                            <i class="fas fa-sync-alt"></i> Actualizar
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">Moneda</th>
+                                <th scope="col">Tasa de Cambio</th>
+                                <th scope="col">1 Bs equivale a</th>
+                                <th scope="col">Última Actualización</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tasa in tasas_cambio %}
+                            <tr>
+                                <td>
+                                    <strong>{{ tasa.moneda }}</strong>
+                                    {% if tasa.moneda == 'BOLIVAR' %}
+                                        <span class="badge badge-primary ml-2">Base</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="text-success">
+                                        1 {{ tasa.moneda }} = {{ tasa.tasa|floatformat:4 }} Bs
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if tasa.moneda != 'BOLIVAR' %}
+                                        <span class="text-info">
+                                            {{ tasa.equivalencia_1_bolivar|floatformat:6 }} {{ tasa.moneda }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">1.0000 Bs</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        {{ tasa.fecha_actualizacion|date:"d/m/Y H:i" }}
+                                    </small>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">
+                                    No hay tasas de cambio disponibles
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <hr>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Calculadora de Conversión</h5>
+                        <div class="form-group">
+                            <label for="amount">Cantidad en Bolívares:</label>
+                            <input type="number" class="form-control" id="amount" placeholder="Ingrese la cantidad" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="target-currency">Convertir a:</label>
+                            <select class="form-control" id="target-currency">
+                                <option value="">-- Seleccione una moneda --</option>
+                                {% for tasa in tasas_cambio %}
+                                    {% if tasa.moneda != 'BOLIVAR' %}
+                                    <option value="{{ tasa.tasa }}" data-currency="{{ tasa.moneda }}">
+                                        {{ tasa.moneda }}
+                                    </option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div id="conversion-result" class="alert alert-info" style="display: none;">
+                            <strong>Resultado:</strong> <span id="result-text"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Información</h5>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success"></i> Las tasas se actualizan periódicamente</li>
+                            <li><i class="fas fa-check text-success"></i> Los cálculos son en tiempo real</li>
+                            <li><i class="fas fa-check text-success"></i> Precisión de hasta 6 decimales</li>
+                            <li><i class="fas fa-info text-info"></i> El Bolívar es la moneda base del sistema</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <a href="{% url 'store' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Volver a la Tienda
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const amountInput = document.getElementById('amount');
+    const currencySelect = document.getElementById('target-currency');
+    const resultDiv = document.getElementById('conversion-result');
+    const resultText = document.getElementById('result-text');
+    
+    function calculateConversion() {
+        const amount = parseFloat(amountInput.value);
+        const selectedOption = currencySelect.options[currencySelect.selectedIndex];
+        
+        if (amount && selectedOption.value) {
+            const rate = parseFloat(selectedOption.value);
+            const currency = selectedOption.getAttribute('data-currency');
+            const converted = amount / rate;
+            
+            resultText.textContent = `${amount.toFixed(2)} Bs = ${converted.toFixed(6)} ${currency}`;
+            resultDiv.style.display = 'block';
+        } else {
+            resultDiv.style.display = 'none';
+        }
+    }
+    
+    amountInput.addEventListener('input', calculateConversion);
+    currencySelect.addEventListener('change', calculateConversion);
+});
+</script>
+{% endblock %} 

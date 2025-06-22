@@ -1,0 +1,13 @@
+/* ==========================================================================
+   LAYOUT STYLES - Layout, grid y espaciado
+   ========================================================================== */
+
+.col-lg-4, .col-lg-6, .col-lg-8, .col-lg-12 {
+	margin-top: 10px;
+}
+
+.form-field {
+	width: 250px;
+	display: inline-block;
+	padding: 5px;
+} 

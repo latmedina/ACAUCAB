@@ -2392,25 +2392,265 @@ INSERT INTO public.caracteristica VALUES (12, 'Historia', 'Origen e historia del
 -- Data for Name: tipo_cerveza; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
+
 INSERT INTO public.tipo_cerveza VALUES (1, 'Ale');
 INSERT INTO public.tipo_cerveza VALUES (2, 'Lager');
 INSERT INTO public.tipo_cerveza VALUES (3, 'Wheat Beer');
+INSERT INTO public.tipo_cerveza VALUES (4, 'Bock');
+INSERT INTO public.tipo_cerveza VALUES (5, 'Stout');
+INSERT INTO public.tipo_cerveza VALUES (6, 'Porter');
+INSERT INTO public.tipo_cerveza VALUES (7, 'Belgian Ale');
+INSERT INTO public.tipo_cerveza VALUES (8, 'Lambic');
+INSERT INTO public.tipo_cerveza VALUES (9, 'IPA');
 
 
 --
 -- Data for Name: car_tip_cer; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-INSERT INTO public.car_tip_cer VALUES (521, 'Lúpulo entre bajo y moderado, con notas cítricas. Carácter maltoso moderado, a menudo con notas caramelizadas.', 1, 1);
-INSERT INTO public.car_tip_cer VALUES (522, 'Color entre ámbar y marrón cobrizo. Espuma amplia y blanca con buena retención. Clara, aunque con dry-hopping puede ser más turbia.', 2, 1);
-INSERT INTO public.car_tip_cer VALUES (523, 'Lúpulo de moderado a alto. Malta de moderada a fuerte, con dulzura inicial y sabor a caramelo. Ésteres frutados moderados o inexistentes.', 3, 1);
-INSERT INTO public.car_tip_cer VALUES (524, 'Cuerpo de medio a alto. Carbonatación de media a alta. Acabado suave sin astringencia.', 4, 1);
-INSERT INTO public.car_tip_cer VALUES (525, '25 - 40', 6, 1);
-INSERT INTO public.car_tip_cer VALUES (526, '10 - 17', 7, 1);
-INSERT INTO public.car_tip_cer VALUES (527, '1.045 – 1.060', 8, 1);
-INSERT INTO public.car_tip_cer VALUES (528, '1.010 – 1.015', 9, 1);
-INSERT INTO public.car_tip_cer VALUES (529, '4.5 – 6.2%', 10, 1);
-INSERT INTO public.car_tip_cer VALUES (530, 'Nació a finales del siglo XX en el Norte de California y Noroeste del Pacífico. También denominadas "Red Ales".', 12, 1);
+INSERT INTO public.car_tip_cer VALUES (531, 'Lúpulo entre bajo y moderado, con notas cítricas. Carácter maltoso moderado, a menudo con notas caramelizadas.', 1, 1);
+INSERT INTO public.car_tip_cer VALUES (532, 'Color entre ámbar y marrón cobrizo. Espuma amplia y blanca con buena retención. Clara, aunque con dry-hopping puede ser más turbia.', 2, 1);
+INSERT INTO public.car_tip_cer VALUES (533, 'Lúpulo de moderado a alto. Malta de moderada a fuerte, con dulzura inicial y sabor a caramelo. Ésteres frutados moderados o inexistentes.', 3, 1);
+INSERT INTO public.car_tip_cer VALUES (534, 'Cuerpo de medio a alto. Carbonatación de media a alta. Acabado suave sin astringencia.', 4, 1);
+INSERT INTO public.car_tip_cer VALUES (535, '25 - 40', 6, 1);
+INSERT INTO public.car_tip_cer VALUES (536, '10 - 17', 7, 1);
+INSERT INTO public.car_tip_cer VALUES (537, '1.045 – 1.060', 8, 1);
+INSERT INTO public.car_tip_cer VALUES (538, '1.010 – 1.015', 9, 1);
+INSERT INTO public.car_tip_cer VALUES (539, '4.5 – 6.2%', 10, 1);
+INSERT INTO public.car_tip_cer VALUES (540, 'Nació a finales del siglo XX en el Norte de California y Noroeste del Pacífico. También denominadas "Red Ales".', 12, 1);
+INSERT INTO public.car_tip_cer VALUES (541, 'Aroma y sabor a lúpulo, con caracteres desde floral y frutal hasta cítrico o resinoso. Sabor a malta medio-bajo.', 1, 9);
+INSERT INTO public.car_tip_cer VALUES (542, 'Aspecto similar a las IPA tradicionales, abarcando toda la gama de cobre, pudiendo tener tintes anaranjados.', 2, 9);
+INSERT INTO public.car_tip_cer VALUES (543, '40 - 60', 6, 9);
+INSERT INTO public.car_tip_cer VALUES (544, '5 - 7.5%', 10, 9);
+INSERT INTO public.car_tip_cer VALUES (545, 'Aroma a lúpulo de moderado a fuerte (cítrico común). Aroma a malta de bajo a moderado. Ésteres frutados de nulo a moderado.', 1, 1);
+INSERT INTO public.car_tip_cer VALUES (546, 'Color de dorado pálido a ámbar profundo. Espuma blanca con buena retención. Generalmente cristalina.', 2, 1);
+INSERT INTO public.car_tip_cer VALUES (547, 'Sabor a lúpulo de moderado a alto (cítrico). Sabor a malta límpido que balancea al lúpulo. Acabado moderadamente seco.', 3, 1);
+INSERT INTO public.car_tip_cer VALUES (548, 'Cuerpo medio-liviano a medio. Carbonatación de moderada a alta. Acabado suave.', 4, 1);
+INSERT INTO public.car_tip_cer VALUES (549, 'Adaptación americana de las Pale Ales inglesas, con ingredientes nativos. Más claras y limpias que sus contrapartes inglesas.', 12, 1);
+INSERT INTO public.car_tip_cer VALUES (550, 'Aromas complejos a malta (chocolate, caramelo), ésteres frutados (ciruelas, pasas) y fenoles especiados (clavo de olor).', 1, 7);
+INSERT INTO public.car_tip_cer VALUES (551, 'Color de ámbar oscuro a cobre, con fondo rojizo. Cristalina. Espuma densa y cremosa.', 2, 7);
+INSERT INTO public.car_tip_cer VALUES (552, 'Sabor rico y complejo a malta, con interacción de ésteres, alcoholes y fenoles. Balance hacia la malta. Acabado moderadamente seco.', 3, 7);
+INSERT INTO public.car_tip_cer VALUES (553, 'Cuerpo medio-pleno. Carbonatación media-alta. Baja tibieza por alcohol.', 4, 7);
+INSERT INTO public.car_tip_cer VALUES (554, '6.5 - 7%', 10, 7);
+INSERT INTO public.car_tip_cer VALUES (555, 'Originarias de los monasterios en la Edad Media, resurgieron a mediados del siglo XIX.', 12, 7);
+INSERT INTO public.car_tip_cer VALUES (556, 'Aroma complejo con ésteres frutados (pera, naranja, manzana), especias y alcohol. Carácter floral del lúpulo.', 1, 7);
+INSERT INTO public.car_tip_cer VALUES (557, 'Color de amarillo a dorado medio. Buena claridad. Efervescente. Espuma blanca, densa y masiva.', 2, 7);
+INSERT INTO public.car_tip_cer VALUES (558, 'Combinación de sabores frutados, especiados y alcohólicos, con suave carácter a malta. Amargor de medio a alto.', 3, 7);
+INSERT INTO public.car_tip_cer VALUES (559, 'Altamente carbonatada. Cuerpo liviano a medio. Suave pero evidente tibieza por alcohol.', 4, 7);
+INSERT INTO public.car_tip_cer VALUES (560, 'Desarrollada por Moortgat después de la SGM como respuesta a la popularidad de las Pilsner.', 12, 7); 
+
+
+--
+-- Data for Name: estilo_cerveza; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.estilo_cerveza VALUES (1, 'American Amber Ale', 'Una cerveza artesana americana, amber moderadamente fuerte con un sabor a malta de caramelo.');
+INSERT INTO public.estilo_cerveza VALUES (2, 'American IPA', 'Versión americana de la IPA, menos maltosa y más lupulizada, a menudo con dry hopping.');
+INSERT INTO public.estilo_cerveza VALUES (3, 'American Pale Ale', 'Adaptación americana de las Pale Ales inglesas, empleando ingredientes nativos.');
+INSERT INTO public.estilo_cerveza VALUES (4, 'Belgian Dubbel', 'Una ale belga de color rojizo profundo, moderadamente fuerte, maltosa y compleja.');
+INSERT INTO public.estilo_cerveza VALUES (5, 'Belgian Golden Strong Ale', 'Una ale belga dorada, compleja, efervescente y fuerte.');
+INSERT INTO public.estilo_cerveza VALUES (6, 'Belgian Specialty Ale', 'Una amplia categoría de cervezas belgas que no se ajustan a otros estilos definidos.');
+INSERT INTO public.estilo_cerveza VALUES (7, 'Pilsner', 'Una de las cervezas más comerciales, de sabor ligero pero intenso y fermentada con levadura de baja fermentación.');
+INSERT INTO public.estilo_cerveza VALUES (8, 'Spezial', 'Un estilo de cerveza Lager alemana.');
+INSERT INTO public.estilo_cerveza VALUES (9, 'Dortmunder', 'Un estilo de cerveza Lager alemana, de la ciudad de Dortmund.');
+INSERT INTO public.estilo_cerveza VALUES (10, 'Schwarzbier', 'Cerveza negra alemana, de tipo Lager.');
+INSERT INTO public.estilo_cerveza VALUES (11, 'Vienna Lager', 'Estilo de Lager de color ámbar rojizo, con un suave y sutil amargor de lúpulo.');
+INSERT INTO public.estilo_cerveza VALUES (12, 'Bock', 'Lager alemana fuerte y maltosa.');
+INSERT INTO public.estilo_cerveza VALUES (13, 'Pale Ale', 'Familia de cervezas ale de color claro, elaboradas con pequeñas proporciones de malta tostada.');
+INSERT INTO public.estilo_cerveza VALUES (14, 'Dark Ale', 'Cervezas ale oscuras, como las Stouts y Porters.');
+INSERT INTO public.estilo_cerveza VALUES (15, 'Weisse Beer', 'Cerveza de trigo alemana, clara y de baja graduación.');
+INSERT INTO public.estilo_cerveza VALUES (16, 'Stout', 'Cerveza negra muy oscura, espesa y cremosa, con fuerte aroma a malta.');
+INSERT INTO public.estilo_cerveza VALUES (17, 'Porter', 'Cerveza ale oscura, similar a la Stout pero menos potente.');
+INSERT INTO public.estilo_cerveza VALUES (18, 'Cerveza de Abadía', 'Cerveza belga de sabor intenso, a menudo con fondo dulce.');
+INSERT INTO public.estilo_cerveza VALUES (19, 'Trapense', 'Cerveza elaborada en monasterios trapenses, de alta fermentación.');
+INSERT INTO public.estilo_cerveza VALUES (20, 'Ámbar Belga', 'Cerveza belga de tonos rojizos y sabor intenso.');
+INSERT INTO public.estilo_cerveza VALUES (21, 'Flamenca', 'Estilo de cerveza ale belga.');
+INSERT INTO public.estilo_cerveza VALUES (22, 'Barley Wine', 'Vino de cebada, cerveza muy alcohólica y con mucho cuerpo.');
+INSERT INTO public.estilo_cerveza VALUES (23, 'Blonde Ale', 'Cerveza rubia de sabor ligero y cuerpo liviano.');
+INSERT INTO public.estilo_cerveza VALUES (24, 'Bohemian Pilsener', 'Versión checa de la Pilsner, más maltosa y con un amargor más pronunciado.');
+INSERT INTO public.estilo_cerveza VALUES (25, 'Dry Stout', 'Stout más seca y amarga que la versión dulce.');
+INSERT INTO public.estilo_cerveza VALUES (26, 'Düsseldorf Altbier', 'Cerveza alemana de color cobre, fermentada como una ale pero madurada como una lager.');
+INSERT INTO public.estilo_cerveza VALUES (27, 'English Pale Ale', 'Estilo tradicional inglés de Pale Ale, con más carácter a malta que las versiones americanas.');
+INSERT INTO public.estilo_cerveza VALUES (28, 'Extra-Strong Bitter (ESB)', 'Una ale inglesa más fuerte y equilibrada que las bitter estándar.');
+INSERT INTO public.estilo_cerveza VALUES (29, 'Fruit Lambic', 'Lambic a la que se le ha añadido fruta durante la fermentación.');
+INSERT INTO public.estilo_cerveza VALUES (30, 'Imperial IPA', 'Una IPA más fuerte y lupulada que la American IPA estándar.');
+INSERT INTO public.estilo_cerveza VALUES (31, 'Imperial Stout', 'Una Stout muy fuerte, oscura y compleja.');
+INSERT INTO public.estilo_cerveza VALUES (32, 'India Pale Ale (IPA)', 'Cerveza pálida y espumosa con un alto nivel de alcohol y lúpulo.');
+INSERT INTO public.estilo_cerveza VALUES (33, 'Irish Red Ale', 'Ale irlandesa de color rojizo, con un dulzor a malta de caramelo.');
+INSERT INTO public.estilo_cerveza VALUES (34, 'Munich Helles', 'Lager alemana de color pálido, limpia y maltosa.');
+INSERT INTO public.estilo_cerveza VALUES (35, 'Oktoberfest-Marzen', 'Lager alemana de color ámbar, rica en malta, tradicional del Oktoberfest.');
+INSERT INTO public.estilo_cerveza VALUES (36, 'Red Ale', 'Ale de color rojo o ámbar, con un perfil de sabor maltoso.');
+INSERT INTO public.estilo_cerveza VALUES (37, 'Spice, Herb or Vegetable Beer', 'Cerveza elaborada con especias, hierbas o vegetales para aportar sabor y aroma.');
+INSERT INTO public.estilo_cerveza VALUES (38, 'Sweet Stout', 'Stout endulzada, a menudo con lactosa (Milk Stout).');
+INSERT INTO public.estilo_cerveza VALUES (39, 'Weizen-Weissbier', 'Nombre alternativo para la cerveza de trigo alemana.');
+INSERT INTO public.estilo_cerveza VALUES (40, 'Witbier', 'Cerveza de trigo belga, a menudo condimentada con cilantro y cáscara de naranja.');
+INSERT INTO public.estilo_cerveza VALUES (41, 'Saison', 'Cerveza de granja belga, refrescante, afrutada y especiada.'); 
+
+--
+-- Data for Name: tipo_estilo_cerveza; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.tipo_estilo_cerveza VALUES (1, 'Ale - American Amber Ale', 'Estilo American Amber Ale de tipo Ale.', 1, 1);
+INSERT INTO public.tipo_estilo_cerveza VALUES (2, 'IPA - American IPA', 'Estilo American IPA de tipo IPA.', 2, 9);
+INSERT INTO public.tipo_estilo_cerveza VALUES (3, 'Ale - American Pale Ale', 'Estilo American Pale Ale de tipo Ale.', 3, 1);
+INSERT INTO public.tipo_estilo_cerveza VALUES (4, 'Belgian Ale - Belgian Dubbel', 'Estilo Belgian Dubbel de tipo Belgian Ale.', 4, 7);
+INSERT INTO public.tipo_estilo_cerveza VALUES (5, 'Belgian Ale - Belgian Golden Strong Ale', 'Estilo Belgian Golden Strong Ale de tipo Belgian Ale.', 5, 7);
+INSERT INTO public.tipo_estilo_cerveza VALUES (6, 'Belgian Ale - Belgian Specialty Ale', 'Estilo Belgian Specialty Ale de tipo Belgian Ale.', 6, 7);
+INSERT INTO public.tipo_estilo_cerveza VALUES (7, 'Lager - Pilsner', 'Estilo Pilsner de tipo Lager.', 7, 2);
+INSERT INTO public.tipo_estilo_cerveza VALUES (8, 'Lager - Spezial', 'Estilo Spezial de tipo Lager.', 8, 2);
+INSERT INTO public.tipo_estilo_cerveza VALUES (9, 'Lager - Dortmunder', 'Estilo Dortmunder de tipo Lager.', 9, 2);
+INSERT INTO public.tipo_estilo_cerveza VALUES (10, 'Lager - Schwarzbier', 'Estilo Schwarzbier de tipo Lager.', 10, 2);
+INSERT INTO public.tipo_estilo_cerveza VALUES (11, 'Lager - Vienna Lager', 'Estilo Vienna Lager de tipo Lager.', 11, 2);
+INSERT INTO public.tipo_estilo_cerveza VALUES (12, 'Bock - Bock', 'Estilo Bock de tipo Bock.', 12, 4);
+INSERT INTO public.tipo_estilo_cerveza VALUES (13, 'Ale - Pale Ale', 'Estilo Pale Ale de tipo Ale.', 13, 1);
+INSERT INTO public.tipo_estilo_cerveza VALUES (14, 'Ale - Dark Ale', 'Estilo Dark Ale de tipo Ale.', 14, 1);
+INSERT INTO public.tipo_estilo_cerveza VALUES (15, 'Wheat Beer - Weisse Beer', 'Estilo Weisse Beer de tipo Wheat Beer.', 15, 3);
+INSERT INTO public.tipo_estilo_cerveza VALUES (16, 'Stout - Stout', 'Estilo Stout de tipo Stout.', 16, 5);
+INSERT INTO public.tipo_estilo_cerveza VALUES (17, 'Porter - Porter', 'Estilo Porter de tipo Porter.', 17, 6);
+INSERT INTO public.tipo_estilo_cerveza VALUES (18, 'Belgian Ale - Cerveza de Abadía', 'Estilo Cerveza de Abadía de tipo Belgian Ale.', 18, 7);
+INSERT INTO public.tipo_estilo_cerveza VALUES (19, 'Belgian Ale - Trapense', 'Estilo Trapense de tipo Belgian Ale.', 19, 7);
+INSERT INTO public.tipo_estilo_cerveza VALUES (20, 'Belgian Ale - Ámbar Belga', 'Estilo Ámbar Belga de tipo Belgian Ale.', 20, 7);
+INSERT INTO public.tipo_estilo_cerveza VALUES (21, 'Belgian Ale - Flamenca', 'Estilo Flamenca de tipo Belgian Ale.', 21, 7);
+INSERT INTO public.tipo_estilo_cerveza VALUES (22, 'Ale - Barley Wine', 'Estilo Barley Wine de tipo Ale.', 22, 1);
+INSERT INTO public.tipo_estilo_cerveza VALUES (23, 'Ale - Blonde Ale', 'Estilo Blonde Ale de tipo Ale.', 23, 1);
+INSERT INTO public.tipo_estilo_cerveza VALUES (24, 'Lager - Bohemian Pilsener', 'Estilo Bohemian Pilsener de tipo Lager.', 24, 2);
+INSERT INTO public.tipo_estilo_cerveza VALUES (25, 'Stout - Dry Stout', 'Estilo Dry Stout de tipo Stout.', 25, 5);
+INSERT INTO public.tipo_estilo_cerveza VALUES (26, 'Ale - Düsseldorf Altbier', 'Estilo Düsseldorf Altbier de tipo Ale.', 26, 1);
+INSERT INTO public.tipo_estilo_cerveza VALUES (27, 'Ale - English Pale Ale', 'Estilo English Pale Ale de tipo Ale.', 27, 1);
+INSERT INTO public.tipo_estilo_cerveza VALUES (28, 'Ale - Extra-Strong Bitter (ESB)', 'Estilo Extra-Strong Bitter (ESB) de tipo Ale.', 28, 1);
+INSERT INTO public.tipo_estilo_cerveza VALUES (29, 'Lambic - Fruit Lambic', 'Estilo Fruit Lambic de tipo Lambic.', 29, 8);
+INSERT INTO public.tipo_estilo_cerveza VALUES (30, 'IPA - Imperial IPA', 'Estilo Imperial IPA de tipo IPA.', 30, 9);
+INSERT INTO public.tipo_estilo_cerveza VALUES (31, 'Stout - Imperial Stout', 'Estilo Imperial Stout de tipo Stout.', 31, 5);
+INSERT INTO public.tipo_estilo_cerveza VALUES (32, 'IPA - India Pale Ale (IPA)', 'Estilo India Pale Ale (IPA) de tipo IPA.', 32, 9);
+INSERT INTO public.tipo_estilo_cerveza VALUES (33, 'Ale - Irish Red Ale', 'Estilo Irish Red Ale de tipo Ale.', 33, 1);
+INSERT INTO public.tipo_estilo_cerveza VALUES (34, 'Lager - Munich Helles', 'Estilo Munich Helles de tipo Lager.', 34, 2);
+INSERT INTO public.tipo_estilo_cerveza VALUES (35, 'Lager - Oktoberfest-Marzen', 'Estilo Oktoberfest-Marzen de tipo Lager.', 35, 2);
+INSERT INTO public.tipo_estilo_cerveza VALUES (36, 'Ale - Red Ale', 'Estilo Red Ale de tipo Ale.', 36, 1);
+INSERT INTO public.tipo_estilo_cerveza VALUES (37, 'Ale - Spice, Herb or Vegetable Beer', 'Estilo Spice, Herb or Vegetable Beer de tipo Ale.', 37, 1);
+INSERT INTO public.tipo_estilo_cerveza VALUES (38, 'Stout - Sweet Stout', 'Estilo Sweet Stout de tipo Stout.', 38, 5);
+INSERT INTO public.tipo_estilo_cerveza VALUES (39, 'Wheat Beer - Weizen-Weissbier', 'Estilo Weizen-Weissbier de tipo Wheat Beer.', 39, 3);
+INSERT INTO public.tipo_estilo_cerveza VALUES (40, 'Wheat Beer - Witbier', 'Estilo Witbier de tipo Wheat Beer.', 40, 3);
+INSERT INTO public.tipo_estilo_cerveza VALUES (41, 'Belgian Ale - Saison', 'Estilo Saison de tipo Belgian Ale.', 41, 7);
+
+--
+-- Data for Name: cerveza; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.cerveza VALUES (1, 'Destilo', 'Primera cerveza genuina ultra Premium tipo Ale hecha en Venezuela.', 5.0, 1);
+INSERT INTO public.cerveza VALUES (2, 'Dos Leones Latin American Pale Ale', 'Suavemente lupulada con tonos cítricos.', 6.0, 2);
+INSERT INTO public.cerveza VALUES (3, 'Benitz Pale Ale', 'Cerveza Pale Ale de producción 100% artesanal, con balance entre el dulce de las maltas y el suave amargor de los lúpulos.', 5.5, 3);
+INSERT INTO public.cerveza VALUES (4, 'Mito Brewhouse Candileja de Abadía', 'Inspirada en las técnicas y procesos utilizados por los monjes en monasterios y abadías trapenses.', 7.0, 4);
+INSERT INTO public.cerveza VALUES (5, 'Cervecería Lago Ángel o Demonio', 'De un dorado y una espuma blanca y fina, va indicando su intensidad de aromas y sabores.', 8.5, 5);
+INSERT INTO public.cerveza VALUES (6, 'Barricas Saison Belga', 'Cerveza de temporada, afrutada con reminiscencias a especies.', 6.5, 41);
+INSERT INTO public.cerveza VALUES (7, 'Aldarra Mantuana', 'Caracterizada por una mezcla de cereales, maltas y lúpulos americanos.', 4.8, 23);
+INSERT INTO public.cerveza VALUES (8, 'Pilsner Urquell', 'La primera cerveza pilsner del mundo, originaria de la República Checa.', 4.4, 7);
+INSERT INTO public.cerveza VALUES (9, 'Spezial Rauchbier', 'Una lager ahumada de Bamberg, Alemania.', 4.8, 8);
+INSERT INTO public.cerveza VALUES (10, 'Dortmunder Gold', 'Lager clásica de Dortmund, bien balanceada.', 5.0, 9);
+INSERT INTO public.cerveza VALUES (11, 'Köstritzer Schwarzbier', 'Una de las Schwarzbier más conocidas de Alemania.', 4.8, 10);
+INSERT INTO public.cerveza VALUES (12, 'Ottakringer Vienna Lager', 'Ejemplo clásico del estilo Vienna.', 5.2, 11);
+INSERT INTO public.cerveza VALUES (13, 'Paulaner Salvator', 'Un Doppelbock clásico, rico y maltoso.', 7.9, 12);
+INSERT INTO public.cerveza VALUES (14, 'Sierra Nevada Pale Ale', 'Un ícono de la revolución de la cerveza artesanal americana.', 5.6, 13);
+INSERT INTO public.cerveza VALUES (15, 'Anchor Porter', 'Un porter robusto y clásico americano.', 5.6, 17);
+INSERT INTO public.cerveza VALUES (16, 'Weihenstephaner Hefeweissbier', 'Un referente mundial para las cervezas de trigo alemanas.', 5.4, 15);
+INSERT INTO public.cerveza VALUES (17, 'Guinness Draught', 'La stout más famosa del mundo.', 4.2, 16);
+INSERT INTO public.cerveza VALUES (18, 'Chimay Blue (Grande Réserve)', 'Una strong dark ale trapense, compleja y potente.', 9.0, 19);
+INSERT INTO public.cerveza VALUES (19, 'Duvel', 'El referente del estilo Belgian Golden Strong Ale.', 8.5, 5);
+INSERT INTO public.cerveza VALUES (20, 'Orval', 'Una cerveza trapense única con un carácter distintivo de Brettanomyces.', 6.2, 6);
+INSERT INTO public.cerveza VALUES (21, 'Fuller''s London Porter', 'Un porter inglés clásico, suave y complejo.', 5.4, 17);
+INSERT INTO public.cerveza VALUES (22, 'La Chouffe', 'Una Belgian Strong Pale Ale con notas especiadas y afrutadas.', 8.0, 7);
+INSERT INTO public.cerveza VALUES (23, 'Thomas Hardy''s Ale', 'Un Barley Wine inglés histórico, muy fuerte y complejo.', 11.7, 22);
+INSERT INTO public.cerveza VALUES (24, 'Hoegaarden Witbier', 'La witbier belga más reconocida internacionalmente.', 4.9, 40);
+INSERT INTO public.cerveza VALUES (25, 'Pilsner Checa Artesanal', 'Ejemplo del estilo Bohemian Pilsener.', 5.0, 24);
+INSERT INTO public.cerveza VALUES (26, 'Uerige Alt', 'Ejemplo clásico del estilo Düsseldorf Altbier.', 4.7, 26);
+INSERT INTO public.cerveza VALUES (27, 'Fuller''s ESB', 'El ejemplo que definió el estilo Extra-Strong Bitter.', 5.9, 28);
+INSERT INTO public.cerveza VALUES (28, 'Lindemans Kriek', 'Un lambic de cereza clásico de Bélgica.', 3.5, 29);
+INSERT INTO public.cerveza VALUES (29, 'Pliny the Elder', 'Una de las Imperial IPAs más famosas y buscadas.', 8.0, 30);
+INSERT INTO public.cerveza VALUES (30, 'North Coast Old Rasputin', 'Una aclamada Imperial Stout rusa.', 9.0, 31);
+INSERT INTO public.cerveza VALUES (31, 'Bell''s Two Hearted Ale', 'Una IPA americana icónica, lupulada y balanceada.', 7.0, 32);
+INSERT INTO public.cerveza VALUES (32, 'Smithwick''s Red Ale', 'Una de las Irish Red Ales más populares.', 4.5, 33);
+INSERT INTO public.cerveza VALUES (33, 'Augustiner-Bräu Helles', 'Un clásico Munich Helles, suave y refrescante.', 5.2, 34);
+INSERT INTO public.cerveza VALUES (34, 'Spaten Oktoberfest', 'Una cerveza Marzen tradicional para el Oktoberfest de Munich.', 5.9, 35);
+INSERT INTO public.cerveza VALUES (35, 'Dogfish Head Punkin Ale', 'Una popular cerveza de calabaza de temporada.', 7.0, 37);
+INSERT INTO public.cerveza VALUES (36, 'Left Hand Milk Stout', 'Un ejemplo clásico de Sweet Stout, cremosa y dulce.', 6.0, 38);
+INSERT INTO public.cerveza VALUES (37, 'Schneider Weisse Original', 'Un referente del estilo Weizen-Weissbier.', 5.4, 39);
+INSERT INTO public.cerveza VALUES (38, 'Saison Dupont', 'Considerada el estándar de oro para el estilo Saison.', 6.5, 41);
+INSERT INTO public.cerveza VALUES (39, 'Dark Ale Genérica', 'Una cerveza ale oscura genérica para representar el estilo.', 5.5, 14);
+INSERT INTO public.cerveza VALUES (40, 'Cerveza de Abadía Genérica', 'Representante del estilo de Abadía.', 6.8, 18);
+INSERT INTO public.cerveza VALUES (41, 'Ámbar Belga Genérica', 'Representante del estilo Ámbar Belga.', 6.5, 20);
+INSERT INTO public.cerveza VALUES (42, 'Flamenca Ale Genérica', 'Representante del estilo Flamenca.', 6.0, 21);
+INSERT INTO public.cerveza VALUES (43, 'English Pale Ale Genérica', 'Representante del estilo English Pale Ale.', 5.0, 27);
+INSERT INTO public.cerveza VALUES (44, 'Red Ale Genérica', 'Representante del estilo Red Ale.', 5.2, 36);
+INSERT INTO public.cerveza VALUES (45, 'The Murphy''s Irish Stout', 'Stout seca irlandesa, referente del estilo Dry Stout', 4.0, 25);
+
+
+--
+-- Data for Name: cerv_car; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.cerv_car VALUES (573, 'Se posiciona como una cerveza ultra premium.', 11, 1);
+INSERT INTO public.cerv_car VALUES (574, 'Suavemente lupulada con tonos cítricos.', 3, 2);
+INSERT INTO public.cerv_car VALUES (575, 'Balance entre el sabor dulce de las maltas y el suave amargor de los lúpulos.', 3, 3);
+INSERT INTO public.cerv_car VALUES (576, 'Totalmente sin filtrar, por lo que posee un turbio natural ("Naturtrübes").', 2, 3);
+INSERT INTO public.cerv_car VALUES (577, 'Aroma intenso a caramelo, con rasgos de durazno y ciruela.', 1, 4);
+INSERT INTO public.cerv_car VALUES (578, 'Cuerpo denso y resplandeciente color ámbar.', 2, 4);
+INSERT INTO public.cerv_car VALUES (579, 'Dorado intenso y una espuma blanca y fina.', 2, 5);
+INSERT INTO public.cerv_car VALUES (580, 'Intensidad de aromas y sabores.', 1, 5);
+INSERT INTO public.cerv_car VALUES (581, 'Afrutada con reminiscencias a especies.', 3, 6);
+INSERT INTO public.cerv_car VALUES (582, 'Aroma que recuerda las frutas tropicales.', 1, 7);
+INSERT INTO public.cerv_car VALUES (583, 'Sabor ligero y cuerpo liviano.', 3, 7);
+
+--
+-- Data for Name: presentacion; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.presentacion VALUES (4, 'Mito Candileja', 330.00, 'Botella de Vidrio', 'cerveza-polar_pLdZjYs.png', 2.90, 24.00, 6.50, 4);
+INSERT INTO public.presentacion VALUES (9, 'Candileja 500ml', 500.00, 'Botella de Vidrio', 'cerveza-solera_kriek_mQ2MMu9.jpg', 3.40, 25.00, 6.80, 4);
+INSERT INTO public.presentacion VALUES (2, 'Dos Leones', 330.00, 'Botella de Vidrio', 'corona combo.png', 2.80, 22.00, 6.00, 2);
+INSERT INTO public.presentacion VALUES (6, 'Barricas Saison', 750.00, 'Botella de Vidrio con Corcho', 'collection-title-escerveza-1-43248638099783.jpg.webp', 5.50, 29.00, 8.00, 6);
+INSERT INTO public.presentacion VALUES (3, 'Benitz', 355.00, 'Botella de Vidrio', '942dc9d6-034e-4632-9a79-f48febf55596_nube-220582656a0a30e3bf16161669860019-480-0.jpg', 3.00, 23.00, 6.20, 3);
+INSERT INTO public.presentacion VALUES (8, 'Estilo Lata', 330.00, 'Lata de Aluminio', '1656110108632-8712000017941.png', 2.40, 11.50, 6.00, 1);
+INSERT INTO public.presentacion VALUES (10, 'Benitz Pack x6', 1980.00, 'Pack de 6 Botellas', 'collection-title-escerveza-1-43248638099783.jpg.webp', 16.50, 24.00, 18.00, 3);
+INSERT INTO public.presentacion VALUES (7, 'Aldarra Mantuana', 355.00, 'Lata de Aluminio', '1223128.png', 2.70, 12.20, 6.60, 7);
+INSERT INTO public.presentacion VALUES (1, 'Estilo', 330.00, 'Botella de Vidrio', 'collection-title-escerveza-21707000741988.jpg.webp', 2.50, 22.00, 6.00, 1);
+INSERT INTO public.presentacion VALUES (5, 'Lago A&D', 330.00, 'Botella de Vidrio', 'corona_combo.png', 3.10, 22.50, 6.00, 5);
+INSERT INTO public.presentacion VALUES (11, 'Pilsner Urquell 330ml', 330.00, 'Botella de Vidrio', 'placeholder.png', 1.80, 4.50, 4.40, 8);
+INSERT INTO public.presentacion VALUES (12, 'Spezial Rauchbier 500ml', 500.00, 'Botella de Vidrio', 'placeholder.png', 2.20, 5.50, 4.80, 9);
+INSERT INTO public.presentacion VALUES (13, 'Dortmunder Gold 330ml', 330.00, 'Lata de Aluminio', 'placeholder.png', 1.90, 4.80, 5.00, 10);
+INSERT INTO public.presentacion VALUES (14, 'Köstritzer Schwarzbier 500ml', 500.00, 'Botella de Vidrio', 'placeholder.png', 2.10, 5.20, 4.80, 11);
+INSERT INTO public.presentacion VALUES (15, 'Ottakringer Vienna Lager 500ml', 500.00, 'Lata de Aluminio', 'placeholder.png', 2.00, 5.00, 5.20, 12);
+INSERT INTO public.presentacion VALUES (16, 'Paulaner Salvator 330ml', 330.00, 'Botella de Vidrio', 'placeholder.png', 2.50, 6.00, 7.90, 13);
+INSERT INTO public.presentacion VALUES (17, 'Sierra Nevada Pale Ale 355ml', 355.00, 'Botella de Vidrio', 'placeholder.png', 2.30, 5.80, 5.60, 14);
+INSERT INTO public.presentacion VALUES (18, 'Anchor Porter 355ml', 355.00, 'Botella de Vidrio', 'placeholder.png', 2.40, 5.90, 5.60, 15);
+INSERT INTO public.presentacion VALUES (19, 'Weihenstephaner Hefeweissbier 500ml', 500.00, 'Botella de Vidrio', 'placeholder.png', 2.60, 6.50, 5.40, 16);
+INSERT INTO public.presentacion VALUES (20, 'Guinness Draught 440ml', 440.00, 'Lata de Aluminio con Nitrógeno', 'placeholder.png', 2.00, 5.00, 4.20, 17);
+INSERT INTO public.presentacion VALUES (21, 'Chimay Blue 330ml', 330.00, 'Botella de Vidrio', 'placeholder.png', 3.50, 8.00, 9.00, 18);
+INSERT INTO public.presentacion VALUES (22, 'Duvel 330ml', 330.00, 'Botella de Vidrio', 'placeholder.png', 3.20, 7.50, 8.50, 19);
+INSERT INTO public.presentacion VALUES (23, 'Orval 330ml', 330.00, 'Botella de Vidrio', 'placeholder.png', 3.30, 7.80, 6.20, 20);
+INSERT INTO public.presentacion VALUES (24, 'Fuller''s London Porter 500ml', 500.00, 'Botella de Vidrio', 'placeholder.png', 2.80, 6.80, 5.40, 21);
+INSERT INTO public.presentacion VALUES (25, 'La Chouffe 330ml', 330.00, 'Botella de Vidrio', 'placeholder.png', 3.10, 7.20, 8.00, 22);
+INSERT INTO public.presentacion VALUES (26, 'Thomas Hardy''s Ale 330ml', 330.00, 'Botella de Vidrio', 'placeholder.png', 4.50, 10.00, 11.70, 23);
+INSERT INTO public.presentacion VALUES (27, 'Hoegaarden Witbier 330ml', 330.00, 'Botella de Vidrio', 'placeholder.png', 2.20, 5.50, 4.90, 24);
+INSERT INTO public.presentacion VALUES (28, 'Pilsner Checa Artesanal 500ml', 500.00, 'Botella de Vidrio', 'placeholder.png', 2.30, 5.60, 5.00, 25);
+INSERT INTO public.presentacion VALUES (29, 'Uerige Alt 330ml', 330.00, 'Botella de Vidrio', 'placeholder.png', 2.40, 5.80, 4.70, 26);
+INSERT INTO public.presentacion VALUES (30, 'Fuller''s ESB 500ml', 500.00, 'Botella de Vidrio', 'placeholder.png', 2.90, 7.00, 5.90, 27);
+INSERT INTO public.presentacion VALUES (31, 'Lindemans Kriek 250ml', 250.00, 'Botella de Vidrio', 'placeholder.png', 2.70, 6.50, 3.50, 28);
+INSERT INTO public.presentacion VALUES (32, 'Pliny the Elder 510ml', 510.00, 'Botella de Vidrio', 'placeholder.png', 5.00, 12.00, 8.00, 29);
+INSERT INTO public.presentacion VALUES (33, 'North Coast Old Rasputin 355ml', 355.00, 'Botella de Vidrio', 'placeholder.png', 3.80, 9.00, 9.00, 30);
+INSERT INTO public.presentacion VALUES (34, 'Bell''s Two Hearted Ale 355ml', 355.00, 'Lata de Aluminio', 'placeholder.png', 2.90, 7.00, 7.00, 31);
+INSERT INTO public.presentacion VALUES (35, 'Smithwick''s Red Ale 500ml', 500.00, 'Lata de Aluminio', 'placeholder.png', 2.10, 5.20, 4.50, 32);
+INSERT INTO public.presentacion VALUES (36, 'Augustiner-Bräu Helles 500ml', 500.00, 'Botella de Vidrio', 'placeholder.png', 2.30, 5.60, 5.20, 33);
+INSERT INTO public.presentacion VALUES (37, 'Spaten Oktoberfest 355ml', 355.00, 'Botella de Vidrio', 'placeholder.png', 2.20, 5.40, 5.90, 34);
+INSERT INTO public.presentacion VALUES (38, 'Dogfish Head Punkin Ale 355ml', 355.00, 'Botella de Vidrio', 'placeholder.png', 3.00, 7.20, 7.00, 35);
+INSERT INTO public.presentacion VALUES (39, 'Left Hand Milk Stout 355ml', 355.00, 'Lata de Aluminio con Nitrógeno', 'placeholder.png', 2.80, 6.80, 6.00, 36);
+INSERT INTO public.presentacion VALUES (40, 'Schneider Weisse Original 500ml', 500.00, 'Botella de Vidrio', 'placeholder.png', 2.70, 6.60, 5.40, 37);
+INSERT INTO public.presentacion VALUES (41, 'Saison Dupont 375ml', 375.00, 'Botella de Vidrio con Corcho', 'placeholder.png', 3.40, 8.00, 6.50, 38);
+INSERT INTO public.presentacion VALUES (42, 'Dark Ale Genérica 330ml', 330.00, 'Botella de Vidrio', 'placeholder.png', 1.90, 4.80, 5.50, 39);
+INSERT INTO public.presentacion VALUES (43, 'Cerveza de Abadía Genérica 330ml', 330.00, 'Botella de Vidrio', 'placeholder.png', 2.80, 6.80, 6.80, 40);
+INSERT INTO public.presentacion VALUES (44, 'Ámbar Belga Genérica 330ml', 330.00, 'Botella de Vidrio', 'placeholder.png', 2.60, 6.40, 6.50, 41);
+INSERT INTO public.presentacion VALUES (45, 'Flamenca Ale Genérica 330ml', 330.00, 'Botella de Vidrio', 'placeholder.png', 2.50, 6.20, 6.00, 42);
+INSERT INTO public.presentacion VALUES (46, 'English Pale Ale Genérica 500ml', 500.00, 'Lata de Aluminio', 'placeholder.png', 2.20, 5.30, 5.00, 43);
+INSERT INTO public.presentacion VALUES (47, 'Red Ale Genérica 355ml', 355.00, 'Lata de Aluminio', 'placeholder.png', 2.00, 5.00, 5.20, 44);
+INSERT INTO public.presentacion VALUES (48, 'The Murphy''s Irish Stout 500ml', 500.00, 'Lata de Aluminio con Nitrógeno', 'placeholder.png', 2.30, 5.50, 4.00, 45);
 
 
 --
@@ -2429,96 +2669,6 @@ INSERT INTO public.cargo VALUES (9, 'Asistente Administrativo', 'Apoyo en tareas
 INSERT INTO public.cargo VALUES (10, 'Analista de Marketing', 'Responsable de estrategias de marketing, promociones y análisis de mercado', 1600000);
 
 
---
--- Data for Name: estilo_cerveza; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-INSERT INTO public.estilo_cerveza VALUES (1, 'American Amber Ale', 'Cerveza artesana americana, moderadamente fuerte con un sabor a malta de caramelo. El amargor y el carácter lupulizado no deben chocar con el perfil de la malta caramelo.');
-INSERT INTO public.estilo_cerveza VALUES (2, 'American IPA', 'Menos maltosa y más lupulizada que la IPA tradicional, con lúpulos americanos y a menudo con dry hopping. Aroma y sabor a lúpulo con caracteres cítricos o resinosos.');
-INSERT INTO public.estilo_cerveza VALUES (3, 'American Pale Ale', 'Adaptación americana de las Pale Ales inglesas, empleando ingredientes nativos. Generalmente más claras, limpias y con menos sabores a caramelo que sus contrapartes inglesas.');
-INSERT INTO public.estilo_cerveza VALUES (4, 'Belgian Dubbel', 'Ale belga de color rojizo profundo, moderadamente fuerte, maltosa y compleja con aromas a chocolate, caramelo y frutas como ciruelas y pasas.');
-INSERT INTO public.estilo_cerveza VALUES (5, 'Belgian Golden Strong Ale', 'Ale belga dorada, compleja, efervescente y fuerte. Con aromas a ésteres frutados, especias y un carácter floral del lúpulo.');
-INSERT INTO public.estilo_cerveza VALUES (6, 'Belgian Specialty Ale', 'Categoría amplia para cervezas belgas artesanales únicas que no encajan en otros estilos, a menudo experimentales o clones de cervezas específicas.');
-INSERT INTO public.estilo_cerveza VALUES (7, 'Blonde Ale', 'De color dorado, posee un sabor ligero y cuerpo liviano, con aroma que recuerda a las frutas tropicales. Carbonatación media, sin asperezas.');
-INSERT INTO public.estilo_cerveza VALUES (8, 'Bohemian Pilsener', 'Estilo clásico de Pilsner originario de Bohemia, conocido por su rico sabor a malta y amargor pronunciado del lúpulo Saaz.');
-INSERT INTO public.estilo_cerveza VALUES (9, 'Bock', 'Lager muy rica en maltas tostadas de color oscuro. Suele tener más de 7% de alcohol, con predominio del sabor a malta y algo de dulzor.');
-INSERT INTO public.estilo_cerveza VALUES (10, 'Dry Stout', 'Stout más ligera y seca, con un característico sabor a café tostado y un final amargo y seco.');
-INSERT INTO public.estilo_cerveza VALUES (11, 'Düsseldorf Altbier', 'Cerveza alemana de color cobre a marrón, limpia y suavemente afrutada, con un amargor de lúpulo asertivo.');
-INSERT INTO public.estilo_cerveza VALUES (12, 'English Pale Ale', 'Versión inglesa de la Pale Ale, con un balance entre la malta y el lúpulo, a menudo con notas terrosas o florales de los lúpulos ingleses.');
-INSERT INTO public.estilo_cerveza VALUES (13, 'Imperial IPA', 'Una IPA más fuerte y lupulada que la versión estándar, con altos niveles de alcohol y amargor.');
-INSERT INTO public.estilo_cerveza VALUES (14, 'Imperial Stout', 'Stout muy intensa y compleja, con sabores a malta tostada, chocolate, café y frutas oscuras, y un alto contenido alcohólico.');
-INSERT INTO public.estilo_cerveza VALUES (15, 'India Pale Ale (IPA)', 'Originalmente una Pale Ale muy alcohólica y rica en lúpulo para aguantar largas travesías. Caracterizada por su fuerte amargor.');
-INSERT INTO public.estilo_cerveza VALUES (16, 'Irish Red Ale', 'Fácil de beber, con un sabor a malta de caramelo y un final seco tostado.');
-INSERT INTO public.estilo_cerveza VALUES (17, 'Munich Helles', 'Lager alemana pálida, con un sutil dulzor de malta y un amargor de lúpulo bajo, muy limpia y refrescante.');
-INSERT INTO public.estilo_cerveza VALUES (18, 'Oktoberfest-Marzen', 'Lager alemana de color ámbar con un sabor a malta limpio, rico, a pan y tostado, con un amargor restringido.');
-INSERT INTO public.estilo_cerveza VALUES (19, 'Porter', 'Cerveza oscura con sabores a malta tostada, chocolate y caramelo. Menos intensa y oscura que una Stout.');
-INSERT INTO public.estilo_cerveza VALUES (20, 'Saison', 'Ale belga de granja, refrescante, afrutada y especiada, con una alta carbonatación y un final muy seco.');
-INSERT INTO public.estilo_cerveza VALUES (21, 'Schwarzbier', 'Lager alemana negra. Ligera en cuerpo con sabores a malta tostada, a menudo con notas de chocolate o café, pero sin el amargor de una Stout.');
-INSERT INTO public.estilo_cerveza VALUES (22, 'Stout', 'Cerveza muy oscura hecha con malta tostada, con sabores a café, chocolate y caramelo, y textura espesa y cremosa.');
-INSERT INTO public.estilo_cerveza VALUES (23, 'Sweet Stout', 'Una Stout con mayor dulzor residual, a menudo por la adición de lactosa (Milk Stout).');
-INSERT INTO public.estilo_cerveza VALUES (24, 'Weizen-Weissbier', 'Cerveza de trigo alemana, pálida y refrescante, con notas distintivas de banana y clavo de la levadura.');
-INSERT INTO public.estilo_cerveza VALUES (25, 'Witbier', 'Cerveza de trigo belga, a menudo aderezada con cilantro y cáscara de naranja, de aspecto pálido y turbio.');
-
-
---
--- Data for Name: tipo_estilo_cerveza; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-INSERT INTO public.tipo_estilo_cerveza VALUES (1, 'American Amber Ale', 'Estilo American Amber Ale de la familia Ale.', 1, 1);
-INSERT INTO public.tipo_estilo_cerveza VALUES (2, 'American IPA', 'Estilo American IPA de la familia Ale.', 2, 1);
-INSERT INTO public.tipo_estilo_cerveza VALUES (3, 'American Pale Ale', 'Estilo American Pale Ale de la familia Ale.', 3, 1);
-INSERT INTO public.tipo_estilo_cerveza VALUES (4, 'Belgian Dubbel', 'Estilo Belgian Dubbel de la familia Ale.', 4, 1);
-INSERT INTO public.tipo_estilo_cerveza VALUES (5, 'Belgian Golden Strong Ale', 'Estilo Belgian Golden Strong Ale de la familia Ale.', 5, 1);
-INSERT INTO public.tipo_estilo_cerveza VALUES (6, 'Belgian Specialty Ale', 'Estilo Belgian Specialty Ale de la familia Ale.', 6, 1);
-INSERT INTO public.tipo_estilo_cerveza VALUES (7, 'Blonde Ale', 'Estilo Blonde Ale de la familia Ale.', 7, 1);
-INSERT INTO public.tipo_estilo_cerveza VALUES (8, 'Bohemian Pilsener Lager', 'Estilo Bohemian Pilsener de la familia Lager.', 8, 2);
-INSERT INTO public.tipo_estilo_cerveza VALUES (9, 'Bock Lager', 'Estilo Bock de la familia Lager.', 9, 2);
-INSERT INTO public.tipo_estilo_cerveza VALUES (10, 'Dry Stout Ale', 'Estilo Dry Stout de la familia Ale.', 10, 1);
-INSERT INTO public.tipo_estilo_cerveza VALUES (11, 'Düsseldorf Altbier', 'Estilo Düsseldorf Altbier de la familia Ale.', 11, 1);
-INSERT INTO public.tipo_estilo_cerveza VALUES (12, 'English Pale Ale', 'Estilo English Pale Ale de la familia Ale.', 12, 1);
-INSERT INTO public.tipo_estilo_cerveza VALUES (13, 'Imperial IPA', 'Estilo Imperial IPA de la familia Ale.', 13, 1);
-INSERT INTO public.tipo_estilo_cerveza VALUES (14, 'Imperial Stout', 'Estilo Imperial Stout de la familia Ale.', 14, 1);
-INSERT INTO public.tipo_estilo_cerveza VALUES (15, 'India Pale Ale (IPA)', 'Estilo India Pale Ale (IPA) de la familia Ale.', 15, 1);
-INSERT INTO public.tipo_estilo_cerveza VALUES (16, 'Irish Red Ale', 'Estilo Irish Red Ale de la familia Ale.', 16, 1);
-INSERT INTO public.tipo_estilo_cerveza VALUES (17, 'Munich Helles Lager', 'Estilo Munich Helles de la familia Lager.', 17, 2);
-INSERT INTO public.tipo_estilo_cerveza VALUES (18, 'Oktoberfest-Marzen Lager', 'Estilo Oktoberfest-Marzen de la familia Lager.', 18, 2);
-INSERT INTO public.tipo_estilo_cerveza VALUES (19, 'Porter Ale', 'Estilo Porter Ale de la familia Ale.', 19, 1);
-INSERT INTO public.tipo_estilo_cerveza VALUES (20, 'Saison Ale', 'Estilo Saison Ale de la familia Ale.', 20, 1);
-INSERT INTO public.tipo_estilo_cerveza VALUES (21, 'Schwarzbier Lager', 'Estilo Schwarzbier de la familia Lager.', 21, 2);
-INSERT INTO public.tipo_estilo_cerveza VALUES (22, 'Stout Ale', 'Estilo Stout de la familia Ale.', 22, 1);
-INSERT INTO public.tipo_estilo_cerveza VALUES (23, 'Sweet Stout Ale', 'Estilo Sweet Stout de la familia Ale.', 23, 1);
-INSERT INTO public.tipo_estilo_cerveza VALUES (24, 'Weizen-Weissbier', 'Estilo Weizen-Weissbier de la familia de Cervezas de Trigo.', 24, 3);
-INSERT INTO public.tipo_estilo_cerveza VALUES (25, 'Witbier', 'Estilo Witbier de la familia de Cervezas de Trigo.', 25, 3);
-
-
---
--- Data for Name: cerveza; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-INSERT INTO public.cerveza VALUES (1, 'Destilo', 'Primera cerveza genuina ultra Premium tipo Ale hecha en Venezuela. Elaborada según la Ley de Baviera de 1516.', 5.50, 1);
-INSERT INTO public.cerveza VALUES (2, 'Dos Leones Latin American Pale Ale', 'Cerveza suavemente lupulada con tonos cítricos. Ya no se fabrica.', 6.00, 2);
-INSERT INTO public.cerveza VALUES (3, 'Benitz Pale Ale', 'Cerveza Pale Ale de producción 100% artesanal, con balance entre el dulce de las maltas y el suave amargor de los lúpulos.', 5.80, 3);
-INSERT INTO public.cerveza VALUES (4, 'Mito Brewhouse Candileja de Abadia', 'Inspirada en procesos de monasterios trapenses. Cuerpo denso, color ámbar, aroma a caramelo, durazno y ciruela.', 6.80, 4);
-INSERT INTO public.cerveza VALUES (5, 'Cerveceria Lago Angel o Demonio', 'Cerveza de un dorado intenso y espuma blanca y fina, indicando su intensidad de aromas y sabores.', 8.50, 5);
-INSERT INTO public.cerveza VALUES (6, 'Barricas Saison Belga', 'Cerveza de temporada, afrutada con reminiscencias a especies. Característica del estilo Saison.', 6.50, 20);
-INSERT INTO public.cerveza VALUES (7, 'Aldarra Mantuana', 'Mezcla de cereales, maltas y lúpulos americanos. Color dorado, sabor ligero y cuerpo liviano. Aroma a frutas tropicales.', 4.80, 7);
-
-
---
--- Data for Name: cerv_car; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-INSERT INTO public.cerv_car VALUES (573, 'Se posiciona como una cerveza ultra premium.', 11, 1);
-INSERT INTO public.cerv_car VALUES (574, 'Suavemente lupulada con tonos cítricos.', 3, 2);
-INSERT INTO public.cerv_car VALUES (575, 'Balance entre el sabor dulce de las maltas y el suave amargor de los lúpulos.', 3, 3);
-INSERT INTO public.cerv_car VALUES (576, 'Totalmente sin filtrar, por lo que posee un turbio natural ("Naturtrübes").', 2, 3);
-INSERT INTO public.cerv_car VALUES (577, 'Aroma intenso a caramelo, con rasgos de durazno y ciruela.', 1, 4);
-INSERT INTO public.cerv_car VALUES (578, 'Cuerpo denso y resplandeciente color ámbar.', 2, 4);
-INSERT INTO public.cerv_car VALUES (579, 'Dorado intenso y una espuma blanca y fina.', 2, 5);
-INSERT INTO public.cerv_car VALUES (580, 'Intensidad de aromas y sabores.', 1, 5);
-INSERT INTO public.cerv_car VALUES (581, 'Afrutada con reminiscencias a especies.', 3, 6);
-INSERT INTO public.cerv_car VALUES (582, 'Aroma que recuerda las frutas tropicales.', 1, 7);
-INSERT INTO public.cerv_car VALUES (583, 'Sabor ligero y cuerpo liviano.', 3, 7);
 
 
 --
@@ -2657,23 +2807,6 @@ INSERT INTO public.oferta VALUES (8, 'Back to School', 'Descuento especial por r
 INSERT INTO public.oferta VALUES (9, 'Aniversario ACAUCAB', 'Celebración del aniversario de la asociación', '2024-10-01', '2024-10-15', 35);
 INSERT INTO public.oferta VALUES (10, 'Navidad 2024', 'Oferta navideña en productos premium', '2024-12-01', '2024-12-31', 22);
 
-
---
--- Data for Name: presentacion; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-INSERT INTO public.presentacion VALUES (4, 'Mito Candileja', 330.00, 'Botella de Vidrio', 'cerveza-polar_pLdZjYs.png', 2.90, 24.00, 6.50, 4);
-INSERT INTO public.presentacion VALUES (9, 'Candileja 500ml', 500.00, 'Botella de Vidrio', 'cerveza-solera_kriek_mQ2MMu9.jpg', 3.40, 25.00, 6.80, 4);
-INSERT INTO public.presentacion VALUES (2, 'Dos Leones', 330.00, 'Botella de Vidrio', 'corona combo.png', 2.80, 22.00, 6.00, 2);
-INSERT INTO public.presentacion VALUES (6, 'Barricas Saison', 750.00, 'Botella de Vidrio con Corcho', 'collection-title-escerveza-1-43248638099783.jpg.webp', 5.50, 29.00, 8.00, 6);
-INSERT INTO public.presentacion VALUES (3, 'Benitz', 355.00, 'Botella de Vidrio', '942dc9d6-034e-4632-9a79-f48febf55596_nube-220582656a0a30e3bf16161669860019-480-0.jpg', 3.00, 23.00, 6.20, 3);
-INSERT INTO public.presentacion VALUES (8, 'Estilo Lata', 330.00, 'Lata de Aluminio', '1656110108632-8712000017941.png', 2.40, 11.50, 6.00, 1);
-INSERT INTO public.presentacion VALUES (10, 'Benitz Pack x6', 1980.00, 'Pack de 6 Botellas', 'collection-title-escerveza-1-43248638099783.jpg.webp', 16.50, 24.00, 18.00, 3);
-INSERT INTO public.presentacion VALUES (7, 'Aldarra Mantuana', 355.00, 'Lata de Aluminio', '1223128.png', 2.70, 12.20, 6.60, 7);
-INSERT INTO public.presentacion VALUES (1, 'Estilo', 330.00, 'Botella de Vidrio', 'collection-title-escerveza-21707000741988.jpg.webp', 2.50, 22.00, 6.00, 1);
-INSERT INTO public.presentacion VALUES (5, 'Lago A&D', 330.00, 'Botella de Vidrio', 'corona_combo.png', 3.10, 22.50, 6.00, 5);
-
-
 --
 -- Data for Name: pre_alm; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -2688,6 +2821,45 @@ INSERT INTO public.pre_alm VALUES (7, 18.75, 35, 6, 7, 4);
 INSERT INTO public.pre_alm VALUES (8, 25.50, 25, 7, 8, 5);
 INSERT INTO public.pre_alm VALUES (9, 30.00, 20, 8, 9, 6);
 INSERT INTO public.pre_alm VALUES (10, 14.80, 90, 9, 10, 7);
+INSERT INTO public.pre_alm VALUES (11, 4.50, 100, 1, NULL, 11);
+INSERT INTO public.pre_alm VALUES (12, 5.50, 80, 2, NULL, 12);
+INSERT INTO public.pre_alm VALUES (13, 4.80, 120, 3, NULL, 13);
+INSERT INTO public.pre_alm VALUES (14, 5.20, 90, 4, NULL, 14);
+INSERT INTO public.pre_alm VALUES (15, 5.00, 110, 5, NULL, 15);
+INSERT INTO public.pre_alm VALUES (16, 6.00, 70, 6, NULL, 16);
+INSERT INTO public.pre_alm VALUES (17, 5.80, 150, 7, NULL, 17);
+INSERT INTO public.pre_alm VALUES (18, 5.90, 85, 8, NULL, 18);
+INSERT INTO public.pre_alm VALUES (19, 6.50, 95, 9, NULL, 19);
+INSERT INTO public.pre_alm VALUES (20, 5.00, 130, 10, NULL, 20);
+INSERT INTO public.pre_alm VALUES (21, 8.00, 60, 1, NULL, 21);
+INSERT INTO public.pre_alm VALUES (22, 7.50, 50, 2, NULL, 22);
+INSERT INTO public.pre_alm VALUES (23, 7.80, 55, 3, NULL, 23);
+INSERT INTO public.pre_alm VALUES (24, 6.80, 75, 4, NULL, 24);
+INSERT INTO public.pre_alm VALUES (25, 7.20, 65, 5, NULL, 25);
+INSERT INTO public.pre_alm VALUES (26, 10.00, 30, 6, NULL, 26);
+INSERT INTO public.pre_alm VALUES (27, 5.50, 140, 7, NULL, 27);
+INSERT INTO public.pre_alm VALUES (28, 5.60, 100, 8, NULL, 28);
+INSERT INTO public.pre_alm VALUES (29, 5.80, 90, 9, NULL, 29);
+INSERT INTO public.pre_alm VALUES (30, 7.00, 80, 10, NULL, 30);
+INSERT INTO public.pre_alm VALUES (31, 6.50, 45, 1, NULL, 31);
+INSERT INTO public.pre_alm VALUES (32, 12.00, 25, 2, NULL, 32);
+INSERT INTO public.pre_alm VALUES (33, 9.00, 40, 3, NULL, 33);
+INSERT INTO public.pre_alm VALUES (34, 7.00, 110, 4, NULL, 34);
+INSERT INTO public.pre_alm VALUES (35, 5.20, 120, 5, NULL, 35);
+INSERT INTO public.pre_alm VALUES (36, 5.60, 100, 6, NULL, 36);
+INSERT INTO public.pre_alm VALUES (37, 5.40, 90, 7, NULL, 37);
+INSERT INTO public.pre_alm VALUES (38, 7.20, 70, 8, NULL, 38);
+INSERT INTO public.pre_alm VALUES (39, 6.80, 80, 9, NULL, 39);
+INSERT INTO public.pre_alm VALUES (40, 6.60, 85, 10, NULL, 40);
+INSERT INTO public.pre_alm VALUES (41, 8.00, 50, 1, NULL, 41);
+INSERT INTO public.pre_alm VALUES (42, 4.80, 100, 2, NULL, 42);
+INSERT INTO public.pre_alm VALUES (43, 6.80, 60, 3, NULL, 43);
+INSERT INTO public.pre_alm VALUES (44, 6.40, 70, 4, NULL, 44);
+INSERT INTO public.pre_alm VALUES (45, 6.20, 75, 5, NULL, 45);
+INSERT INTO public.pre_alm VALUES (46, 5.30, 110, 6, NULL, 46);
+INSERT INTO public.pre_alm VALUES (47, 5.00, 130, 7, NULL, 47);
+INSERT INTO public.pre_alm VALUES (48, 5.50, 100, 8, NULL, 48);
+
 
 
 --
@@ -2916,7 +3088,44 @@ INSERT INTO public.inventario VALUES (7, 45, 7, 7, 7);
 INSERT INTO public.inventario VALUES (8, 20, 8, 8, 8);
 INSERT INTO public.inventario VALUES (9, 30, 9, 9, 9);
 INSERT INTO public.inventario VALUES (10, 25, 10, 10, 10);
-
+INSERT INTO public.inventario VALUES (11, 100, 1, NULL, 11);
+INSERT INTO public.inventario VALUES (12, 80, 2, NULL, 12);
+INSERT INTO public.inventario VALUES (13, 120, 3, NULL, 13);
+INSERT INTO public.inventario VALUES (14, 90, 4, NULL, 14);
+INSERT INTO public.inventario VALUES (15, 110, 5, NULL, 15);
+INSERT INTO public.inventario VALUES (16, 70, 6, NULL, 16);
+INSERT INTO public.inventario VALUES (17, 150, 7, NULL, 17);
+INSERT INTO public.inventario VALUES (18, 85, 8, NULL, 18);
+INSERT INTO public.inventario VALUES (19, 95, 9, NULL, 19);
+INSERT INTO public.inventario VALUES (20, 130, 10, NULL, 20);
+INSERT INTO public.inventario VALUES (21, 60, 1, NULL, 21);
+INSERT INTO public.inventario VALUES (22, 50, 2, NULL, 22);
+INSERT INTO public.inventario VALUES (23, 55, 3, NULL, 23);
+INSERT INTO public.inventario VALUES (24, 75, 4, NULL, 24);
+INSERT INTO public.inventario VALUES (25, 65, 5, NULL, 25);
+INSERT INTO public.inventario VALUES (26, 30, 6, NULL, 26);
+INSERT INTO public.inventario VALUES (27, 140, 7, NULL, 27);
+INSERT INTO public.inventario VALUES (28, 100, 8, NULL, 28);
+INSERT INTO public.inventario VALUES (29, 90, 9, NULL, 29);
+INSERT INTO public.inventario VALUES (30, 80, 10, NULL, 30);
+INSERT INTO public.inventario VALUES (31, 45, 1, NULL, 31);
+INSERT INTO public.inventario VALUES (32, 25, 2, NULL, 32);
+INSERT INTO public.inventario VALUES (33, 40, 3, NULL, 33);
+INSERT INTO public.inventario VALUES (34, 110, 4, NULL, 34);
+INSERT INTO public.inventario VALUES (35, 120, 5, NULL, 35);
+INSERT INTO public.inventario VALUES (36, 100, 6, NULL, 36);
+INSERT INTO public.inventario VALUES (37, 90, 7, NULL, 37);
+INSERT INTO public.inventario VALUES (38, 70, 8, NULL, 38);
+INSERT INTO public.inventario VALUES (39, 80, 9, NULL, 39);
+INSERT INTO public.inventario VALUES (40, 85, 10, NULL, 40);
+INSERT INTO public.inventario VALUES (41, 50, 1, NULL, 41);
+INSERT INTO public.inventario VALUES (42, 100, 2, NULL, 42);
+INSERT INTO public.inventario VALUES (43, 60, 3, NULL, 43);
+INSERT INTO public.inventario VALUES (44, 70, 4, NULL, 44);
+INSERT INTO public.inventario VALUES (45, 75, 5, NULL, 45);
+INSERT INTO public.inventario VALUES (46, 110, 6, NULL, 46);
+INSERT INTO public.inventario VALUES (47, 130, 7, NULL, 47);
+INSERT INTO public.inventario VALUES (48, 100, 8, NULL, 48); 
 
 --
 -- Data for Name: venta_fisica; Type: TABLE DATA; Schema: public; Owner: postgres
@@ -3573,6 +3782,12 @@ INSERT INTO public.moneda VALUES (2, 'DOLAR');
 INSERT INTO public.moneda VALUES (3, 'EURO');
 INSERT INTO public.moneda VALUES (4, 'YEN');
 INSERT INTO public.moneda VALUES (5, 'LIBRA');
+INSERT INTO public.moneda VALUES (6, 'FRANCO SUIZO');
+INSERT INTO public.moneda VALUES (7, 'PESO MEXICANO');
+INSERT INTO public.moneda VALUES (8, 'REAL BRASILEÑO');
+INSERT INTO public.moneda VALUES (9, 'PESO ARGENTINO');
+INSERT INTO public.moneda VALUES (10, 'RUPIA INDIA');
+
 
 
 --
@@ -3594,6 +3809,26 @@ INSERT INTO public.historico_moneda VALUES (12, '2024-11-30 20:00:00-04', 0.27, 
 INSERT INTO public.historico_moneda VALUES (13, '2023-12-31 20:00:00-04', 46.20, 5);
 INSERT INTO public.historico_moneda VALUES (14, '2024-05-31 20:00:00-04', 48.10, 5);
 INSERT INTO public.historico_moneda VALUES (15, '2024-11-30 20:00:00-04', 50.25, 5);
+
+INSERT INTO public.historico_moneda VALUES (16, '2023-12-31 20:00:00-04', 0.95, 6);
+INSERT INTO public.historico_moneda VALUES (17, '2024-05-31 20:00:00-04', 0.98, 6);
+INSERT INTO public.historico_moneda VALUES (18, '2024-11-30 20:00:00-04', 1.02, 6);
+
+INSERT INTO public.historico_moneda VALUES (19, '2023-12-31 20:00:00-04', 20.00, 7);
+INSERT INTO public.historico_moneda VALUES (20, '2024-05-31 20:00:00-04', 21.50, 7);
+INSERT INTO public.historico_moneda VALUES (21, '2024-11-30 20:00:00-04', 22.75, 7);
+
+INSERT INTO public.historico_moneda VALUES (22, '2023-12-31 20:00:00-04', 5.10, 8);
+INSERT INTO public.historico_moneda VALUES (23, '2024-05-31 20:00:00-04', 5.25, 8);
+INSERT INTO public.historico_moneda VALUES (24, '2024-11-30 20:00:00-04', 5.40, 8);
+
+INSERT INTO public.historico_moneda VALUES (25, '2023-12-31 20:00:00-04', 800.00, 9);
+INSERT INTO public.historico_moneda VALUES (26, '2024-05-31 20:00:00-04', 950.00, 9);
+INSERT INTO public.historico_moneda VALUES (27, '2024-11-30 20:00:00-04', 1100.00, 9);
+
+INSERT INTO public.historico_moneda VALUES (28, '2023-12-31 20:00:00-04', 82.00, 10);
+INSERT INTO public.historico_moneda VALUES (29, '2024-05-31 20:00:00-04', 83.50, 10);
+INSERT INTO public.historico_moneda VALUES (30, '2024-11-30 20:00:00-04', 85.00, 10);
 
 
 --

@@ -1,0 +1,15 @@
+/* ==========================================================================
+   NAVIGATION STYLES - Navbar y elementos de navegación
+   ========================================================================== */
+
+.navbar {
+	background-color: #302b2b !important;
+}
+
+.navbar-brand {
+	font-size: 1.5rem;
+	font-weight: 700;
+	color: #fff;
+	text-decoration: none;
+	margin-left: 1000px;
+} 

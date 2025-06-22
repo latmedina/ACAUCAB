@@ -1,0 +1,22 @@
+/* ==========================================================================
+   BUTTONS STYLES - Botones y sus estados
+   ========================================================================== */
+
+.btn {
+	border-radius: 0;
+}
+
+/* Estilos para botón deshabilitado */
+.btn:disabled {
+	background-color: #f8f9fa;
+	border-color: #dee2e6;
+	color: #6c757d;
+	cursor: not-allowed;
+	opacity: 0.65;
+}
+
+.btn:disabled:hover {
+	background-color: #f8f9fa;
+	border-color: #dee2e6;
+	color: #6c757d;
+} 

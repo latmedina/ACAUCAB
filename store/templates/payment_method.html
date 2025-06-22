@@ -1,0 +1,331 @@
+{% extends 'main.html' %}
+{% load static %}
+{% block content %}
+<div class="container" style="min-height: 100vh;">
+    <div class="row justify-content-center align-items-center h-100">
+        <div class="col-lg-8">
+            <div class="box-element">
+                <h3 class="text-center mb-4">Seleccionar Método de Pago</h3>
+                <hr>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="purchase-summary">
+                            <h5>Resumen de la Compra</h5>
+                            <p><strong>Venta ID:</strong> #{{ venta_id }}</p>
+                            <p><strong>Total Original:</strong> ${{ total|floatformat:2 }} USD</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="purchase-summary">
+                            <h5>Total Convertido</h5>
+                            <div id="converted-amount">
+                                <p><em>Seleccione una moneda para ver la conversión</em></p>
+                            </div>
+                            <div class="text-center mt-3">
+                                <a href="{% url 'currency_rates' %}" target="_blank" class="btn btn-sm btn-outline-info">
+                                    <i class="fas fa-exchange-alt"></i> Ver Todas las Tasas
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <form id="payment-form">
+                    <div class="form-group mb-4">
+                        <label for="moneda_select" class="form-label"><strong>Moneda de Pago:</strong></label>
+                        <select class="form-control" id="moneda_select" name="moneda_select" required>
+                            <option value="">-- Seleccione una moneda --</option>
+                            {% for moneda in monedas_disponibles %}
+                            <option value="{{ moneda.id }}" 
+                                    data-tipo="{{ moneda.tipo }}" 
+                                    data-tasa="{{ moneda.valor_cambio }}" 
+                                    data-convertido="{{ moneda.total_convertido }}"
+                                    data-fecha="{{ moneda.fecha_actualizacion|date:'d/m/Y H:i' }}">
+                                {{ moneda.tipo }} (1 {{ moneda.tipo }} = {{ moneda.valor_cambio|floatformat:4 }} Bs)
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group mb-4">
+                        <label for="tipo_pago" class="form-label"><strong>Tipo de Método de Pago:</strong></label>
+                        <select class="form-control" id="tipo_pago" name="tipo_pago" required>
+                            <option value="">-- Seleccione un método --</option>
+                            <option value="efectivo">Efectivo</option>
+                            <option value="cheque">Cheque</option>
+                            <option value="tarjeta_debito">Tarjeta de Débito</option>
+                            <option value="tarjeta_credito">Tarjeta de Crédito</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Campos para Efectivo -->
+                    <div id="efectivo-fields" class="payment-fields" style="display: none;">
+                        <h5>Información de Efectivo</h5>
+                        <div class="form-group">
+                            <label for="denominacion">Denominación (<span id="currency-symbol">seleccione moneda</span>):</label>
+                            <select class="form-control" id="denominacion" name="denominacion">
+                                <option value="">-- Seleccione denominación --</option>
+                                <option value="1">1 <span class="denomination-currency"></span></option>
+                                <option value="5">5 <span class="denomination-currency"></span></option>
+                                <option value="10">10 <span class="denomination-currency"></span></option>
+                                <option value="20">20 <span class="denomination-currency"></span></option>
+                                <option value="50">50 <span class="denomination-currency"></span></option>
+                                <option value="100">100 <span class="denomination-currency"></span></option>
+                                <option value="200">200 <span class="denomination-currency"></span></option>
+                                <option value="500">500 <span class="denomination-currency"></span></option>
+                                <option value="1000">1000 <span class="denomination-currency"></span></option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Campos para Cheque -->
+                    <div id="cheque-fields" class="payment-fields" style="display: none;">
+                        <h5>Información del Cheque</h5>
+                        <div class="form-group">
+                            <label for="num_cheque">Número de Cheque:</label>
+                            <input type="number" class="form-control" id="num_cheque" name="num_cheque" placeholder="Ingrese el número del cheque">
+                        </div>
+                    </div>
+                    
+                    <!-- Campos para Tarjeta de Débito -->
+                    <div id="tarjeta_debito-fields" class="payment-fields" style="display: none;">
+                        <h5>Información de Tarjeta de Débito</h5>
+                                                 <div class="form-group">
+                             <label for="numero_debito">Número de Tarjeta:</label>
+                             <input type="text" class="form-control card-input" id="numero_debito" name="numero_debito" placeholder="1234 5678 9012 3456" maxlength="19">
+                         </div>
+                        <div class="form-group">
+                            <label for="vencimiento_debito">Fecha de Vencimiento:</label>
+                            <input type="date" class="form-control" id="vencimiento_debito" name="vencimiento_debito">
+                        </div>
+                        <div class="form-group">
+                            <label for="banco">Banco:</label>
+                            <input type="text" class="form-control" id="banco" name="banco" placeholder="Nombre del banco">
+                        </div>
+                    </div>
+                    
+                    <!-- Campos para Tarjeta de Crédito -->
+                    <div id="tarjeta_credito-fields" class="payment-fields" style="display: none;">
+                        <h5>Información de Tarjeta de Crédito</h5>
+                                                 <div class="form-group">
+                             <label for="numero_credito">Número de Tarjeta:</label>
+                             <input type="text" class="form-control card-input" id="numero_credito" name="numero_credito" placeholder="1234 5678 9012 3456" maxlength="19">
+                         </div>
+                        <div class="form-group">
+                            <label for="vencimiento_credito">Fecha de Vencimiento:</label>
+                            <input type="date" class="form-control" id="vencimiento_credito" name="vencimiento_credito">
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                                         <div class="payment-buttons">
+                         <button type="button" class="btn btn-secondary" onclick="window.history.back()">Cancelar</button>
+                         <button type="submit" class="btn btn-success" id="process-payment-btn">Procesar Pago</button>
+                     </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const monedaSelect = document.getElementById('moneda_select');
+    const tipoSelect = document.getElementById('tipo_pago');
+    const paymentFields = document.querySelectorAll('.payment-fields');
+    const form = document.getElementById('payment-form');
+    const convertedAmountDiv = document.getElementById('converted-amount');
+    
+    // Mostrar conversión cuando se selecciona una moneda
+    monedaSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        if (selectedOption.value) {
+            const tipo = selectedOption.getAttribute('data-tipo');
+            const tasa = parseFloat(selectedOption.getAttribute('data-tasa'));
+            const convertido = parseFloat(selectedOption.getAttribute('data-convertido'));
+            const fecha = selectedOption.getAttribute('data-fecha');
+            
+            convertedAmountDiv.innerHTML = `
+                <p><strong>Total a Pagar:</strong> ${convertido.toFixed(4)} ${tipo}</p>
+                <p><small>Tasa de cambio: 1 ${tipo} = ${tasa.toFixed(4)} Bs</small></p>
+                <p><small>Última actualización: ${fecha}</small></p>
+            `;
+            
+            // Actualizar las denominaciones de efectivo
+            updateCashDenominations(tipo);
+        } else {
+            convertedAmountDiv.innerHTML = '<p><em>Seleccione una moneda para ver la conversión</em></p>';
+            updateCashDenominations('seleccione moneda');
+        }
+    });
+    
+    // Función para actualizar las denominaciones de efectivo
+    function updateCashDenominations(currencyType) {
+        const currencySymbol = document.getElementById('currency-symbol');
+        const denominationOptions = document.querySelectorAll('#denominacion option');
+        
+        currencySymbol.textContent = currencyType;
+        
+        denominationOptions.forEach((option, index) => {
+            if (index > 0) { // Skip the first option (placeholder)
+                const value = option.value;
+                option.textContent = `${value} ${currencyType}`;
+            }
+        });
+    }
+    
+    // Mostrar campos según el tipo de pago seleccionado
+    tipoSelect.addEventListener('change', function() {
+        // Ocultar todos los campos
+        paymentFields.forEach(field => {
+            field.style.display = 'none';
+        });
+        
+        // Mostrar campos del tipo seleccionado
+        const selectedType = this.value;
+        if (selectedType) {
+            const fieldsToShow = document.getElementById(selectedType + '-fields');
+            if (fieldsToShow) {
+                fieldsToShow.style.display = 'block';
+            }
+        }
+    });
+    
+    // Formatear número de tarjeta
+    function formatCardNumber(input) {
+        input.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+            let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+            if (formattedValue !== e.target.value) {
+                e.target.value = formattedValue;
+            }
+        });
+    }
+    
+    formatCardNumber(document.getElementById('numero_debito'));
+    formatCardNumber(document.getElementById('numero_credito'));
+    
+    // Procesar formulario
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const monedaId = monedaSelect.value;
+        const tipoPago = tipoSelect.value;
+        
+        if (!monedaId) {
+            alert('Por favor seleccione una moneda');
+            return;
+        }
+        
+        if (!tipoPago) {
+            alert('Por favor seleccione un método de pago');
+            return;
+        }
+        
+        let paymentData = {
+            moneda_id: monedaId,
+            tipo_pago: tipoPago
+        };
+        
+        // Recopilar datos según el tipo de pago
+        if (tipoPago === 'efectivo') {
+            const denominacion = document.getElementById('denominacion').value;
+            if (!denominacion) {
+                alert('Por favor seleccione una denominación');
+                return;
+            }
+            paymentData.denominacion = denominacion;
+            
+        } else if (tipoPago === 'cheque') {
+            const numCheque = document.getElementById('num_cheque').value;
+            if (!numCheque) {
+                alert('Por favor ingrese el número de cheque');
+                return;
+            }
+            paymentData.num_cheque = numCheque;
+            
+        } else if (tipoPago === 'tarjeta_debito') {
+            const numero = document.getElementById('numero_debito').value.replace(/\s/g, '');
+            const vencimiento = document.getElementById('vencimiento_debito').value;
+            const banco = document.getElementById('banco').value;
+            
+            if (!numero || !vencimiento || !banco) {
+                alert('Por favor complete todos los campos de la tarjeta de débito');
+                return;
+            }
+            
+            paymentData.numero = numero;
+            paymentData.vencimiento = vencimiento;
+            paymentData.banco = banco;
+            
+        } else if (tipoPago === 'tarjeta_credito') {
+            const numero = document.getElementById('numero_credito').value.replace(/\s/g, '');
+            const vencimiento = document.getElementById('vencimiento_credito').value;
+            
+            if (!numero || !vencimiento) {
+                alert('Por favor complete todos los campos de la tarjeta de crédito');
+                return;
+            }
+            
+            paymentData.numero = numero;
+            paymentData.vencimiento = vencimiento;
+        }
+        
+        // Enviar datos
+        const processBtn = document.getElementById('process-payment-btn');
+        processBtn.disabled = true;
+        processBtn.textContent = 'Procesando...';
+        
+        fetch('/process-payment-method/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(paymentData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const mensaje = `¡Pago procesado exitosamente!\n\n` +
+                    `Monto original: ${data.monto_original.toFixed(2)} Bs\n` +
+                    `Monto pagado: ${data.monto_convertido.toFixed(4)} ${data.moneda}\n` +
+                    `Tasa de cambio: ${data.tasa_cambio.toFixed(4)}`;
+                alert(mensaje);
+                window.location.href = '{% url "store" %}';
+            } else {
+                alert('Error: ' + data.message);
+                processBtn.disabled = false;
+                processBtn.textContent = 'Procesar Pago';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al procesar el pago');
+            processBtn.disabled = false;
+            processBtn.textContent = 'Procesar Pago';
+        });
+    });
+    
+    // Función para obtener el CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>
+{% endblock %} 
