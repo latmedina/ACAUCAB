@@ -8,6 +8,7 @@ from .models import (
     metodo_pago, pago, moneda, historico_moneda, tienda, 
     inventario, venta_fisica, detalle_venta_fisica
 )
+from django.db import connection
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from .forms import CustomUserCreationForm
@@ -412,6 +413,12 @@ def processOrder(request):
         'redirect_to_payment': True
     })
 
+def ejecutar_registro_venta_fisica(cliente_id, tienda_id, total):
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT registrar_venta_fisica(%s, %s, %s);", [cliente_id, tienda_id, total])
+                nueva_venta_id = cursor.fetchone()[0]
+            return nueva_venta_id
+
 @csrf_exempt
 def process_order_view(request, tipo):
     """Procesar orden generalizada (física/online) - Ahora diferencia entre ambos tipos"""
@@ -461,12 +468,13 @@ def process_order_view(request, tipo):
             return JsonResponse({'status': 'error', 'message': 'Usuario debe tener un cliente asociado para ventas físicas'}, status=400)
 
         # Crear venta física
-        venta = venta_fisica.objects.create(
-            ven_fis_fecha=timezone.now().date(),
-            ven_fis_total=int(total_venta),  # venta_fisica.ven_fis_total es IntegerField
-            fk_cliente=request.user.fk_cliente,
-            fk_tienda=tienda_obj
+        venta_id = ejecutar_registro_venta_fisica(
+            cliente_id=request.user.fk_cliente.cli_id,
+            tienda_id=tienda_obj.tie_id,
+            total=total_venta
         )
+
+        venta = venta_fisica.objects.get(ven_fis_id=venta_id)
         
         # Crear detalles de venta física
         for d in detalles:
