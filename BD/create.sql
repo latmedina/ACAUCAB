@@ -1424,7 +1424,9 @@ CREATE TABLE public.metodo_pago (
     tar_deb_banco character varying(50),
     tar_cre_numero bigint,
     tar_cre_vencimiento date,
+    pun_cantidad integer,
     met_pag_tipo_pago character varying(50) NOT NULL,
+    fk_usuario integer NOT NULL,
     fk_his_pre_pun integer
 );
 
