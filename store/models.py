@@ -446,6 +446,7 @@ class instruccion(models.Model):
 class inventario(models.Model):
     inv_id = models.AutoField(primary_key=True)
     inv_cantidad = models.IntegerField()
+    inv_precio_unitario = models.DecimalField(max_digits=10, decimal_places=2)
     fk_anaquel = models.ForeignKey(anaquel, models.DO_NOTHING, db_column='fk_anaquel')
     fk_presentacion = models.ForeignKey('presentacion', models.DO_NOTHING, db_column='fk_presentacion')
     fk_oferta = models.ForeignKey('oferta', models.DO_NOTHING, db_column='fk_oferta', blank=True, null=True)
