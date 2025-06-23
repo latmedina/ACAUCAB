@@ -15,7 +15,7 @@ from .forms import CustomUserCreationForm
 from django.views.decorators.csrf import csrf_exempt
 from decimal import Decimal
 from datetime import datetime, date
-
+from .utils import registrar_usuario_via_sql
 
 def validate_expiration_date(exp_date_str):
     """Valida que la fecha de vencimiento no sea anterior a la actual"""
@@ -785,15 +785,45 @@ def registro(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            usuario = form.save()
-            grupo_cliente, _ = Group.objects.get_or_create(name='Cliente')
-            usuario.groups.add(grupo_cliente)
-            login(request, usuario)
-            return redirect('home')
-    else:
-        form = CustomUserCreationForm(request.POST)
-    return render(request, 'registro.html', {'form': form})
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password1']
+            email = form.cleaned_data['email']
+            first_name = form.cleaned_data.get('first_name', '')
+            last_name = form.cleaned_data.get('last_name', '')
+            fk_cliente = form.cleaned_data['fk_cliente']
+            fk_proveedor = form.cleaned_data['fk_proveedor']
+            
 
+            # Convertir a IDs o None
+            fk_cliente_id = fk_cliente.cli_id if fk_cliente else None
+            fk_proveedor_id = fk_proveedor.pro_id if fk_proveedor else None
+
+            # Llamar al stored procedure
+            registrar_usuario_via_sql(
+                        username=username,
+                        password=password,
+                        email=email,
+                        first_name=first_name,
+                        last_name=last_name,
+                        fk_cliente=fk_cliente_id,
+                        fk_proveedor=fk_proveedor_id
+                    )
+
+            # Autenticar y loguear
+            user = authenticate(request, username=username, password=password)
+            if user:
+                login(request, user)
+                grupo_cliente, _ = Group.objects.get_or_create(name='Cliente')
+                user.groups.add(grupo_cliente)
+                return redirect('home')
+            else:
+                return render(request, 'registro.html', {
+                    'form': form,
+                    'error': 'Usuario creado pero no se pudo autenticar.'
+                })
+    else:
+        form = CustomUserCreationForm()
+    return render(request, 'registro.html', {'form': form})
 # HOME
 @login_required(login_url='login')
 def home_view(request):
