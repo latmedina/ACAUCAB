@@ -283,10 +283,14 @@ def store_view(request, tipo='online'):
                 p.precio_usd = inventario_item.inv_precio_unitario
                 p.precio_bs = convert_price_to_bolivars(inventario_item.inv_precio_unitario)
                 p.disponible = inventario_item.inv_cantidad > 0
+                p.cantidad_disponible = inventario_item.inv_cantidad  # Mostrar cantidad exacta
+                p.stock_info = f"En stock: {inventario_item.inv_cantidad} unidades"
             else:
                 p.precio_usd = 0
                 p.precio_bs = 0
                 p.disponible = False
+                p.cantidad_disponible = 0
+                p.stock_info = "No disponible en tienda física"
         else:
             # Para tienda online: usar tabla pre_alm
             prealm = pre_alm.objects.filter(fk_presentacion=p).first()
@@ -294,10 +298,14 @@ def store_view(request, tipo='online'):
                 p.precio_usd = prealm.pre_alm_precio
                 p.precio_bs = convert_price_to_bolivars(prealm.pre_alm_precio)
                 p.disponible = prealm.pre_alm_cantidad > 0
+                p.cantidad_disponible = prealm.pre_alm_cantidad  # Mostrar cantidad exacta
+                p.stock_info = f"En stock: {prealm.pre_alm_cantidad} unidades"
             else:
                 p.precio_usd = 0
                 p.precio_bs = 0
                 p.disponible = False
+                p.cantidad_disponible = 0
+                p.stock_info = "No disponible en tienda online"
 
     template = 'tienda_fisica.html' if tipo == 'fisica' else 'store.html'
     return render(request, template, {
@@ -335,7 +343,7 @@ def update_cart(request):
 
 @csrf_exempt
 def update_cart_view(request, tipo):
-    """Actualizar carrito generalizado (física/online)"""
+    """Actualizar carrito generalizado (física/online) con validación de inventario"""
     data = json.loads(request.body)
     product_id = str(data.get('productId', '')).strip()
     action = data.get('action')
@@ -343,8 +351,57 @@ def update_cart_view(request, tipo):
     cart_key = 'cart_fisica' if tipo == 'fisica' else 'cart'
     cart = request.session.get(cart_key, {})
 
+    # Validar inventario antes de añadir al carrito
     if action == 'add':
-        cart[product_id] = cart.get(product_id, 0) + 1
+        try:
+            producto = presentacion.objects.get(prese_id=int(product_id))
+            nueva_cantidad = cart.get(product_id, 0) + 1
+            
+            # Verificar disponibilidad según el tipo de tienda
+            if tipo == 'fisica':
+                # Para tienda física: verificar tabla inventario
+                inventario_item = inventario.objects.filter(fk_presentacion=producto).first()
+                if not inventario_item:
+                    return JsonResponse({
+                        'status': 'error', 
+                        'message': f'Producto "{producto.prese_nombre}" no disponible en tienda física'
+                    }, status=400)
+                
+                if inventario_item.inv_cantidad < nueva_cantidad:
+                    return JsonResponse({
+                        'status': 'error', 
+                        'message': f'Inventario insuficiente para "{producto.prese_nombre}". Disponible: {inventario_item.inv_cantidad}, Solicitado: {nueva_cantidad}'
+                    }, status=400)
+                    
+            else:
+                # Para tienda online: verificar tabla pre_alm
+                prealm_item = pre_alm.objects.filter(fk_presentacion=producto).first()
+                if not prealm_item:
+                    return JsonResponse({
+                        'status': 'error', 
+                        'message': f'Producto "{producto.prese_nombre}" no disponible en tienda online'
+                    }, status=400)
+                
+                if prealm_item.pre_alm_cantidad < nueva_cantidad:
+                    return JsonResponse({
+                        'status': 'error', 
+                        'message': f'Stock insuficiente para "{producto.prese_nombre}". Disponible: {prealm_item.pre_alm_cantidad}, Solicitado: {nueva_cantidad}'
+                    }, status=400)
+            
+            # Si pasa las validaciones, añadir al carrito
+            cart[product_id] = nueva_cantidad
+            
+        except presentacion.DoesNotExist:
+            return JsonResponse({
+                'status': 'error', 
+                'message': 'Producto no encontrado'
+            }, status=404)
+        except ValueError:
+            return JsonResponse({
+                'status': 'error', 
+                'message': 'ID de producto inválido'
+            }, status=400)
+            
     elif action == 'remove' and cart.get(product_id):
         cart[product_id] -= 1
         if cart[product_id] <= 0:
@@ -386,34 +443,92 @@ def checkout_view(request, tipo='online'):
     })
 
 # PROCESAR ÓRDENES
+def validate_inventory_availability(cart, tipo='online'):
+    """
+    Validar disponibilidad de inventario para el carrito
+    Args:
+        cart: diccionario con product_id: cantidad
+        tipo: 'fisica' o 'online'
+    Returns:
+        tuple: (es_valido, lista_errores, detalles_validos)
+    """
+    errores = []
+    detalles_validos = []
+    
+    for product_id, cantidad in cart.items():
+        try:
+            producto = presentacion.objects.get(prese_id=int(product_id))
+            
+            if tipo == 'fisica':
+                # Verificar inventario físico
+                item = inventario.objects.filter(fk_presentacion=producto).first()
+                if not item:
+                    errores.append(f'Producto "{producto.prese_nombre}" no disponible en inventario físico')
+                    continue
+                    
+                if item.inv_cantidad < cantidad:
+                    errores.append(
+                        f'Inventario insuficiente para "{producto.prese_nombre}". '
+                        f'Disponible: {item.inv_cantidad}, Solicitado: {cantidad}'
+                    )
+                    continue
+                    
+                detalles_validos.append({
+                    'producto': producto,
+                    'cantidad': cantidad,
+                    'item': item,
+                    'precio_unitario': item.inv_precio_unitario
+                })
+            else:
+                # Verificar stock online
+                item = pre_alm.objects.filter(fk_presentacion=producto).first()
+                if not item:
+                    errores.append(f'Producto "{producto.prese_nombre}" no disponible en tienda online')
+                    continue
+                    
+                if item.pre_alm_cantidad < cantidad:
+                    errores.append(
+                        f'Stock insuficiente para "{producto.prese_nombre}". '
+                        f'Disponible: {item.pre_alm_cantidad}, Solicitado: {cantidad}'
+                    )
+                    continue
+                    
+                detalles_validos.append({
+                    'producto': producto,
+                    'cantidad': cantidad,
+                    'item': item,
+                    'precio_unitario': item.pre_alm_precio
+                })
+                
+        except presentacion.DoesNotExist:
+            errores.append(f'Producto con ID {product_id} no encontrado')
+            continue
+    
+    return len(errores) == 0, errores, detalles_validos
+
 def processOrder(request):
-    """Procesar orden básica (original)"""
-    data = json.loads(request.body)
+    """Procesar orden básica (original) con validaciones de stock"""
     cart = request.session.get('cart', {})
 
     if not cart:
         return JsonResponse({'status': 'error', 'message': 'Carrito vacío'}, status=400)
 
-    total_venta = 0
-    detalles = []
+    # Validar stock antes de procesar
+    es_valido, errores, detalles = validate_inventory_availability(cart, tipo='online')
+    
+    if not es_valido:
+        return JsonResponse({
+            'status': 'error', 
+            'message': 'Errores de stock encontrados:', 
+            'errores': errores
+        }, status=400)
 
-    for product_id, cantidad in cart.items():
-        try:
-            producto = presentacion.objects.get(prese_id=int(product_id))
-            prealm = pre_alm.objects.filter(fk_presentacion=producto).first()
-            if not prealm:
-                continue
-            precio_unitario = prealm.pre_alm_precio or 0
-            total_venta += precio_unitario * cantidad
-            detalles.append({
-                'producto': producto,
-                'cantidad': cantidad,
-                'precio_unitario': precio_unitario,
-                'prealm': prealm
-            })
-        except presentacion.DoesNotExist:
-            continue
+    if not detalles:
+        return JsonResponse({'status': 'error', 'message': 'No hay productos válidos en el carrito'}, status=400)
 
+    # Calcular total
+    total_venta = sum(d['precio_unitario'] * d['cantidad'] for d in detalles)
+    
     tienda_obj = tienda.objects.first()
     if total_venta <= 0:
         return JsonResponse({'status': 'error', 'message': 'Total de la venta inválido'}, status=400)
@@ -428,7 +543,7 @@ def processOrder(request):
     for item in detalles:
         detalle_venta_online.objects.create(
             fk_venta_online=venta,
-            fk_pre_alm=item['prealm'],
+            fk_pre_alm=item['item'],  # item ahora contiene el objeto pre_alm
             det_ven_onl_cantidad=item['cantidad'],
             det_ven_onl_precio=item['precio_unitario']
         )
@@ -468,12 +583,23 @@ def process_order_view(request, tipo):
     if tipo == 'fisica':
         # Lógica para venta física - USA SOLO TABLA INVENTARIO
         detalles, total_venta = [], 0
+        errores_inventario = []
+        
         for pid, cantidad in cart.items():
             try:
                 producto = presentacion.objects.get(pk=int(pid))
                 # Para venta física, usar SOLO tabla inventario (precio y cantidad)
                 inventario_item = inventario.objects.filter(fk_presentacion=producto).first()
-                if not inventario_item or inventario_item.inv_cantidad < cantidad:
+                
+                if not inventario_item:
+                    errores_inventario.append(f'Producto "{producto.prese_nombre}" no disponible en inventario físico')
+                    continue
+                    
+                if inventario_item.inv_cantidad < cantidad:
+                    errores_inventario.append(
+                        f'Inventario insuficiente para "{producto.prese_nombre}". '
+                        f'Disponible: {inventario_item.inv_cantidad}, Solicitado: {cantidad}'
+                    )
                     continue
                 
                 detalles.append({
@@ -486,10 +612,19 @@ def process_order_view(request, tipo):
                 subtotal = inventario_item.inv_precio_unitario * cantidad
                 total_venta += subtotal
             except presentacion.DoesNotExist:
+                errores_inventario.append(f'Producto con ID {pid} no encontrado')
                 continue
 
+        # Si hay errores de inventario, retornar todos los errores
+        if errores_inventario:
+            return JsonResponse({
+                'status': 'error', 
+                'message': 'Errores de inventario encontrados:', 
+                'errores': errores_inventario
+            }, status=400)
+
         if total_venta <= 0:
-            return JsonResponse({'status': 'error', 'message': 'Venta inválida'}, status=400)
+            return JsonResponse({'status': 'error', 'message': 'Venta inválida - no hay productos válidos en el carrito'}, status=400)
 
         # Verificar si el usuario tiene un cliente asociado
         if not request.user.fk_cliente:
@@ -518,13 +653,24 @@ def process_order_view(request, tipo):
         venta_id = venta.ven_fis_id
         
     else:
-        # Lógica para venta online (original)
+        # Lógica para venta online con validaciones de stock
         detalles, total_venta = [], 0
+        errores_stock = []
+        
         for pid, cantidad in cart.items():
             try:
                 producto = presentacion.objects.get(pk=int(pid))
                 prealm = pre_alm.objects.filter(fk_presentacion=producto).first()
+                
                 if not prealm:
+                    errores_stock.append(f'Producto "{producto.prese_nombre}" no disponible en tienda online')
+                    continue
+                
+                if prealm.pre_alm_cantidad < cantidad:
+                    errores_stock.append(
+                        f'Stock insuficiente para "{producto.prese_nombre}". '
+                        f'Disponible: {prealm.pre_alm_cantidad}, Solicitado: {cantidad}'
+                    )
                     continue
                 
                 detalles.append({
@@ -536,10 +682,19 @@ def process_order_view(request, tipo):
                 subtotal = prealm.pre_alm_precio * cantidad
                 total_venta += subtotal
             except presentacion.DoesNotExist:
+                errores_stock.append(f'Producto con ID {pid} no encontrado')
                 continue
 
+        # Si hay errores de stock, retornar todos los errores
+        if errores_stock:
+            return JsonResponse({
+                'status': 'error', 
+                'message': 'Errores de stock encontrados:', 
+                'errores': errores_stock
+            }, status=400)
+
         if total_venta <= 0:
-            return JsonResponse({'status': 'error', 'message': 'Venta inválida'}, status=400)
+            return JsonResponse({'status': 'error', 'message': 'Venta inválida - no hay productos válidos en el carrito'}, status=400)
 
         # Crear venta online
         venta = venta_online.objects.create(

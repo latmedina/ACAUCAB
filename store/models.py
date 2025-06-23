@@ -494,6 +494,7 @@ class metodo_pago(models.Model):
     tar_cre_vencimiento = models.DateField(blank=True, null=True)
     met_pag_tipo_pago = models.CharField(max_length=50)
     fk_his_pre_pun = models.ForeignKey(historico_precio_punto, models.DO_NOTHING, db_column='fk_his_pre_pun', blank=True, null=True)
+    fk_usuario = models.ForeignKey('usuario', on_delete=models.CASCADE, db_column='fk_usuario')
 
     class Meta:
         managed = True
