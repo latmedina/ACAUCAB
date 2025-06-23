@@ -414,7 +414,7 @@ def processOrder(request):
 
 @csrf_exempt
 def process_order_view(request, tipo):
-    """Procesar orden generalizada (física/online) - Ambas funcionan igual ahora"""
+    """Procesar orden generalizada (física/online) - Ahora diferencia entre ambos tipos"""
     if request.method != 'POST':
         return JsonResponse({'status': 'error'}, status=400)
 
@@ -423,48 +423,109 @@ def process_order_view(request, tipo):
     cart_key = 'cart_fisica' if tipo == 'fisica' else 'cart'
     cart = request.session.get(cart_key, {})
 
-    detalles, total_venta = [], 0
-    for pid, cantidad in cart.items():
-        try:
-            producto = presentacion.objects.get(pk=int(pid))
-            prealm = pre_alm.objects.filter(fk_presentacion=producto).first()
-            if not prealm:
-                continue
-            
-            detalles.append({
-                'producto': producto, 
-                'prealm': prealm,
-                'cantidad': cantidad
-            })
-            
-            subtotal = prealm.pre_alm_precio * cantidad
-            total_venta += subtotal
-        except presentacion.DoesNotExist:
-            continue
-
-    if total_venta <= 0:
-        return JsonResponse({'status': 'error', 'message': 'Venta inválida'}, status=400)
-
     tienda_obj = tienda.objects.first()
 
-    # Tratar tanto física como online igual - crear venta online y redirigir a método de pago
-    venta = venta_online.objects.create(
-        ven_onl_fecha=timezone.now(),
-        ven_onl_total=total_venta,
-        fk_usuario=request.user,
-        fk_tienda=tienda_obj
-    )
-    
-    for d in detalles:
-        detalle_venta_online.objects.create(
-            fk_venta_online=venta,
-            fk_pre_alm=d['prealm'],
-            det_ven_onl_cantidad=d['cantidad'],
-            det_ven_onl_precio=d['prealm'].pre_alm_precio
-        )
+    if tipo == 'fisica':
+        # Lógica para venta física
+        detalles, total_venta = [], 0
+        for pid, cantidad in cart.items():
+            try:
+                producto = presentacion.objects.get(pk=int(pid))
+                # Para venta física, necesitamos buscar en inventario
+                inventario_item = inventario.objects.filter(fk_presentacion=producto).first()
+                if not inventario_item or inventario_item.inv_cantidad < cantidad:
+                    continue
+                
+                # El precio lo obtenemos del pre_alm
+                prealm = pre_alm.objects.filter(fk_presentacion=producto).first()
+                if not prealm:
+                    continue
+                
+                detalles.append({
+                    'producto': producto, 
+                    'inventario': inventario_item,
+                    'prealm': prealm,
+                    'cantidad': cantidad
+                })
+                
+                subtotal = prealm.pre_alm_precio * cantidad
+                total_venta += subtotal
+            except presentacion.DoesNotExist:
+                continue
 
-    # Guardar el ID de venta en la sesión para usar en el método de pago
-    request.session['pending_venta_id'] = venta.ven_onl_id
+        if total_venta <= 0:
+            return JsonResponse({'status': 'error', 'message': 'Venta inválida'}, status=400)
+
+        # Verificar si el usuario tiene un cliente asociado
+        if not request.user.fk_cliente:
+            return JsonResponse({'status': 'error', 'message': 'Usuario debe tener un cliente asociado para ventas físicas'}, status=400)
+
+        # Crear venta física
+        venta = venta_fisica.objects.create(
+            ven_fis_fecha=timezone.now().date(),
+            ven_fis_total=int(total_venta),  # venta_fisica.ven_fis_total es IntegerField
+            fk_cliente=request.user.fk_cliente,
+            fk_tienda=tienda_obj
+        )
+        
+        # Crear detalles de venta física
+        for d in detalles:
+            detalle_venta_fisica.objects.create(
+                fk_venta_fisica=venta,
+                fk_inventario=d['inventario'],
+                det_ven_fis_cantidad=d['cantidad'],
+                det_ven_fis_precio_unitario=d['prealm'].pre_alm_precio
+            )
+
+        # Guardar el ID de venta en la sesión para usar en el método de pago
+        request.session['pending_venta_id'] = venta.ven_fis_id
+        venta_id = venta.ven_fis_id
+        
+    else:
+        # Lógica para venta online (original)
+        detalles, total_venta = [], 0
+        for pid, cantidad in cart.items():
+            try:
+                producto = presentacion.objects.get(pk=int(pid))
+                prealm = pre_alm.objects.filter(fk_presentacion=producto).first()
+                if not prealm:
+                    continue
+                
+                detalles.append({
+                    'producto': producto, 
+                    'prealm': prealm,
+                    'cantidad': cantidad
+                })
+                
+                subtotal = prealm.pre_alm_precio * cantidad
+                total_venta += subtotal
+            except presentacion.DoesNotExist:
+                continue
+
+        if total_venta <= 0:
+            return JsonResponse({'status': 'error', 'message': 'Venta inválida'}, status=400)
+
+        # Crear venta online
+        venta = venta_online.objects.create(
+            ven_onl_fecha=timezone.now(),
+            ven_onl_total=total_venta,
+            fk_usuario=request.user,
+            fk_tienda=tienda_obj
+        )
+        
+        # Crear detalles de venta online
+        for d in detalles:
+            detalle_venta_online.objects.create(
+                fk_venta_online=venta,
+                fk_pre_alm=d['prealm'],
+                det_ven_onl_cantidad=d['cantidad'],
+                det_ven_onl_precio=d['prealm'].pre_alm_precio
+            )
+
+        # Guardar el ID de venta en la sesión para usar en el método de pago
+        request.session['pending_venta_id'] = venta.ven_onl_id
+        venta_id = venta.ven_onl_id
+
     request.session['pending_total'] = float(total_venta)
     request.session['pending_tipo'] = tipo  # Guardar el tipo para referencia
     # NO limpiar el carrito aquí - se limpiará después del pago exitoso
@@ -472,7 +533,7 @@ def process_order_view(request, tipo):
     return JsonResponse({
         'status': 'ok', 
         'message': 'Venta registrada', 
-        'venta_id': venta.ven_onl_id,
+        'venta_id': venta_id,
         'redirect_to_payment': True
     })
 
@@ -537,15 +598,25 @@ def process_payment_method(request):
         data = json.loads(request.body)
         venta_id = request.session.get('pending_venta_id')
         total = request.session.get('pending_total')
+        pending_tipo = request.session.get('pending_tipo', 'online')
         
         if not venta_id or not total:
             return JsonResponse({'status': 'error', 'message': 'No hay venta pendiente'}, status=400)
         
-        # Obtener la venta
-        try:
-            venta = venta_online.objects.get(ven_onl_id=venta_id)
-        except venta_online.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': 'Venta no encontrada'}, status=404)
+        # Obtener la venta según el tipo
+        venta_fisica_obj = None
+        venta_online_obj = None
+        
+        if pending_tipo == 'fisica':
+            try:
+                venta_fisica_obj = venta_fisica.objects.get(ven_fis_id=venta_id)
+            except venta_fisica.DoesNotExist:
+                return JsonResponse({'status': 'error', 'message': 'Venta física no encontrada'}, status=404)
+        else:
+            try:
+                venta_online_obj = venta_online.objects.get(ven_onl_id=venta_id)
+            except venta_online.DoesNotExist:
+                return JsonResponse({'status': 'error', 'message': 'Venta online no encontrada'}, status=404)
         
         tipo_pago = data.get('tipo_pago')
         moneda_id = data.get('moneda_id')
@@ -625,16 +696,17 @@ def process_payment_method(request):
         metodo_pago_obj = metodo_pago.objects.create(**metodo_pago_data)
         
         # Crear el registro de pago con el monto convertido
+        # El modelo pago puede referenciar tanto venta_fisica como venta_online
         pago_obj = pago.objects.create(
             pag_monto=monto_convertido,
             pag_fecha=timezone.now(),
             fk_metodo_pago=metodo_pago_obj,
-            fk_venta_online=venta,
+            fk_venta_fisica=venta_fisica_obj,
+            fk_venta_online=venta_online_obj,
             fk_moneda=moneda_obj
         )
         
         # Limpiar la sesión - incluir el carrito ahora que el pago fue exitoso
-        pending_tipo = request.session.get('pending_tipo', 'online')
         cart_key = 'cart_fisica' if pending_tipo == 'fisica' else 'cart'
         
         request.session.pop('pending_venta_id', None)
