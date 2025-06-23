@@ -177,25 +177,44 @@ def cart_data(request, tipo='online'):
     for product_id, quantity in cart.items():
         try:
             producto = presentacion.objects.get(pk=int(product_id))
-            prealm = pre_alm.objects.filter(fk_presentacion=producto).first()
-            if not prealm:
-                continue
-            precio_usd = prealm.pre_alm_precio  # Precio en dólares (base en BD)
-            precio_bs = convert_price_to_bolivars(precio_usd)  # Precio en bolívares para mostrar
-            subtotal_usd = precio_usd * quantity  # Subtotal en dólares (para cálculos internos)
-            subtotal_bs = precio_bs * quantity  # Subtotal en bolívares (para mostrar)
+            
+            if tipo == 'fisica':
+                # Para tienda física: usar tabla inventario
+                inventario_item = inventario.objects.filter(fk_presentacion=producto).first()
+                if not inventario_item:
+                    continue
+                precio_usd = inventario_item.inv_precio_unitario
+                source_item = inventario_item
+            else:
+                # Para tienda online: usar tabla pre_alm
+                prealm = pre_alm.objects.filter(fk_presentacion=producto).first()
+                if not prealm:
+                    continue
+                precio_usd = prealm.pre_alm_precio
+                source_item = prealm
+            
+            precio_bs = convert_price_to_bolivars(precio_usd)
+            subtotal_usd = precio_usd * quantity
+            subtotal_bs = precio_bs * quantity
 
-            items.append({
+            item_data = {
                 'product': producto,
                 'quantity': quantity,
-                'get_total': subtotal_usd,  # Total en dólares (base)
-                'get_total_bs': subtotal_bs,  # Total en bolívares para mostrar
-                'precio_unitario': precio_usd,  # Precio unitario en dólares
-                'precio_unitario_bs': precio_bs,  # Precio unitario en bolívares
-                'precio_unitario_usd': precio_usd,  # Para compatibilidad con templates
-                'prealm': prealm
-            })
-            total_usd += subtotal_usd  # Total en dólares para cálculos internos
+                'get_total': subtotal_usd,
+                'get_total_bs': subtotal_bs,
+                'precio_unitario': precio_usd,
+                'precio_unitario_bs': precio_bs,
+                'precio_unitario_usd': precio_usd,
+            }
+            
+            # Agregar la referencia correcta según el tipo
+            if tipo == 'fisica':
+                item_data['inventario'] = source_item
+            else:
+                item_data['prealm'] = source_item
+            
+            items.append(item_data)
+            total_usd += subtotal_usd
             total_items += quantity
         except presentacion.DoesNotExist:
             continue
@@ -255,16 +274,30 @@ def store_view(request, tipo='online'):
     """Vista general de tienda (física/online)"""
     data = cart_data(request, tipo)
     productos = presentacion.objects.all()
+    
     for p in productos:
-        prealm = pre_alm.objects.filter(fk_presentacion=p).first()
-        if prealm:
-            p.precio_usd = prealm.pre_alm_precio
-            p.precio_bs = convert_price_to_bolivars(prealm.pre_alm_precio)
-            p.disponible = prealm.pre_alm_cantidad > 0
+        if tipo == 'fisica':
+            # Para tienda física: usar tabla inventario
+            inventario_item = inventario.objects.filter(fk_presentacion=p).first()
+            if inventario_item:
+                p.precio_usd = inventario_item.inv_precio_unitario
+                p.precio_bs = convert_price_to_bolivars(inventario_item.inv_precio_unitario)
+                p.disponible = inventario_item.inv_cantidad > 0
+            else:
+                p.precio_usd = 0
+                p.precio_bs = 0
+                p.disponible = False
         else:
-            p.precio_usd = 0
-            p.precio_bs = 0
-            p.disponible = False
+            # Para tienda online: usar tabla pre_alm
+            prealm = pre_alm.objects.filter(fk_presentacion=p).first()
+            if prealm:
+                p.precio_usd = prealm.pre_alm_precio
+                p.precio_bs = convert_price_to_bolivars(prealm.pre_alm_precio)
+                p.disponible = prealm.pre_alm_cantidad > 0
+            else:
+                p.precio_usd = 0
+                p.precio_bs = 0
+                p.disponible = False
 
     template = 'tienda_fisica.html' if tipo == 'fisica' else 'store.html'
     return render(request, template, {
@@ -433,29 +466,24 @@ def process_order_view(request, tipo):
     tienda_obj = tienda.objects.first()
 
     if tipo == 'fisica':
-        # Lógica para venta física
+        # Lógica para venta física - USA SOLO TABLA INVENTARIO
         detalles, total_venta = [], 0
         for pid, cantidad in cart.items():
             try:
                 producto = presentacion.objects.get(pk=int(pid))
-                # Para venta física, necesitamos buscar en inventario
+                # Para venta física, usar SOLO tabla inventario (precio y cantidad)
                 inventario_item = inventario.objects.filter(fk_presentacion=producto).first()
                 if not inventario_item or inventario_item.inv_cantidad < cantidad:
-                    continue
-                
-                # El precio lo obtenemos del pre_alm
-                prealm = pre_alm.objects.filter(fk_presentacion=producto).first()
-                if not prealm:
                     continue
                 
                 detalles.append({
                     'producto': producto, 
                     'inventario': inventario_item,
-                    'prealm': prealm,
                     'cantidad': cantidad
                 })
                 
-                subtotal = prealm.pre_alm_precio * cantidad
+                # Precio viene del inventario, NO de pre_alm
+                subtotal = inventario_item.inv_precio_unitario * cantidad
                 total_venta += subtotal
             except presentacion.DoesNotExist:
                 continue
@@ -482,7 +510,7 @@ def process_order_view(request, tipo):
                 fk_venta_fisica=venta,
                 fk_inventario=d['inventario'],
                 det_ven_fis_cantidad=d['cantidad'],
-                det_ven_fis_precio_unitario=d['prealm'].pre_alm_precio
+                det_ven_fis_precio_unitario=d['inventario'].inv_precio_unitario
             )
 
         # Guardar el ID de venta en la sesión para usar en el método de pago
