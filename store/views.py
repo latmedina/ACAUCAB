@@ -10,7 +10,7 @@ from .models import (
 )
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
+from .forms import CustomUserCreationForm
 from django.views.decorators.csrf import csrf_exempt
 from decimal import Decimal
 from datetime import datetime, date
@@ -775,7 +775,7 @@ def logout_view(request):
 
 def registro(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             usuario = form.save()
             grupo_cliente, _ = Group.objects.get_or_create(name='Cliente')
@@ -783,7 +783,7 @@ def registro(request):
             login(request, usuario)
             return redirect('home')
     else:
-        form = UserCreationForm()
+        form = CustomUserCreationForm(request.POST)
     return render(request, 'registro.html', {'form': form})
 
 # HOME
