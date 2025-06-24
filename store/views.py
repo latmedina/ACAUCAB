@@ -437,7 +437,7 @@ def cart_dropdown_data(request):
                 'price_bs': float(item['precio_unitario_bs']),
                 'subtotal_usd': float(item['get_total']),
                 'subtotal_bs': float(item['get_total_bs']),
-                'image': item['product'].prese_imagen.url if item['product'].prese_imagen else None,
+                'image': item['product'].get_imagen_url() if item['product'].prese_imagen else None,
             })
         
         response_data = {
