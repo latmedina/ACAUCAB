@@ -1716,6 +1716,23 @@ INSERT INTO public.empleado VALUES (9, 'V26234567', 'Fernando', 'Jose', 'Delgado
 INSERT INTO public.empleado VALUES (10, 'V27345678', 'Gabriela', 'Antonieta', 'Vega', 'Paredes', 'Zona Industrial 741, Ciudad Bolivar', '1994-06-12', 'F', 95);
 
 --
+-- Data for Name: cargo; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.cargo VALUES (1, 'Gerente General', 'Responsable de la dirección general de la tienda y supervisión de todas las operaciones', 2500000);
+INSERT INTO public.cargo VALUES (2, 'Supervisor de Ventas', 'Encargado de supervisar el equipo de ventas y garantizar el cumplimiento de objetivos', 1800000);
+INSERT INTO public.cargo VALUES (3, 'Vendedor Senior', 'Vendedor con experiencia en productos cerveceros y atención al cliente especializada', 1200000);
+INSERT INTO public.cargo VALUES (4, 'Vendedor Junior', 'Personal de ventas de nivel inicial con conocimientos básicos de productos', 900000);
+INSERT INTO public.cargo VALUES (5, 'Almacenista', 'Responsable del manejo de inventario, recepción y despacho de mercancía', 1000000);
+INSERT INTO public.cargo VALUES (6, 'Cajero', 'Encargado del manejo de caja, cobros y atención directa al cliente en el punto de venta', 850000);
+INSERT INTO public.cargo VALUES (7, 'Especialista en Cervezas', 'Experto en productos cerveceros, degustaciones y asesoría técnica a clientes', 1500000);
+INSERT INTO public.cargo VALUES (8, 'Coordinador de Logistica', 'Responsable de la coordinación de envíos, distribución y logística de productos', 1400000);
+INSERT INTO public.cargo VALUES (9, 'Asistente Administrativo', 'Apoyo en tareas administrativas, documentación y gestión de archivos', 950000);
+INSERT INTO public.cargo VALUES (10, 'Analista de Marketing', 'Responsable de estrategias de marketing, promociones y análisis de mercado', 1600000);
+
+
+
+--
 -- Data for Name: asistencia; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -2651,23 +2668,6 @@ INSERT INTO public.presentacion VALUES (46, 'English Pale Ale Genérica 500ml', 
 INSERT INTO public.presentacion VALUES (47, 'Red Ale Genérica 355ml', 355.00, 'Lata de Aluminio', 'Artesanal_Tempus.jpg', 2.00, 5.00, 5.20, 44);
 INSERT INTO public.presentacion VALUES (48, 'The Murphy''s Irish Stout 500ml', 500.00, 'Lata de Aluminio con Nitrógeno', 'e1bc5fb3-2f02-4be9-9a5f-c7d5a7fd7d8e.png', 2.30, 5.50, 4.00, 45); 
 
---
--- Data for Name: cargo; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-INSERT INTO public.cargo VALUES (1, 'Gerente General', 'Responsable de la dirección general de la tienda y supervisión de todas las operaciones', 2500000);
-INSERT INTO public.cargo VALUES (2, 'Supervisor de Ventas', 'Encargado de supervisar el equipo de ventas y garantizar el cumplimiento de objetivos', 1800000);
-INSERT INTO public.cargo VALUES (3, 'Vendedor Senior', 'Vendedor con experiencia en productos cerveceros y atención al cliente especializada', 1200000);
-INSERT INTO public.cargo VALUES (4, 'Vendedor Junior', 'Personal de ventas de nivel inicial con conocimientos básicos de productos', 900000);
-INSERT INTO public.cargo VALUES (5, 'Almacenista', 'Responsable del manejo de inventario, recepción y despacho de mercancía', 1000000);
-INSERT INTO public.cargo VALUES (6, 'Cajero', 'Encargado del manejo de caja, cobros y atención directa al cliente en el punto de venta', 850000);
-INSERT INTO public.cargo VALUES (7, 'Especialista en Cervezas', 'Experto en productos cerveceros, degustaciones y asesoría técnica a clientes', 1500000);
-INSERT INTO public.cargo VALUES (8, 'Coordinador de Logistica', 'Responsable de la coordinación de envíos, distribución y logística de productos', 1400000);
-INSERT INTO public.cargo VALUES (9, 'Asistente Administrativo', 'Apoyo en tareas administrativas, documentación y gestión de archivos', 950000);
-INSERT INTO public.cargo VALUES (10, 'Analista de Marketing', 'Responsable de estrategias de marketing, promociones y análisis de mercado', 1600000);
-
-
-
 
 --
 -- Data for Name: contacto_cliente; Type: TABLE DATA; Schema: public; Owner: postgres
@@ -2789,6 +2789,20 @@ INSERT INTO public.dep_tie VALUES (528, '2023-02-20', NULL, 8, 8);
 INSERT INTO public.dep_tie VALUES (529, '2023-03-10', NULL, 9, 9);
 INSERT INTO public.dep_tie VALUES (530, '2023-01-30', NULL, 10, 10);
 
+--
+-- Data for Name: emp_car; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.emp_car VALUES (521, 1, 1, '2023-01-15', NULL, 1, 1);
+INSERT INTO public.emp_car VALUES (522, 2, 2, '2023-02-01', NULL, 2, 2);
+INSERT INTO public.emp_car VALUES (523, 3, 3, '2023-01-20', NULL, 5, 3);
+INSERT INTO public.emp_car VALUES (524, 4, 4, '2023-03-01', NULL, 10, 4);
+INSERT INTO public.emp_car VALUES (525, 5, 5, '2023-01-10', NULL, 8, 5);
+INSERT INTO public.emp_car VALUES (526, 6, 6, '2023-02-15', NULL, 3, 6);
+INSERT INTO public.emp_car VALUES (527, 7, 7, '2023-01-25', NULL, 4, 7);
+INSERT INTO public.emp_car VALUES (528, 8, 8, '2023-02-20', NULL, 7, 8);
+INSERT INTO public.emp_car VALUES (529, 9, 9, '2023-03-10', NULL, 9, 9);
+INSERT INTO public.emp_car VALUES (530, 10, 10, '2023-01-30', NULL, 6, 10);
 
 --
 -- Data for Name: oferta; Type: TABLE DATA; Schema: public; Owner: postgres
@@ -4123,20 +4137,7 @@ INSERT INTO public.django_migrations VALUES (23, 'store', '0004_solicitud_compra
 INSERT INTO public.django_session VALUES ('r9k4jha7sxcfrgtlu0stpru5b398bobj', '.eJxVjDsOgzAQBe_iOrLWn8UOZXrOgNa7diCJQOJTIe4ekCiS9s282VRL69K165ynthdVK-PQqdvvnIjfeTiZvGh4jprHYZn6pE9FX3TWzSj587jcv0BHc3e87wxIKZNnyS4IiZhoSwxI1jIUjxYEXRSOxYNBQucBvKlixQgB0hFlmhZVb_v-BasuO20:1uSeA6:sV1ZksC7zYFeNPX2dHE8NDIPBMdopTURwQgqoSdQsw8', '2025-07-04 12:00:18.287661-04');
 
 
---
--- Data for Name: emp_car; Type: TABLE DATA; Schema: public; Owner: postgres
---
 
-INSERT INTO public.emp_car VALUES (521, 1, 1, '2023-01-15', NULL, 1, 1);
-INSERT INTO public.emp_car VALUES (522, 2, 2, '2023-02-01', NULL, 2, 2);
-INSERT INTO public.emp_car VALUES (523, 3, 3, '2023-01-20', NULL, 5, 3);
-INSERT INTO public.emp_car VALUES (524, 4, 4, '2023-03-01', NULL, 10, 4);
-INSERT INTO public.emp_car VALUES (525, 5, 5, '2023-01-10', NULL, 8, 5);
-INSERT INTO public.emp_car VALUES (526, 6, 6, '2023-02-15', NULL, 3, 6);
-INSERT INTO public.emp_car VALUES (527, 7, 7, '2023-01-25', NULL, 4, 7);
-INSERT INTO public.emp_car VALUES (528, 8, 8, '2023-02-20', NULL, 7, 8);
-INSERT INTO public.emp_car VALUES (529, 9, 9, '2023-03-10', NULL, 9, 9);
-INSERT INTO public.emp_car VALUES (530, 10, 10, '2023-01-30', NULL, 6, 10);
 
 
 --
