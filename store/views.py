@@ -20,7 +20,6 @@ from django.views.decorators.csrf import csrf_exempt
 from decimal import Decimal
 from datetime import datetime, date
 from .forms import ClienteForm, EmpleadoForm, ProveedorForm
-from .utils import crear_usuario_sql
 
 def validate_expiration_date(exp_date_str):
     """Valida que la fecha de vencimiento no sea anterior a la actual"""
@@ -1382,4 +1381,26 @@ def generar_reporte_venta_api(request, venta_id):
     except Exception as e:
         # Este bloque capturará cualquier error durante el proceso
         print(f"¡ERROR! Ocurrió una excepción en la vista: {e}")
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    
+def vista_orden_compra(request):
+    # Asegúrate de que tu archivo 'factura_reporte.html' esté en tu carpeta de templates
+        return render(request, 'Orden_compra_reporte.html')
+
+def generar_orden_compra_api(request, orden_id):
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT obtener_datos_orden_compra(%s);", [orden_id])
+            result = cursor.fetchone()
+            
+            if result is None or result[0] is None:
+                return HttpResponseNotFound(f'No se encontraron datos para la orden de compra con ID {orden_id}')
+
+            report_data = result[0]
+            return JsonResponse(report_data, encoder=DjangoJSONEncoder, safe=False)
+
+    except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)

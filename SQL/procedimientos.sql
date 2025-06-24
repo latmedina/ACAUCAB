@@ -7,7 +7,7 @@
 -- FUNCION: registrar_venta_fisica
 -- ===========================================
 
-CREATE OR REPLACE FUNCTION registrar_venta_fisica(
+CREATE OR REPLACE FUNCTION public.registrar_venta_fisica(
     cliente_id INTEGER,
     tienda_id INTEGER,
     total NUMERIC
@@ -27,7 +27,7 @@ $$ LANGUAGE plpgsql;
 -- FUNCION: registrar_usuario
 -- ===========================================
 
-CREATE OR REPLACE FUNCTION registrar_usuario(
+CREATE OR REPLACE FUNCTION public.registrar_usuario(
     p_username TEXT,
     p_email TEXT,
     p_password TEXT,
@@ -120,5 +120,87 @@ BEGIN
     WHERE vf.ven_fis_id = p_venta_id;
 
     RETURN v_reporte_data;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION public.obtener_datos_orden_compra(p_solicitud_id INT)
+RETURNS JSON AS $$
+DECLARE
+    v_reporte_data JSON;
+BEGIN
+    SELECT
+        json_build_object(
+            'orden_info', json_build_object(
+                'id', sc.sol_com_id,
+                'fecha', TO_CHAR(sc.sol_com_fecha, 'DD/MM/YYYY')
+            ),
+            'proveedor_info', json_build_object(
+                'nombre', COALESCE(p.pro_razon_social, 'N/A'),
+                'telefono', (SELECT tel_numero::text FROM public.telefono WHERE fk_proveedor = p.pro_id LIMIT 1),
+                'direccion', COALESCE(p.pro_direccion_fiscal, 'N/A')
+            ),
+            'enviar_a_info', json_build_object(
+                'local', COALESCE(t.tie_nombre, 'Almacén Principal'),
+                'telefono', '0412-1234567', -- Teléfono de la empresa (puede ser dinámico si lo tienes en la tabla tienda)
+                'direccion', COALESCE(t.tie_direccion, 'Dirección de la empresa')
+            ),
+            'detalles', (
+                SELECT COALESCE(json_agg(
+                    json_build_object(
+                        'id', pr.prese_id,
+                        'producto', pr.prese_nombre,
+                        'cantidad', dc.det_com_cantidad,
+                        'precio_unitario', dc.det_com_precio_unitario,
+                        'total_linea', dc.det_com_cantidad * dc.det_com_precio_unitario
+                    )
+                ), '[]'::json)
+                FROM public.detalle_compra dc
+                JOIN public.presentacion pr ON dc.fk_presentacion = pr.prese_id
+                WHERE dc.fk_sol_com = sc.sol_com_id
+            ),
+            'totales', json_build_object(
+                'subtotal', sc.sol_com_total / 1.16,
+                'impuestos', sc.sol_com_total - (sc.sol_com_total / 1.16),
+                'total', sc.sol_com_total
+            )
+        )
+    INTO v_reporte_data
+    FROM public.solicitud_compra sc
+    LEFT JOIN public.proveedor p ON sc.fk_proveedor = p.pro_id
+    LEFT JOIN public.pre_alm pa ON sc.fk_pre_alm = pa.pre_alm_id
+    LEFT JOIN public.almacen a ON pa.fk_almacen = a.alm_id
+    LEFT JOIN public.tienda t ON a.fk_tienda = t.tie_id
+    WHERE sc.sol_com_id = p_solicitud_id;
+
+    RETURN v_reporte_data;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ===========================================
+-- FUNCION: modificar_usuario
+-- ===========================================
+
+CREATE OR REPLACE FUNCTION modificar_usuario(
+    p_id_usuario INTEGER,
+    p_username TEXT,
+    p_email TEXT,
+    p_password TEXT,
+    p_first_name TEXT,
+    p_last_name TEXT
+)
+RETURNS VOID AS $$
+BEGIN
+    UPDATE usuario
+    SET 
+        username = p_username,
+        email = p_email,
+        first_name = p_first_name,
+        last_name = p_last_name,
+        password = CASE 
+                    WHEN p_password IS NOT NULL AND p_password != '' 
+                    THEN crypt(p_password, gen_salt('bf')) 
+                    ELSE password 
+                END
+    WHERE id = p_id_usuario;
 END;
 $$ LANGUAGE plpgsql;
