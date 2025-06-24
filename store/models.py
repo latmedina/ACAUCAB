@@ -588,6 +588,18 @@ class presentacion(models.Model):
     def get_precio_actual(self):
         prealm = self.pre_alm_set.first()
         return prealm.pre_alm_precio if prealm else None
+    
+    def get_imagen_url(self):
+        """Retorna la URL de la imagen con el prefijo productos/ agregado"""
+        if self.prese_imagen:
+            # Si la imagen ya tiene el prefijo productos/, usar la URL normal
+            if str(self.prese_imagen).startswith('productos/'):
+                return self.prese_imagen.url
+            # Si no tiene el prefijo, agregarlo manualmente
+            else:
+                from django.conf import settings
+                return f"{settings.MEDIA_URL}productos/{self.prese_imagen}"
+        return None
 
 class proveedor(models.Model):
     pro_id = models.AutoField(primary_key=True)
