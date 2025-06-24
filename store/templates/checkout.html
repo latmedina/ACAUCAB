@@ -24,8 +24,8 @@
                             <div class="checkout-item">
                                 <div class="d-flex align-items-center">
                                     <div class="flex-shrink-0 me-3">
-                                        {% if item.product.prese_imagen %}
-                                            <img class="row-image" src="{{ item.product.prese_imagen.url }}" 
+                                                            {% if item.product.prese_imagen %}
+                        <img class="row-image" src="{{ item.product.get_imagen_url }}" 
                                                  style="width: 60px; height: 60px; object-fit: cover;" 
                                                  alt="{{ item.product.prese_nombre }}">
                                         {% else %}

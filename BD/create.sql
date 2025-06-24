@@ -2046,9 +2046,9 @@ CREATE TABLE public.usuario (
     is_staff boolean NOT NULL,
     is_active boolean NOT NULL,
     date_joined timestamp with time zone NOT NULL,
-    fk_emp_car integer,
     fk_cliente integer,
-    fk_proveedor integer
+    fk_proveedor integer,
+    fk_emp_car integer
 );
 
 

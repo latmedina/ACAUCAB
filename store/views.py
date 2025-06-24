@@ -441,7 +441,7 @@ def cart_dropdown_data(request):
                 'price_bs': float(item['precio_unitario_bs']),
                 'subtotal_usd': float(item['get_total']),
                 'subtotal_bs': float(item['get_total_bs']),
-                'image': item['product'].prese_imagen.url if item['product'].prese_imagen else None,
+                'image': item['product'].get_imagen_url() if item['product'].prese_imagen else None,
             })
         
         response_data = {
@@ -1280,6 +1280,24 @@ def registrar_proveedor_view(request):
     else:
         form = ProveedorForm()
     return render(request, 'registro_proveedor.html', {'form': form})
+
+def modificar_usuario_view(request, id_usuario):
+    usuario = usuario.objects.get(pk=id_usuario)
+
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')  # puede estar vacío si no se desea cambiar
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+
+        modificar_usuario_sql(id_usuario, username, email, password, first_name, last_name)
+        return redirect('perfil')  # o donde desees redirigir
+
+    return render(request, 'modificar_usuario.html', {
+        'usuario': usuario
+    })
+
 
 # HOME
 @login_required(login_url='login')
