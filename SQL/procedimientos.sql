@@ -71,63 +71,41 @@ CREATE OR REPLACE FUNCTION public.obtener_datos_reporte_venta(p_venta_id INT)
 RETURNS JSON AS $$
 DECLARE
     v_reporte_data JSON;
-    v_venta_count INT;
 BEGIN
-    -- --- PASO DE DEPURACIÓN 1 ---
-    -- Vamos a verificar si la fila es visible DENTRO de la función.
-    RAISE NOTICE 'Iniciando obtener_datos_reporte_venta para p_venta_id: %', p_venta_id;
-
-    SELECT count(*)
-    INTO v_venta_count
-    FROM public.venta_fisica
-    WHERE ven_fis_id = p_venta_id;
-
-    RAISE NOTICE 'Conteo de ventas encontradas con el id %: %', p_venta_id, v_venta_count;
-
-    -- Si el conteo es 0, el problema es que la función no puede ver la fila.
-    -- No es necesario continuar con la consulta principal.
-    IF v_venta_count = 0 THEN
-        RAISE NOTICE 'La consulta de conteo no encontró la venta. La fila podría no estar confirmada (committed) o no ser visible para el usuario actual.';
-        RETURN json_build_object(
-            'error', 'Venta no encontrada durante la verificación interna',
-            'status', 404,
-            'venta_id_buscado', p_venta_id,
-            'debug_info', 'El conteo inicial fue 0'
-        );
-    END IF;
-
-    -- --- FIN DEL PASO DE DEPURACIÓN ---
-
-    -- El bloque principal de la consulta. Solo se ejecuta si la venta fue encontrada en el conteo.
     SELECT
+        -- Construye el objeto JSON principal
         json_build_object(
+            -- Sección 'venta': contiene datos generales y totales de la factura
             'venta', json_build_object(
                 'id', vf.ven_fis_id,
                 'fecha', TO_CHAR(vf.ven_fis_fecha, 'DD/MM/YYYY'),
-                'subtotal', ROUND(vf.ven_fis_total / 1.16, 2), -- Asumiendo IVA del 16%
-                'iva', ROUND(vf.ven_fis_total - (vf.ven_fis_total / 1.16), 2),
-                'total', ROUND(vf.ven_fis_total, 2)
+                'subtotal', vf.ven_fis_total / 1.16, -- Calcula la base imponible (asumiendo IVA 16%)
+                'iva', vf.ven_fis_total - (vf.ven_fis_total / 1.16), -- Calcula el monto del IVA
+                'total', vf.ven_fis_total
             ),
+            -- Sección 'cliente': información del cliente que realizó la compra
             'cliente', json_build_object(
                 'nombre', COALESCE(c.cli_nat_pnombre || ' ' || c.cli_nat_papellido, c.cli_jur_razon_social, 'No disponible'),
                 'rif', COALESCE(c.cli_rif, 'N/A'),
                 'direccion', COALESCE(c.cli_direccion_fisica, 'N/A'),
-                'telefono', (SELECT tel_numero::text FROM public.telefono WHERE fk_cliente = c.cli_id LIMIT 1)
+                'telefono', (SELECT tel_numero::text FROM public.telefono WHERE fk_cliente = c.cli_id LIMIT 1) -- Subconsulta para obtener un teléfono
             ),
+            -- Sección 'tienda': datos de la tienda donde se realizó la venta
             'tienda', json_build_object(
                 'nombre', COALESCE(t.tie_nombre, 'No disponible'),
                 'direccion', COALESCE(t.tie_direccion, 'N/A')
             ),
+            -- Sección 'detalles': una lista (array) de todos los productos en la venta
             'detalles', (
                 SELECT COALESCE(json_agg(
                     json_build_object(
-                        'id', p.prese_id,
+                        'id', p.prese_id, -- ID del producto/presentación
                         'producto', p.prese_nombre,
                         'cantidad', dvf.det_ven_fis_cantidad,
                         'precio_unitario', dvf.det_ven_fis_precio_unitario,
                         'total_linea', dvf.det_ven_fis_cantidad * dvf.det_ven_fis_precio_unitario
                     )
-                ), '[]'::json)
+                ), '[]'::json) -- Si no hay detalles, devuelve un array JSON vacío
                 FROM public.detalle_venta_fisica dvf
                 JOIN public.inventario i ON dvf.fk_inventario = i.inv_id
                 JOIN public.presentacion p ON i.fk_presentacion = p.prese_id
@@ -136,21 +114,11 @@ BEGIN
         )
     INTO v_reporte_data
     FROM public.venta_fisica vf
+    -- Usamos LEFT JOIN para ser más robustos
     LEFT JOIN public.cliente c ON vf.fk_cliente = c.cli_id
     LEFT JOIN public.tienda t ON vf.fk_tienda = t.tie_id
     WHERE vf.ven_fis_id = p_venta_id;
 
-    -- Verificación final por si algo más falló.
-    IF v_reporte_data IS NULL THEN
-        RAISE NOTICE 'v_reporte_data es NULL después del SELECT principal, a pesar de que el conteo inicial fue > 0. Esto podría indicar un problema en los JOINs.';
-        RETURN json_build_object(
-            'error', 'Venta encontrada pero los datos no se pudieron construir (posible problema con JOINs)',
-            'status', 500,
-            'venta_id_buscado', p_venta_id
-        );
-    END IF;
-
-    -- Si se encontraron datos, se devuelve el JSON construido.
     RETURN v_reporte_data;
 END;
 $$ LANGUAGE plpgsql;
