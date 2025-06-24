@@ -1,0 +1,54 @@
+{% extends 'main.html' %}
+{% block content %}
+<h2>Registrar Cliente</h2>
+<form method="POST">
+    {% csrf_token %}
+
+    {{ form.cli_rif.label_tag }} {{ form.cli_rif }}<br>
+    {{ form.cli_direccion_fisica.label_tag }} {{ form.cli_direccion_fisica }}<br>
+    {{ form.cli_tipo_cliente.label_tag }} {{ form.cli_tipo_cliente }}<br>
+
+    <div class="natural-fields">
+        {{ form.cli_nat_ci.label_tag }} {{ form.cli_nat_ci }}<br>
+        {{ form.cli_nat_pnombre.label_tag }} {{ form.cli_nat_pnombre }}<br>
+        {{ form.cli_nat_snombre.label_tag }} {{ form.cli_nat_snombre }}<br>
+        {{ form.cli_nat_papellido.label_tag }} {{ form.cli_nat_papellido }}<br>
+        {{ form.cli_nat_sapellido.label_tag }} {{ form.cli_nat_sapellido }}<br>
+        {{ form.cli_nat_sexo.label_tag }} {{ form.cli_nat_sexo }}<br>
+    </div>
+
+    <div class="juridico-fields">
+        {{ form.cli_jur_denom_comercial.label_tag }} {{ form.cli_jur_denom_comercial }}<br>
+        {{ form.cli_jur_razon_social.label_tag }} {{ form.cli_jur_razon_social }}<br>
+        {{ form.cli_jur_url_web.label_tag }} {{ form.cli_jur_url_web }}<br>
+        {{ form.cli_jur_capital.label_tag }} {{ form.cli_jur_capital }}<br>
+        {{ form.cli_jur_dir_fiscal.label_tag }} {{ form.cli_jur_dir_fiscal }}<br>
+    </div>
+
+    {{ form.fk_lugar.label_tag }} {{ form.fk_lugar }}<br>
+
+    <button type="submit">Guardar Cliente</button>
+</form>
+
+<script>
+    function toggleFields() {
+        const tipoCliente = document.getElementById("id_cli_tipo_cliente").value;
+        const naturalFields = document.querySelector(".natural-fields");
+        const juridicoFields = document.querySelector(".juridico-fields");
+
+        if (tipoCliente === "NATURAL") {
+            naturalFields.style.display = "block";
+            juridicoFields.style.display = "none";
+        } else {
+            naturalFields.style.display = "none";
+            juridicoFields.style.display = "block";
+        }
+    }
+
+    // Ejecutar al cargar
+    document.addEventListener("DOMContentLoaded", function() {
+        toggleFields();
+        document.getElementById("id_cli_tipo_cliente").addEventListener("change", toggleFields);
+    });
+</script>
+{% endblock %}
