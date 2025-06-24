@@ -1,5 +1,37 @@
 {% extends "main.html" %}
+{% load static %}
 {% block content %}
+
+<!-- CSS del sistema de autopago si está en modo autopago -->
+{% if autopago_mode %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/autopago.css' %}">
+
+<!-- Información del cliente de autopago -->
+<div class="autopago-client-info">
+    <div class="autopago-client-header">
+        <div class="autopago-avatar">
+            {% if tipo_cliente == 'NATURAL' %}
+                <i class="fas fa-user"></i>
+            {% else %}
+                <i class="fas fa-building"></i>
+            {% endif %}
+        </div>
+        <div class="autopago-client-details">
+            {% if tipo_cliente == 'NATURAL' %}
+                <h5>{{ cliente_info.cli_nat_pnombre }} {{ cliente_info.cli_nat_papellido }}</h5>
+                <p>CI: {{ cliente_info.cli_nat_ci }} | Cliente Natural</p>
+            {% else %}
+                <h5>{{ cliente_info.cli_jur_razon_social|default:cliente_info.cli_jur_denom_comercial }}</h5>
+                <p>RIF: {{ cliente_info.cli_rif }} | Cliente Jurídico</p>
+            {% endif %}
+        </div>
+        <a href="{% url 'autopago_logout' %}" class="autopago-logout-btn">
+            <i class="fas fa-sign-out-alt"></i>
+            Cerrar Sesión
+        </a>
+    </div>
+</div>
+{% endif %}
 
 <!-- Barra de búsqueda -->
 <div class="row mb-4">

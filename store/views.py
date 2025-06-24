@@ -3,10 +3,11 @@ from django.http import JsonResponse
 import json
 from django.utils import timezone
 from django.contrib.auth.models import User, Group
+from django.contrib import messages
 from .models import (
     presentacion, venta_online, detalle_venta_online, pre_alm, 
     metodo_pago, pago, moneda, historico_moneda, tienda, 
-    inventario, venta_fisica, detalle_venta_fisica
+    inventario, venta_fisica, detalle_venta_fisica, cliente, usuario
 )
 from django.db import connection
 from django.contrib.auth import authenticate, login, logout
@@ -167,7 +168,7 @@ def cartData(request):
     }
 
 # FUNCIÓN AUXILIAR GENERALIZADA PARA CARRITO (NUEVA VERSIÓN)
-def cart_data(request, tipo='online'):
+def cart_data(request, tipo='fisica'):
     """Función generalizada para carrito físico y online"""
     cart_key = 'cart_fisica' if tipo == 'fisica' else 'cart'
     cart = request.session.get(cart_key, {})
@@ -239,8 +240,8 @@ def cart_data(request, tipo='online'):
 
 # VISTAS DE TIENDA
 def redirect_store(request):
-    """Redirecciona a la tienda online por defecto"""
-    return redirect('store_view', tipo='online')
+    """Redirecciona a la tienda física por defecto"""
+    return redirect('store_view', tipo='fisica')
 
 def store(request):
     """Vista de tienda básica (original)"""
@@ -270,7 +271,7 @@ def store(request):
     }
     return render(request, 'store.html', context)
 
-def store_view(request, tipo='online'):
+def store_view(request, tipo='fisica', extra_context=None):
     """Vista general de tienda (física/online)"""
     data = cart_data(request, tipo)
     productos = presentacion.objects.all()
@@ -307,13 +308,20 @@ def store_view(request, tipo='online'):
                 p.cantidad_disponible = 0
                 p.stock_info = "No disponible en tienda online"
 
-    template = 'tienda_fisica.html' if tipo == 'fisica' else 'store.html'
-    return render(request, template, {
+    # Contexto base
+    context = {
         'products': productos,
         'cartItems': data['cartItems'],
         'tipo': tipo,
         'dollar_rate': get_dollar_exchange_rate()
-    })
+    }
+    
+    # Añadir contexto extra si se proporciona (para autopago)
+    if extra_context:
+        context.update(extra_context)
+
+    template = 'tienda_fisica.html' if tipo == 'fisica' else 'store.html'
+    return render(request, template, context)
 
 # ACTUALIZAR CARRITO
 @csrf_exempt
@@ -412,7 +420,171 @@ def update_cart_view(request, tipo):
     return JsonResponse({'status': 'ok', 'cartItems': total_items})
 
 # VISTAS DE CARRITO
-def cart_view(request, tipo='online'):
+@csrf_exempt
+def cart_dropdown_data(request):
+    """Vista AJAX para obtener datos del carrito para el dropdown"""
+    try:
+        # Usar carrito físico por defecto
+        data = cart_data(request, tipo='fisica')
+        
+        cart_items = []
+        for item in data['items']:
+            cart_items.append({
+                'product_id': item['product'].prese_id,
+                'name': item['product'].prese_nombre,
+                'quantity': item['quantity'],
+                'price_usd': float(item['precio_unitario_usd']),
+                'price_bs': float(item['precio_unitario_bs']),
+                'subtotal_usd': float(item['get_total']),
+                'subtotal_bs': float(item['get_total_bs']),
+                'image': item['product'].prese_imagen.url if item['product'].prese_imagen else None,
+            })
+        
+        response_data = {
+            'items': cart_items,
+            'total_items': data['cartItems'],
+            'total_usd': float(data['order']['get_cart_total_usd']),
+            'total_bs': float(data['order']['get_cart_total_bs']),
+            'dollar_rate': float(data['order']['dollar_rate']),
+            'empty': len(cart_items) == 0
+        }
+        
+        return JsonResponse(response_data)
+        
+    except Exception as e:
+        return JsonResponse({
+            'error': True,
+            'message': str(e),
+            'items': [],
+            'total_items': 0,
+            'total_usd': 0,
+            'total_bs': 0,
+            'empty': True
+        })
+
+# VISTAS DE AUTOPAGO
+def autopago_inicio(request):
+    """Vista de inicio del sistema de autopago"""
+    return render(request, 'autopago_inicio.html')
+
+def autopago_login(request):
+    """Vista de login para autopago con documento"""
+    tipo_cliente = request.GET.get('tipo', 'NATURAL')
+    
+    if request.method == 'POST':
+        tipo_cliente = request.POST.get('tipo_cliente', 'NATURAL')
+        documento = request.POST.get('documento', '').strip().upper()
+        
+        if not documento:
+            messages.error(request, 'Por favor, ingrese su documento de identificación.')
+            return render(request, 'autopago_login.html', {'tipo_cliente': tipo_cliente})
+        
+        try:
+            # Buscar cliente según el tipo
+            if tipo_cliente == 'NATURAL':
+                # Buscar por cédula (cli_nat_ci)
+                cliente_obj = cliente.objects.get(
+                    cli_tipo_cliente='NATURAL',
+                    cli_nat_ci=documento
+                )
+            else:
+                # Buscar por RIF (cli_rif)
+                cliente_obj = cliente.objects.get(
+                    cli_tipo_cliente='JURIDICO',
+                    cli_rif=documento
+                )
+            
+            # Buscar usuario asociado al cliente
+            try:
+                usuario_obj = usuario.objects.filter(fk_cliente=cliente_obj).first()
+                if not usuario_obj:
+                    raise usuario.DoesNotExist
+                
+                # Autenticar automáticamente al usuario
+                login(request, usuario_obj)
+                
+                # Guardar información de la sesión de autopago
+                request.session['autopago_mode'] = True
+                request.session['autopago_cliente_id'] = cliente_obj.cli_id
+                request.session['autopago_tipo'] = tipo_cliente
+                
+                # Mensaje de bienvenida personalizado
+                if tipo_cliente == 'NATURAL':
+                    nombre = f"{cliente_obj.cli_nat_pnombre} {cliente_obj.cli_nat_papellido}"
+                else:
+                    nombre = cliente_obj.cli_jur_razon_social or cliente_obj.cli_jur_denom_comercial
+                
+                messages.success(request, f'¡Bienvenido(a) {nombre}! Puede comenzar a seleccionar productos.')
+                
+                # Redirigir a la tienda física
+                return redirect('autopago_tienda')
+                
+            except usuario.DoesNotExist:
+                messages.error(request, 
+                    f'No se encontró un usuario asociado al cliente con documento {documento}. '
+                    'Contacte al personal para activar su cuenta.'
+                )
+        
+        except cliente.DoesNotExist:
+            if tipo_cliente == 'NATURAL':
+                messages.error(request, f'No se encontró un cliente natural con cédula {documento}.')
+            else:
+                messages.error(request, f'No se encontró un cliente jurídico con RIF {documento}.')
+        
+        except Exception as e:
+            messages.error(request, f'Error al buscar cliente: {str(e)}')
+    
+    return render(request, 'autopago_login.html', {'tipo_cliente': tipo_cliente})
+
+def autopago_tienda(request):
+    """Vista de tienda para modo autopago"""
+    # Verificar que el usuario esté en modo autopago
+    if not request.session.get('autopago_mode', False):
+        messages.warning(request, 'Debe iniciar sesión en el sistema de autopago.')
+        return redirect('autopago_inicio')
+    
+    if not request.user.is_authenticated:
+        messages.error(request, 'Sesión expirada. Inicie sesión nuevamente.')
+        return redirect('autopago_inicio')
+    
+    # Obtener información del cliente
+    cliente_id = request.session.get('autopago_cliente_id')
+    tipo_cliente = request.session.get('autopago_tipo')
+    
+    try:
+        cliente_obj = cliente.objects.get(cli_id=cliente_id)
+        
+        # Información personalizada para el template
+        context = {
+            'autopago_mode': True,
+            'cliente_info': cliente_obj,
+            'tipo_cliente': tipo_cliente,
+        }
+        
+        # Usar la vista de tienda existente pero con contexto de autopago
+        return store_view(request, tipo='fisica', extra_context=context)
+        
+    except cliente.DoesNotExist:
+        messages.error(request, 'Error: Cliente no encontrado.')
+        return redirect('autopago_inicio')
+
+def autopago_logout(request):
+    """Cerrar sesión del autopago"""
+    # Limpiar variables de sesión de autopago
+    request.session.pop('autopago_mode', None)
+    request.session.pop('autopago_cliente_id', None)
+    request.session.pop('autopago_tipo', None)
+    
+    # Limpiar carrito de autopago
+    request.session.pop('cart_fisica', None)
+    
+    # Cerrar sesión del usuario
+    logout(request)
+    
+    messages.success(request, 'Sesión de autopago cerrada correctamente.')
+    return redirect('autopago_inicio')
+
+def cart_view(request, tipo='fisica'):
     """Vista de carrito generalizada"""
     data = cart_data(request, tipo)
     return render(request, 'cart.html', {
@@ -432,7 +604,7 @@ def checkout(request):
         'cartItems': data['cartItems'],
     })
 
-def checkout_view(request, tipo='online'):
+def checkout_view(request, tipo='fisica'):
     """Vista de checkout generalizada"""
     data = cart_data(request, tipo)
     return render(request, 'checkout.html', {
@@ -443,7 +615,7 @@ def checkout_view(request, tipo='online'):
     })
 
 # PROCESAR ÓRDENES
-def validate_inventory_availability(cart, tipo='online'):
+def validate_inventory_availability(cart, tipo='fisica'):
     """
     Validar disponibilidad de inventario para el carrito
     Args:
@@ -454,7 +626,7 @@ def validate_inventory_availability(cart, tipo='online'):
     """
     errores = []
     detalles_validos = []
-    
+
     for product_id, cantidad in cart.items():
         try:
             producto = presentacion.objects.get(prese_id=int(product_id))
@@ -464,7 +636,7 @@ def validate_inventory_availability(cart, tipo='online'):
                 item = inventario.objects.filter(fk_presentacion=producto).first()
                 if not item:
                     errores.append(f'Producto "{producto.prese_nombre}" no disponible en inventario físico')
-                    continue
+                continue
                     
                 if item.inv_cantidad < cantidad:
                     errores.append(
@@ -474,8 +646,8 @@ def validate_inventory_availability(cart, tipo='online'):
                     continue
                     
                 detalles_validos.append({
-                    'producto': producto,
-                    'cantidad': cantidad,
+                'producto': producto,
+                'cantidad': cantidad,
                     'item': item,
                     'precio_unitario': item.inv_precio_unitario
                 })
@@ -503,7 +675,7 @@ def validate_inventory_availability(cart, tipo='online'):
         except presentacion.DoesNotExist:
             errores.append(f'Producto con ID {product_id} no encontrado')
             continue
-    
+
     return len(errores) == 0, errores, detalles_validos
 
 def processOrder(request):
@@ -513,13 +685,13 @@ def processOrder(request):
     if not cart:
         return JsonResponse({'status': 'error', 'message': 'Carrito vacío'}, status=400)
 
-    # Validar stock antes de procesar
-    es_valido, errores, detalles = validate_inventory_availability(cart, tipo='online')
+    # Validar stock antes de procesar (ahora para tienda física)
+    es_valido, errores, detalles = validate_inventory_availability(cart, tipo='fisica')
     
     if not es_valido:
         return JsonResponse({
             'status': 'error', 
-            'message': 'Errores de stock encontrados:', 
+            'message': 'Errores de inventario encontrados:', 
             'errores': errores
         }, status=400)
 
@@ -533,31 +705,38 @@ def processOrder(request):
     if total_venta <= 0:
         return JsonResponse({'status': 'error', 'message': 'Total de la venta inválido'}, status=400)
         
-    venta = venta_online.objects.create(
-        ven_onl_fecha=timezone.now(),
-        ven_onl_total=total_venta,
-        fk_usuario=request.user,
-        fk_tienda=tienda_obj
+    # Verificar si el usuario tiene un cliente asociado
+    if not request.user.fk_cliente:
+        return JsonResponse({'status': 'error', 'message': 'Usuario debe tener un cliente asociado para ventas físicas'}, status=400)
+
+    # Crear venta física (no online)
+    venta_id = ejecutar_registro_venta_fisica(
+        cliente_id=request.user.fk_cliente.cli_id,
+        tienda_id=tienda_obj.tie_id,
+        total=total_venta
     )
 
+    venta = venta_fisica.objects.get(ven_fis_id=venta_id)
+    
+    # Crear detalles de venta física (no online)
     for item in detalles:
-        detalle_venta_online.objects.create(
-            fk_venta_online=venta,
-            fk_pre_alm=item['item'],  # item ahora contiene el objeto pre_alm
-            det_ven_onl_cantidad=item['cantidad'],
-            det_ven_onl_precio=item['precio_unitario']
+        detalle_venta_fisica.objects.create(
+            fk_venta_fisica=venta,
+            fk_inventario=item['item'],  # item contiene el objeto inventario
+            det_ven_fis_cantidad=item['cantidad'],
+            det_ven_fis_precio_unitario=item['precio_unitario']
         )
 
     # Guardar el ID de venta en la sesión para usar en el método de pago
-    request.session['pending_venta_id'] = venta.ven_onl_id
+    request.session['pending_venta_id'] = venta.ven_fis_id
     request.session['pending_total'] = float(total_venta)
-    request.session['pending_tipo'] = 'online'  # Tipo por defecto para compatibilidad
+    request.session['pending_tipo'] = 'fisica'
     # NO limpiar el carrito aquí - se limpiará después del pago exitoso
 
     return JsonResponse({
         'status': 'ok', 
         'message': 'Venta registrada', 
-        'venta_id': venta.ven_onl_id,
+        'venta_id': venta.ven_fis_id,
         'redirect_to_payment': True
     })
 
@@ -734,7 +913,7 @@ def payment_method_view(request):
     """Vista para seleccionar y configurar el método de pago"""
     venta_id = request.session.get('pending_venta_id')
     total = request.session.get('pending_total')
-    pending_tipo = request.session.get('pending_tipo', 'online')
+    pending_tipo = request.session.get('pending_tipo', 'fisica')
     
     if not venta_id or not total:
         # Redirigir al checkout del tipo correcto
@@ -789,7 +968,7 @@ def process_payment_method(request):
         data = json.loads(request.body)
         venta_id = request.session.get('pending_venta_id')
         total = request.session.get('pending_total')
-        pending_tipo = request.session.get('pending_tipo', 'online')
+        pending_tipo = request.session.get('pending_tipo', 'fisica')
         
         if not venta_id or not total:
             return JsonResponse({'status': 'error', 'message': 'No hay venta pendiente'}, status=400)
