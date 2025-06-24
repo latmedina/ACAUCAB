@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factura ACAUCAB</title>
+    <style>
+        /* Estilos generales y fuentes */
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+
+        /* Contenedor principal de la factura */
+        .invoice-container {
+            max-width: 850px;
+            margin: auto;
+            background-color: #fff;
+            padding: 40px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        /* Encabezado azul */
+        .invoice-header {
+            background-color: #1A237E; /* Azul corporativo */
+            color: #fff;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo {
+            background-color: #FFC107; /* Amarillo */
+            padding: 8px;
+            border-radius: 8px;
+            margin-right: 20px;
+            font-size: 32px; /* Tamaño del emoji de la jarra */
+        }
+        
+        .company-details h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .company-details p {
+            margin: 4px 0 0;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .header-right {
+            text-align: right;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .header-right p {
+            margin: 5px 0;
+        }
+
+        /* Sección principal con información del cliente y tabla */
+        .invoice-main {
+            padding: 30px 0;
+        }
+
+        .client-info h2 {
+            font-size: 20px;
+            color: #1A237E;
+            margin-top: 0;
+        }
+
+        .client-info .info-line {
+            display: flex;
+            align-items: baseline;
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+        
+        .client-info label {
+            font-weight: bold;
+            flex-basis: 100px; /* Ancho fijo para las etiquetas */
+            flex-shrink: 0;
+        }
+        
+        .client-info .line {
+            flex-grow: 1;
+            border-bottom: 1.5px dotted #aaa;
+            height: 15px;
+        }
+
+        /* Tabla de productos */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+        }
+
+        .items-table thead th {
+            background-color: #1A237E;
+            color: #fff;
+            padding: 12px;
+            font-size: 13px;
+            text-align: left;
+        }
+        
+        /* --- ESTILO DE CELDA MODIFICADO --- */
+        .items-table tbody td {
+            border: 1.5px dotted #ccc;
+            padding: 8px; /* Relleno reducido */
+            height: 25px; /* Altura de fila reducida */
+        }
+        
+        /* Ajuste de anchos de columna */
+        .col-id { width: 10%; }
+        .col-desc { width: 50%; }
+        .col-qty, .col-price, .col-total { width: 13.33%; text-align: right; }
+
+
+        /* Pie de página con observaciones y totales */
+        .invoice-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #f0f2f5;
+        }
+
+        .observations {
+            width: 60%;
+        }
+
+        .observations h3 {
+            margin-top: 0;
+            font-size: 16px;
+            color: #1A237E;
+        }
+        
+        .observations p {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .totals {
+            width: 35%;
+        }
+        
+        .totals-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2px;
+        }
+        
+        .totals-row .label {
+            background-color: #1A237E;
+            color: #fff;
+            padding: 10px 15px;
+            font-weight: bold;
+            font-size: 14px;
+            flex-basis: 40%;
+            text-align: center;
+        }
+        
+        .totals-row .value {
+            flex-grow: 1;
+            border-bottom: 1.5px dotted #aaa;
+            height: 38px;
+            margin-left: 10px;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="invoice-container">
+        <header class="invoice-header">
+            <div class="header-left">
+                <div class="logo">🍺</div>
+                <div class="company-details">
+                    <h1>ACAUCAB</h1>
+                    <p>Final Avenida Teherán, Caracas 1020, Distrito Capital, Venezuela.</p>
+                    <p>Tlf: 0412-1234567</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <p>FECHA:  </p>
+                <p>NÚMERO: </p>
+            </div>
+        </header>
+
+        <main class="invoice-main">
+            <section class="client-info">
+                <h2>CLIENTE:</h2>
+                <div class="info-line">
+                    <label>Nombre</label>
+                    <div class="line" contenteditable="true"></div>
+                </div>
+                <div class="info-line">
+                    <label>Teléfono</label>
+                    <div class="line" contenteditable="true"></div>
+                </div>
+                <div class="info-line">
+                    <label>Dirección</label>
+                    <div class="line" contenteditable="true"></div>
+                </div>
+            </section>
+
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th class="col-id">ID</th>
+                        <th class="col-desc">DESCRIPCIÓN</th>
+                        <th class="col-qty">CANTIDAD</th>
+                        <th class="col-price">PRECIO UNIT.</th>
+                        <th class="col-total">TOTAL</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>
+                    <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>
+                    <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>
+                    <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>
+                    <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>
+                    <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>
+                    <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>
+                    <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>
+                </tbody>
+            </table>
+        </main>
+
+        <footer class="invoice-footer">
+            <div class="observations">
+                <h3>OBSERVACIONES:</h3>
+                <p contenteditable="true">
+                    
+                </p>
+            </div>
+            <div class="totals">
+                <div class="totals-row">
+                    <div class="label">BASE</div>
+                    <div class="value" contenteditable="true"></div>
+                </div>
+                <div class="totals-row">
+                    <div class="label">TOTAL</div>
+                    <div class="value" contenteditable="true"></div>
+                </div>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
