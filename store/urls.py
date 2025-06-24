@@ -27,7 +27,10 @@ urlpatterns = [
     # Autenticación
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
-    path('registro/', views.registro, name='registro'),
+    path('registrar/cliente/', views.registrar_cliente_view, name='registrar_cliente'),
+    path('registrar/empleado/', views.registrar_empleado_view, name='registrar_empleado'),
+    path('registrar/proveedor/', views.registrar_proveedor_view, name='registrar_proveedor'),
+    path('registrar/usuario/<str:tipo>/<int:id_entidad>/', views.crear_usuario_view, name='crear_usuario'),
 
     # Página principal post-login
     path('home/', views.home_view, name='home'),

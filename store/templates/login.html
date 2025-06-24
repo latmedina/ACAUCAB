@@ -23,10 +23,27 @@
                     <button type="submit" class="btn btn-primary">Entrar</button>
                 </div>
             </form>
-            <div class="d-grid">
-                <a href="{% url 'registro' %}" class="btn btn-secondary">Registrar</a>
+            <div class="d-grid gap-2">
+                <label for="tipo-registro" class="form-label">¿Cómo deseas registrarte?</label>
+                <select id="tipo-registro" class="form-select mb-2" onchange="redirigirRegistro(this)">
+                    <option selected disabled>Selecciona una opción</option>
+                    <option value="{% url 'registrar_cliente' %}">Cliente</option>
+                    <option value="{% url 'registrar_proveedor' %}">Proveedor</option>
+                    <option value="{% url 'registrar_empleado' %}">Empleado</option>
+                </select>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    function redirigirRegistro(select) {
+        const url = select.value;
+        if (url) {
+            window.location.href = url;
+        }
+    }
+</script>
+
 {% endblock %}
+

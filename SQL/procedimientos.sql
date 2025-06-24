@@ -28,32 +28,44 @@ $$ LANGUAGE plpgsql;
 -- ===========================================
 
 CREATE OR REPLACE FUNCTION registrar_usuario(
-    p_username VARCHAR,
-    p_password VARCHAR,
-    p_email VARCHAR,
-    p_first_name VARCHAR DEFAULT '',
-    p_last_name VARCHAR DEFAULT '',
-    p_is_superuser BOOLEAN DEFAULT FALSE,
-    p_is_staff BOOLEAN DEFAULT FALSE,
-    p_fk_cliente INTEGER DEFAULT NULL,
-    p_fk_proveedor INTEGER DEFAULT NULL
+    p_username TEXT,
+    p_email TEXT,
+    p_password TEXT,
+    p_tipo TEXT,
+    p_id_entidad INTEGER,
+    p_emp_car_id INTEGER,
+    p_first_name TEXT,
+    p_last_name TEXT
 )
 RETURNS VOID AS $$
 BEGIN
     INSERT INTO usuario (
-        username, password, email,
-        first_name, last_name,
-        is_active, is_superuser, is_staff,
-        date_joined, fk_cliente, fk_proveedor
-    ) VALUES (
-        p_username, p_password, p_email,
-        p_first_name, p_last_name,
-        TRUE, p_is_superuser, p_is_staff,
-        NOW(), p_fk_cliente, p_fk_proveedor
+        username,
+        email,
+        password,
+        is_active,
+        is_staff,
+        is_superuser,
+        date_joined,
+        fk_cliente,
+        fk_proveedor,
+        fk_emp_car,
+        first_name,
+        last_name
+    )
+    VALUES (
+        p_username,
+        p_email,
+        p_password,
+        TRUE, FALSE, FALSE, NOW(),
+        CASE WHEN p_tipo = 'cliente' THEN p_id_entidad ELSE NULL END,
+        CASE WHEN p_tipo = 'proveedor' THEN p_id_entidad ELSE NULL END,
+        CASE WHEN p_tipo = 'empleado' THEN p_emp_car_id ELSE NULL END,
+        p_first_name,
+        p_last_name
     );
 END;
 $$ LANGUAGE plpgsql;
-
 -- ===========================================
 -- Puedes seguir agregando más funciones aquí
 -- ===========================================

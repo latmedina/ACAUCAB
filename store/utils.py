@@ -74,9 +74,16 @@ def guestOrder(request, data):
 	
 	return None, None
 
-def registrar_usuario_via_sql(username, password, email, fk_cliente=None, fk_proveedor=None, first_name='', last_name='', is_staff=False, is_superuser=False):
+def crear_usuario_sql(username, email, password, tipo, id_entidad, emp_car_id=None, first_name='', last_name=''):
     hashed_password = make_password(password)
     with connection.cursor() as cursor:
-        cursor.execute("""
-            SELECT registrar_usuario(%s, %s, %s, %s, %s, %s, %s, %s, %s);
-        """, [username, hashed_password, email, first_name, last_name, is_superuser, is_staff, fk_cliente, fk_proveedor])
+        cursor.callproc('registrar_usuario', [
+            username,
+            email,
+            hashed_password,
+            tipo,
+            id_entidad,
+            emp_car_id,
+            first_name,
+            last_name
+        ])
