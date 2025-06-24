@@ -75,3 +75,14 @@ DROP TABLE IF EXISTS MONEDA CASCADE;
 DROP TABLE IF EXISTS ANAQUEL CASCADE;
 DROP TABLE IF EXISTS LUGAR_TIENDA CASCADE;
 DROP TABLE IF EXISTS DETALLE_COMPRA CASCADE;   
+DROP TABLE public.admin_interface_theme;
+
+DROP TABLE IF EXISTS public.auth_group CASCADE;
+DROP TABLE IF EXISTS public.auth_group_permissions CASCADE;
+DROP TABLE IF EXISTS public.auth_permission CASCADE;
+DROP TABLE IF EXISTS public.django_admin_log CASCADE;
+DROP TABLE IF EXISTS public.django_content_type CASCADE;
+DROP TABLE IF EXISTS public.django_migrations CASCADE;
+DROP TABLE IF EXISTS public.django_session CASCADE;
+DROP TABLE IF EXISTS public.usuario_groups CASCADE;
+DROP TABLE IF EXISTS public.usuario_user_permissions CASCADE;
