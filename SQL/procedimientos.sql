@@ -67,31 +67,58 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- ===========================================
--- FUNCION: modificar_usuario
--- ===========================================
-
-CREATE OR REPLACE FUNCTION modificar_usuario(
-    p_id_usuario INTEGER,
-    p_username TEXT,
-    p_email TEXT,
-    p_password TEXT,
-    p_first_name TEXT,
-    p_last_name TEXT
-)
-RETURNS VOID AS $$
+CREATE OR REPLACE FUNCTION public.obtener_datos_reporte_venta(p_venta_id INT)
+RETURNS JSON AS $$
+DECLARE
+    v_reporte_data JSON;
 BEGIN
-    UPDATE usuario
-    SET 
-        username = p_username,
-        email = p_email,
-        first_name = p_first_name,
-        last_name = p_last_name,
-        password = CASE 
-                    WHEN p_password IS NOT NULL AND p_password != '' 
-                    THEN crypt(p_password, gen_salt('bf')) 
-                    ELSE password 
-                END
-    WHERE id = p_id_usuario;
+    SELECT
+        -- Construye el objeto JSON principal
+        json_build_object(
+            -- Sección 'venta': contiene datos generales y totales de la factura
+            'venta', json_build_object(
+                'id', vf.ven_fis_id,
+                'fecha', TO_CHAR(vf.ven_fis_fecha, 'DD/MM/YYYY'),
+                'subtotal', vf.ven_fis_total / 1.16, -- Calcula la base imponible (asumiendo IVA 16%)
+                'iva', vf.ven_fis_total - (vf.ven_fis_total / 1.16), -- Calcula el monto del IVA
+                'total', vf.ven_fis_total
+            ),
+            -- Sección 'cliente': información del cliente que realizó la compra
+            'cliente', json_build_object(
+                'nombre', COALESCE(c.cli_nat_pnombre || ' ' || c.cli_nat_papellido, c.cli_jur_razon_social, 'No disponible'),
+                'rif', COALESCE(c.cli_rif, 'N/A'),
+                'direccion', COALESCE(c.cli_direccion_fisica, 'N/A'),
+                'telefono', (SELECT tel_numero::text FROM public.telefono WHERE fk_cliente = c.cli_id LIMIT 1) -- Subconsulta para obtener un teléfono
+            ),
+            -- Sección 'tienda': datos de la tienda donde se realizó la venta
+            'tienda', json_build_object(
+                'nombre', COALESCE(t.tie_nombre, 'No disponible'),
+                'direccion', COALESCE(t.tie_direccion, 'N/A')
+            ),
+            -- Sección 'detalles': una lista (array) de todos los productos en la venta
+            'detalles', (
+                SELECT COALESCE(json_agg(
+                    json_build_object(
+                        'id', p.prese_id, -- ID del producto/presentación
+                        'producto', p.prese_nombre,
+                        'cantidad', dvf.det_ven_fis_cantidad,
+                        'precio_unitario', dvf.det_ven_fis_precio_unitario,
+                        'total_linea', dvf.det_ven_fis_cantidad * dvf.det_ven_fis_precio_unitario
+                    )
+                ), '[]'::json) -- Si no hay detalles, devuelve un array JSON vacío
+                FROM public.detalle_venta_fisica dvf
+                JOIN public.inventario i ON dvf.fk_inventario = i.inv_id
+                JOIN public.presentacion p ON i.fk_presentacion = p.prese_id
+                WHERE dvf.fk_venta_fisica = vf.ven_fis_id
+            )
+        )
+    INTO v_reporte_data
+    FROM public.venta_fisica vf
+    -- Usamos LEFT JOIN para ser más robustos
+    LEFT JOIN public.cliente c ON vf.fk_cliente = c.cli_id
+    LEFT JOIN public.tienda t ON vf.fk_tienda = t.tie_id
+    WHERE vf.ven_fis_id = p_venta_id;
+
+    RETURN v_reporte_data;
 END;
 $$ LANGUAGE plpgsql;
