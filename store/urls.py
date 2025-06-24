@@ -39,6 +39,10 @@ urlpatterns = [
     path('registrar/proveedor/', views.registrar_proveedor_view, name='registrar_proveedor'),
     path('registrar/usuario/<str:tipo>/<int:id_entidad>/', views.crear_usuario_view, name='crear_usuario'),
 
+    # AJAX para selector jerárquico de lugar
+    path('ajax/load-municipios/', views.load_municipios, name='ajax_load_municipios'),
+    path('ajax/load-parroquias/', views.load_parroquias, name='ajax_load_parroquias'),
+
     # Página principal post-login
     path('home/', views.home_view, name='home'),
 ]

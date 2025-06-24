@@ -1,9 +1,292 @@
 {% extends 'main.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/registro-forms.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %}
+
 {% block content %}
-<h2>Registrar Empleado</h2>
-<form method="POST">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Guardar Empleado</button>
-</form>
+<div class="registro-container">
+
+    <!-- Errores generales del formulario -->
+    {% if form.non_field_errors %}
+    <div class="form-errors">
+        <strong><i class="fas fa-exclamation-triangle"></i> Errores en el formulario:</strong>
+        {{ form.non_field_errors }}
+    </div>
+    {% endif %}
+
+    <form method="POST" id="empleadoForm">
+        {% csrf_token %}
+
+        <!-- Información Personal -->
+        <div class="form-section">
+            <h3><i class="fas fa-user"></i> Información Personal</h3>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="{{ form.emp_ci.id_for_label }}" class="required">{{ form.emp_ci.label }}</label>
+                    {{ form.emp_ci }}
+                    {% if form.emp_ci.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.emp_ci.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                    <div class="help-text">Formato: V-12345678 (máximo 10 dígitos)</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.emp_sexo.id_for_label }}" class="required">{{ form.emp_sexo.label }}</label>
+                    {{ form.emp_sexo }}
+                    {% if form.emp_sexo.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.emp_sexo.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="{{ form.emp_pnombre.id_for_label }}" class="required">{{ form.emp_pnombre.label }}</label>
+                    {{ form.emp_pnombre }}
+                    {% if form.emp_pnombre.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.emp_pnombre.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.emp_snombre.id_for_label }}">{{ form.emp_snombre.label }}</label>
+                    {{ form.emp_snombre }}
+                    {% if form.emp_snombre.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.emp_snombre.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="{{ form.emp_papellido.id_for_label }}" class="required">{{ form.emp_papellido.label }}</label>
+                    {{ form.emp_papellido }}
+                    {% if form.emp_papellido.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.emp_papellido.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.emp_sapellido.id_for_label }}">{{ form.emp_sapellido.label }}</label>
+                    {{ form.emp_sapellido }}
+                    {% if form.emp_sapellido.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.emp_sapellido.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.emp_fecha_nacimiento.id_for_label }}" class="required">{{ form.emp_fecha_nacimiento.label }}</label>
+                {{ form.emp_fecha_nacimiento }}
+                {% if form.emp_fecha_nacimiento.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.emp_fecha_nacimiento.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                <div class="help-text">Seleccione la fecha de nacimiento del empleado</div>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.emp_direccion.id_for_label }}" class="required">{{ form.emp_direccion.label }}</label>
+                {{ form.emp_direccion }}
+                {% if form.emp_direccion.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.emp_direccion.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Selector de Ubicación -->
+        <div class="form-section location-section">
+            <h3><i class="fas fa-map-marker-alt"></i> Ubicación de Residencia</h3>
+            
+            <div class="lugar-selector">
+                <div class="form-group">
+                    <label for="{{ form.estado.id_for_label }}" class="required">{{ form.estado.label }}</label>
+                    {{ form.estado }}
+                    {% if form.estado.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.estado.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.municipio.id_for_label }}" class="required">{{ form.municipio.label }}</label>
+                    {{ form.municipio }}
+                    {% if form.municipio.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.municipio.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.parroquia.id_for_label }}" class="required">{{ form.parroquia.label }}</label>
+                    {{ form.parroquia }}
+                    {% if form.parroquia.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.parroquia.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="help-text">
+                <i class="fas fa-info-circle"></i> 
+                Seleccione primero el estado, luego el municipio y finalmente la parroquia donde reside el empleado.
+            </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="btn-container">
+            <button type="button" class="btn-secondary" onclick="window.history.back()">
+                <i class="fas fa-arrow-left"></i> Cancelar
+            </button>
+            <button type="submit" class="btn-primary" id="submitBtn">
+                <i class="fas fa-save"></i> Guardar Empleado
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const estadoSelect = document.getElementById('id_estado');
+    const municipioSelect = document.getElementById('id_municipio');
+    const parroquiaSelect = document.getElementById('id_parroquia');
+
+    // Función para cargar municipios
+    function loadMunicipios() {
+        const estadoId = estadoSelect.value;
+        
+        if (estadoId) {
+            estadoSelect.classList.add('loading');
+            
+            fetch(`/ajax/load-municipios/?estado_id=${estadoId}`)
+                .then(response => response.json())
+                .then(data => {
+                    municipioSelect.innerHTML = '<option value="">Selecciona un municipio</option>';
+                    parroquiaSelect.innerHTML = '<option value="">Primero selecciona un municipio</option>';
+                    
+                    data.municipios.forEach(municipio => {
+                        municipioSelect.innerHTML += `<option value="${municipio.id}">${municipio.nombre}</option>`;
+                    });
+                    
+                    municipioSelect.disabled = false;
+                    parroquiaSelect.disabled = true;
+                })
+                .catch(error => {
+                    console.error('Error cargando municipios:', error);
+                })
+                .finally(() => {
+                    estadoSelect.classList.remove('loading');
+                });
+        } else {
+            municipioSelect.innerHTML = '<option value="">Primero selecciona un estado</option>';
+            parroquiaSelect.innerHTML = '<option value="">Primero selecciona un municipio</option>';
+            municipioSelect.disabled = true;
+            parroquiaSelect.disabled = true;
+        }
+    }
+
+    // Función para cargar parroquias
+    function loadParroquias() {
+        const municipioId = municipioSelect.value;
+        
+        if (municipioId) {
+            municipioSelect.classList.add('loading');
+            
+            fetch(`/ajax/load-parroquias/?municipio_id=${municipioId}`)
+                .then(response => response.json())
+                .then(data => {
+                    parroquiaSelect.innerHTML = '<option value="">Selecciona una parroquia</option>';
+                    
+                    data.parroquias.forEach(parroquia => {
+                        parroquiaSelect.innerHTML += `<option value="${parroquia.id}">${parroquia.nombre}</option>`;
+                    });
+                    
+                    parroquiaSelect.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Error cargando parroquias:', error);
+                })
+                .finally(() => {
+                    municipioSelect.classList.remove('loading');
+                });
+        } else {
+            parroquiaSelect.innerHTML = '<option value="">Primero selecciona un municipio</option>';
+            parroquiaSelect.disabled = true;
+        }
+    }
+
+    // Event listeners
+    estadoSelect.addEventListener('change', loadMunicipios);
+    municipioSelect.addEventListener('change', loadParroquias);
+
+    // Si hay un estado preseleccionado (edición), cargar sus municipios
+    if (estadoSelect.value) {
+        loadMunicipios();
+        
+        // Si hay un municipio preseleccionado, cargar sus parroquias
+        setTimeout(() => {
+            if (municipioSelect.value) {
+                loadParroquias();
+            }
+        }, 500);
+    }
+
+    // Validación en tiempo real
+    const inputs = document.querySelectorAll('input, select, textarea');
+    
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            this.classList.remove('is-invalid');
+            const errorList = this.parentNode.querySelector('.errorlist');
+            if (errorList) {
+                errorList.style.display = 'none';
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

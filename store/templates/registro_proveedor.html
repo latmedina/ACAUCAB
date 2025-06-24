@@ -1,9 +1,257 @@
 {% extends 'main.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/registro-forms.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %}
+
 {% block content %}
-<h2>Registrar Proveedor</h2>
-<form method="POST">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Guardar Proveedor</button>
-</form>
+<div class="registro-container">
+
+    <!-- Errores generales del formulario -->
+    {% if form.non_field_errors %}
+    <div class="form-errors">
+        <strong><i class="fas fa-exclamation-triangle"></i> Errores en el formulario:</strong>
+        {{ form.non_field_errors }}
+    </div>
+    {% endif %}
+
+    <form method="POST" id="proveedorForm">
+        {% csrf_token %}
+
+        <!-- Información Empresarial -->
+        <div class="form-section">
+            <h3><i class="fas fa-building"></i> Información Empresarial</h3>
+            
+            <div class="form-group">
+                <label for="{{ form.pro_rif.id_for_label }}" class="required">{{ form.pro_rif.label }}</label>
+                {{ form.pro_rif }}
+                {% if form.pro_rif.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.pro_rif.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                <div class="help-text">Formato: J-12345678-9 (máximo 10 dígitos)</div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="{{ form.pro_razon_social.id_for_label }}" class="required">{{ form.pro_razon_social.label }}</label>
+                    {{ form.pro_razon_social }}
+                    {% if form.pro_razon_social.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.pro_razon_social.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                    <div class="help-text">Razón social registrada legalmente</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.pro_denominacion_comercial.id_for_label }}">{{ form.pro_denominacion_comercial.label }}</label>
+                    {{ form.pro_denominacion_comercial }}
+                    {% if form.pro_denominacion_comercial.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.pro_denominacion_comercial.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                    <div class="help-text">Nombre comercial (opcional)</div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="{{ form.pro_url_web.id_for_label }}">{{ form.pro_url_web.label }}</label>
+                    {{ form.pro_url_web }}
+                    {% if form.pro_url_web.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.pro_url_web.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                    <div class="help-text">Sitio web de la empresa (opcional)</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.pro_direccion_fiscal.id_for_label }}">{{ form.pro_direccion_fiscal.label }}</label>
+                {{ form.pro_direccion_fiscal }}
+                {% if form.pro_direccion_fiscal.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.pro_direccion_fiscal.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                <div class="help-text">Dirección registrada para efectos fiscales</div>
+            </div>
+        </div>
+
+        <!-- Selector de Ubicación -->
+        <div class="form-section location-section">
+            <h3><i class="fas fa-map-marker-alt"></i> Ubicación Fiscal</h3>
+            
+            <div class="lugar-selector">
+                <div class="form-group">
+                    <label for="{{ form.estado.id_for_label }}" class="required">{{ form.estado.label }}</label>
+                    {{ form.estado }}
+                    {% if form.estado.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.estado.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.municipio.id_for_label }}" class="required">{{ form.municipio.label }}</label>
+                    {{ form.municipio }}
+                    {% if form.municipio.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.municipio.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.parroquia.id_for_label }}" class="required">{{ form.parroquia.label }}</label>
+                    {{ form.parroquia }}
+                    {% if form.parroquia.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.parroquia.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="help-text">
+                <i class="fas fa-info-circle"></i> 
+                Seleccione primero el estado, luego el municipio y finalmente la parroquia donde está ubicado fiscalmente el proveedor.
+            </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="btn-container">
+            <button type="button" class="btn-secondary" onclick="window.history.back()">
+                <i class="fas fa-arrow-left"></i> Cancelar
+            </button>
+            <button type="submit" class="btn-primary" id="submitBtn">
+                <i class="fas fa-save"></i> Guardar Proveedor
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const estadoSelect = document.getElementById('id_estado');
+    const municipioSelect = document.getElementById('id_municipio');
+    const parroquiaSelect = document.getElementById('id_parroquia');
+
+    // Función para cargar municipios
+    function loadMunicipios() {
+        const estadoId = estadoSelect.value;
+        
+        if (estadoId) {
+            estadoSelect.classList.add('loading');
+            
+            fetch(`/ajax/load-municipios/?estado_id=${estadoId}`)
+                .then(response => response.json())
+                .then(data => {
+                    municipioSelect.innerHTML = '<option value="">Selecciona un municipio</option>';
+                    parroquiaSelect.innerHTML = '<option value="">Primero selecciona un municipio</option>';
+                    
+                    data.municipios.forEach(municipio => {
+                        municipioSelect.innerHTML += `<option value="${municipio.id}">${municipio.nombre}</option>`;
+                    });
+                    
+                    municipioSelect.disabled = false;
+                    parroquiaSelect.disabled = true;
+                })
+                .catch(error => {
+                    console.error('Error cargando municipios:', error);
+                })
+                .finally(() => {
+                    estadoSelect.classList.remove('loading');
+                });
+        } else {
+            municipioSelect.innerHTML = '<option value="">Primero selecciona un estado</option>';
+            parroquiaSelect.innerHTML = '<option value="">Primero selecciona un municipio</option>';
+            municipioSelect.disabled = true;
+            parroquiaSelect.disabled = true;
+        }
+    }
+
+    // Función para cargar parroquias
+    function loadParroquias() {
+        const municipioId = municipioSelect.value;
+        
+        if (municipioId) {
+            municipioSelect.classList.add('loading');
+            
+            fetch(`/ajax/load-parroquias/?municipio_id=${municipioId}`)
+                .then(response => response.json())
+                .then(data => {
+                    parroquiaSelect.innerHTML = '<option value="">Selecciona una parroquia</option>';
+                    
+                    data.parroquias.forEach(parroquia => {
+                        parroquiaSelect.innerHTML += `<option value="${parroquia.id}">${parroquia.nombre}</option>`;
+                    });
+                    
+                    parroquiaSelect.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Error cargando parroquias:', error);
+                })
+                .finally(() => {
+                    municipioSelect.classList.remove('loading');
+                });
+        } else {
+            parroquiaSelect.innerHTML = '<option value="">Primero selecciona un municipio</option>';
+            parroquiaSelect.disabled = true;
+        }
+    }
+
+    // Event listeners
+    estadoSelect.addEventListener('change', loadMunicipios);
+    municipioSelect.addEventListener('change', loadParroquias);
+
+    // Si hay un estado preseleccionado (edición), cargar sus municipios
+    if (estadoSelect.value) {
+        loadMunicipios();
+        
+        // Si hay un municipio preseleccionado, cargar sus parroquias
+        setTimeout(() => {
+            if (municipioSelect.value) {
+                loadParroquias();
+            }
+        }, 500);
+    }
+
+    // Validación en tiempo real
+    const inputs = document.querySelectorAll('input, select, textarea');
+    
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            this.classList.remove('is-invalid');
+            const errorList = this.parentNode.querySelector('.errorlist');
+            if (errorList) {
+                errorList.style.display = 'none';
+            }
+        });
+    });
+});
+</script>
 {% endblock %}
