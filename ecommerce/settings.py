@@ -85,10 +85,10 @@ WSGI_APPLICATION = 'ecommerce.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'latorres', 
-        'USER': 'latorres20',
+        'NAME': 'ACAUCAB3',
+        'USER': 'postgres',
         'PASSWORD': '',
-        'HOST': 'labs-dbservices01.ucab.edu.ve',
+        'HOST': 'localhost',
         'PORT': '5432',
     }
 }
