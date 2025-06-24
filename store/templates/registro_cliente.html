@@ -1,54 +1,446 @@
 {% extends 'main.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/registro-forms.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %}
+
 {% block content %}
-<h2>Registrar Cliente</h2>
-<form method="POST">
+<div class="registro-container">
+
+    <!-- Errores generales del formulario -->
+    {% if form.non_field_errors %}
+    <div class="form-errors">
+        <strong><i class="fas fa-exclamation-triangle"></i> Errores en el formulario:</strong>
+        {{ form.non_field_errors }}
+    </div>
+    {% endif %}
+
+    <form method="POST" id="clienteForm">
     {% csrf_token %}
 
-    {{ form.cli_rif.label_tag }} {{ form.cli_rif }}<br>
-    {{ form.cli_direccion_fisica.label_tag }} {{ form.cli_direccion_fisica }}<br>
-    {{ form.cli_tipo_cliente.label_tag }} {{ form.cli_tipo_cliente }}<br>
+        <!-- Switch Toggle para Tipo de Cliente -->
+        <div class="client-type-toggle">
+            <div class="toggle-container">
+                <div class="toggle-slider" id="toggleSlider"></div>
+                <div class="toggle-options">
+                    <div class="toggle-option active" data-type="NATURAL">
+                        <i class="fas fa-user"></i> Persona Natural
+                    </div>
+                    <div class="toggle-option" data-type="JURIDICO">
+                        <i class="fas fa-building"></i> Persona Jurídica
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <div class="natural-fields">
-        {{ form.cli_nat_ci.label_tag }} {{ form.cli_nat_ci }}<br>
-        {{ form.cli_nat_pnombre.label_tag }} {{ form.cli_nat_pnombre }}<br>
-        {{ form.cli_nat_snombre.label_tag }} {{ form.cli_nat_snombre }}<br>
-        {{ form.cli_nat_papellido.label_tag }} {{ form.cli_nat_papellido }}<br>
-        {{ form.cli_nat_sapellido.label_tag }} {{ form.cli_nat_sapellido }}<br>
-        {{ form.cli_nat_sexo.label_tag }} {{ form.cli_nat_sexo }}<br>
+        <!-- Campo oculto para tipo de cliente -->
+        {{ form.cli_tipo_cliente }}
+
+        <!-- Información Básica -->
+        <div class="form-section">
+            <h3><i class="fas fa-info-circle"></i> Información Básica</h3>
+            
+            <div class="form-group">
+                <label for="{{ form.cli_rif.id_for_label }}" class="required">{{ form.cli_rif.label }}</label>
+                {{ form.cli_rif }}
+                {% if form.cli_rif.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.cli_rif.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                <div class="help-text"><i class="fas fa-info-circle"></i> Formato: J-12345678-9 (máximo 10 dígitos)</div>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.cli_direccion_fisica.id_for_label }}" class="required">{{ form.cli_direccion_fisica.label }}</label>
+                {{ form.cli_direccion_fisica }}
+                {% if form.cli_direccion_fisica.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.cli_direccion_fisica.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Datos de Persona Natural -->
+        <div class="form-section natural-section conditional-section" id="naturalSection">
+            <h3><i class="fas fa-user"></i> Datos de Persona Natural</h3>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="{{ form.cli_nat_ci.id_for_label }}" class="required">{{ form.cli_nat_ci.label }}</label>
+                    {{ form.cli_nat_ci }}
+                    {% if form.cli_nat_ci.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.cli_nat_ci.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                    <div class="help-text"><i class="fas fa-info-circle"></i> Formato: V-12345678 (máximo 10 dígitos)</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.cli_nat_sexo.id_for_label }}" class="required">{{ form.cli_nat_sexo.label }}</label>
+                    {{ form.cli_nat_sexo }}
+                    {% if form.cli_nat_sexo.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.cli_nat_sexo.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="{{ form.cli_nat_pnombre.id_for_label }}" class="required">{{ form.cli_nat_pnombre.label }}</label>
+                    {{ form.cli_nat_pnombre }}
+                    {% if form.cli_nat_pnombre.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.cli_nat_pnombre.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.cli_nat_snombre.id_for_label }}">{{ form.cli_nat_snombre.label }}</label>
+                    {{ form.cli_nat_snombre }}
+                    {% if form.cli_nat_snombre.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.cli_nat_snombre.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="{{ form.cli_nat_papellido.id_for_label }}" class="required">{{ form.cli_nat_papellido.label }}</label>
+                    {{ form.cli_nat_papellido }}
+                    {% if form.cli_nat_papellido.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.cli_nat_papellido.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.cli_nat_sapellido.id_for_label }}">{{ form.cli_nat_sapellido.label }}</label>
+                    {{ form.cli_nat_sapellido }}
+                    {% if form.cli_nat_sapellido.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.cli_nat_sapellido.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Datos de Persona Jurídica -->
+        <div class="form-section juridico-section conditional-section" id="juridicoSection">
+            <h3><i class="fas fa-building"></i> Datos de Persona Jurídica</h3>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="{{ form.cli_jur_razon_social.id_for_label }}" class="required">{{ form.cli_jur_razon_social.label }}</label>
+                    {{ form.cli_jur_razon_social }}
+                    {% if form.cli_jur_razon_social.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.cli_jur_razon_social.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.cli_jur_denom_comercial.id_for_label }}">{{ form.cli_jur_denom_comercial.label }}</label>
+                    {{ form.cli_jur_denom_comercial }}
+                    {% if form.cli_jur_denom_comercial.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.cli_jur_denom_comercial.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.cli_jur_url_web.id_for_label }}">{{ form.cli_jur_url_web.label }}</label>
+                {{ form.cli_jur_url_web }}
+                {% if form.cli_jur_url_web.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.cli_jur_url_web.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                <div class="help-text"><i class="fas fa-info-circle"></i> Sitio web de la empresa (opcional)</div>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.cli_jur_dir_fiscal.id_for_label }}">{{ form.cli_jur_dir_fiscal.label }}</label>
+                {{ form.cli_jur_dir_fiscal }}
+                {% if form.cli_jur_dir_fiscal.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.cli_jur_dir_fiscal.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Selector de Ubicación -->
+        <div class="form-section location-section">
+            <h3><i class="fas fa-map-marker-alt"></i> Ubicación</h3>
+            
+            <div class="lugar-selector">
+                <div class="form-group">
+                    <label for="{{ form.estado.id_for_label }}" class="required">{{ form.estado.label }}</label>
+                    {{ form.estado }}
+                    {% if form.estado.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.estado.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
     </div>
 
-    <div class="juridico-fields">
-        {{ form.cli_jur_denom_comercial.label_tag }} {{ form.cli_jur_denom_comercial }}<br>
-        {{ form.cli_jur_razon_social.label_tag }} {{ form.cli_jur_razon_social }}<br>
-        {{ form.cli_jur_url_web.label_tag }} {{ form.cli_jur_url_web }}<br>
-        {{ form.cli_jur_capital.label_tag }} {{ form.cli_jur_capital }}<br>
-        {{ form.cli_jur_dir_fiscal.label_tag }} {{ form.cli_jur_dir_fiscal }}<br>
+                <div class="form-group">
+                    <label for="{{ form.municipio.id_for_label }}" class="required">{{ form.municipio.label }}</label>
+                    {{ form.municipio }}
+                    {% if form.municipio.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.municipio.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
     </div>
 
-    {{ form.fk_lugar.label_tag }} {{ form.fk_lugar }}<br>
+                <div class="form-group">
+                    <label for="{{ form.parroquia.id_for_label }}" class="required">{{ form.parroquia.label }}</label>
+                    {{ form.parroquia }}
+                    {% if form.parroquia.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.parroquia.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="help-text">
+                <i class="fas fa-info-circle"></i> 
+                Seleccione primero el estado, luego el municipio y finalmente la parroquia.
+            </div>
+        </div>
 
-    <button type="submit">Guardar Cliente</button>
+        <!-- Botones -->
+        <div class="btn-container">
+            <button type="button" class="btn-secondary" onclick="window.history.back()">
+                <i class="fas fa-arrow-left"></i> Cancelar
+            </button>
+            <button type="submit" class="btn-primary" id="submitBtn">
+                <i class="fas fa-save"></i> Guardar Cliente
+            </button>
+        </div>
 </form>
+</div>
 
 <script>
-    function toggleFields() {
-        const tipoCliente = document.getElementById("id_cli_tipo_cliente").value;
-        const naturalFields = document.querySelector(".natural-fields");
-        const juridicoFields = document.querySelector(".juridico-fields");
+document.addEventListener('DOMContentLoaded', function() {
+    const tipoClienteInput = document.getElementById('id_cli_tipo_cliente');
+    const naturalSection = document.getElementById('naturalSection');
+    const juridicoSection = document.getElementById('juridicoSection');
+    const estadoSelect = document.getElementById('id_estado');
+    const municipioSelect = document.getElementById('id_municipio');
+    const parroquiaSelect = document.getElementById('id_parroquia');
+    const toggleOptions = document.querySelectorAll('.toggle-option');
+    const toggleSlider = document.getElementById('toggleSlider');
 
-        if (tipoCliente === "NATURAL") {
-            naturalFields.style.display = "block";
-            juridicoFields.style.display = "none";
+    // Función para actualizar el toggle visual
+    function updateToggle(tipoCliente) {
+        toggleOptions.forEach(option => {
+            option.classList.remove('active');
+            if (option.dataset.type === tipoCliente) {
+                option.classList.add('active');
+            }
+        });
+        
+        if (tipoCliente === 'JURIDICO') {
+            toggleSlider.classList.add('juridico');
         } else {
-            naturalFields.style.display = "none";
-            juridicoFields.style.display = "block";
+            toggleSlider.classList.remove('juridico');
         }
     }
 
-    // Ejecutar al cargar
-    document.addEventListener("DOMContentLoaded", function() {
-        toggleFields();
-        document.getElementById("id_cli_tipo_cliente").addEventListener("change", toggleFields);
+    // Función para mostrar/ocultar secciones según el tipo de cliente
+    function toggleClienteSections(tipoCliente) {
+        if (tipoCliente === 'NATURAL') {
+            naturalSection.classList.add('show');
+            juridicoSection.classList.remove('show');
+        } else if (tipoCliente === 'JURIDICO') {
+            naturalSection.classList.remove('show');
+            juridicoSection.classList.add('show');
+        } else {
+            naturalSection.classList.remove('show');
+            juridicoSection.classList.remove('show');
+        }
+    }
+
+    // Event listeners para el toggle
+    toggleOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            const tipoCliente = this.dataset.type;
+            tipoClienteInput.value = tipoCliente;
+            updateToggle(tipoCliente);
+            toggleClienteSections(tipoCliente);
+        });
     });
+
+    // Función para cargar municipios
+    function loadMunicipios() {
+        const estadoId = estadoSelect.value;
+        
+        if (estadoId) {
+            estadoSelect.classList.add('loading');
+            
+            fetch(`/ajax/load-municipios/?estado_id=${estadoId}`)
+                .then(response => response.json())
+                .then(data => {
+                    municipioSelect.innerHTML = '<option value="">Selecciona un municipio</option>';
+                    parroquiaSelect.innerHTML = '<option value="">Primero selecciona un municipio</option>';
+                    
+                    data.municipios.forEach(municipio => {
+                        municipioSelect.innerHTML += `<option value="${municipio.id}">${municipio.nombre}</option>`;
+                    });
+                    
+                    municipioSelect.disabled = false;
+                    parroquiaSelect.disabled = true;
+                })
+                .catch(error => {
+                    console.error('Error cargando municipios:', error);
+                })
+                .finally(() => {
+                    estadoSelect.classList.remove('loading');
+                });
+        } else {
+            municipioSelect.innerHTML = '<option value="">Primero selecciona un estado</option>';
+            parroquiaSelect.innerHTML = '<option value="">Primero selecciona un municipio</option>';
+            municipioSelect.disabled = true;
+            parroquiaSelect.disabled = true;
+        }
+    }
+
+    // Función para cargar parroquias
+    function loadParroquias() {
+        const municipioId = municipioSelect.value;
+        
+        if (municipioId) {
+            municipioSelect.classList.add('loading');
+            
+            fetch(`/ajax/load-parroquias/?municipio_id=${municipioId}`)
+                .then(response => response.json())
+                .then(data => {
+                    parroquiaSelect.innerHTML = '<option value="">Selecciona una parroquia</option>';
+                    
+                    data.parroquias.forEach(parroquia => {
+                        parroquiaSelect.innerHTML += `<option value="${parroquia.id}">${parroquia.nombre}</option>`;
+                    });
+                    
+                    parroquiaSelect.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Error cargando parroquias:', error);
+                })
+                .finally(() => {
+                    municipioSelect.classList.remove('loading');
+                });
+        } else {
+            parroquiaSelect.innerHTML = '<option value="">Primero selecciona un municipio</option>';
+            parroquiaSelect.disabled = true;
+        }
+    }
+
+    // Event listeners para selector de lugar
+    estadoSelect.addEventListener('change', loadMunicipios);
+    municipioSelect.addEventListener('change', loadParroquias);
+
+    // Inicializar el tipo de cliente por defecto
+    const tipoInicial = tipoClienteInput.value || 'NATURAL';
+    tipoClienteInput.value = tipoInicial;
+    updateToggle(tipoInicial);
+    toggleClienteSections(tipoInicial);
+    
+    // Si hay un estado preseleccionado (edición), cargar sus municipios
+    if (estadoSelect.value) {
+        loadMunicipios();
+        
+        // Si hay un municipio preseleccionado, cargar sus parroquias
+        setTimeout(() => {
+            if (municipioSelect.value) {
+                loadParroquias();
+            }
+        }, 500);
+    }
+
+    // Validación en tiempo real
+    const form = document.getElementById('clienteForm');
+    const inputs = form.querySelectorAll('input, select, textarea');
+    
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            this.classList.remove('is-invalid');
+            const errorList = this.parentNode.querySelector('.errorlist');
+            if (errorList) {
+                errorList.style.display = 'none';
+            }
+        });
+    });
+
+    // Animación suave para cambio de secciones
+    function smoothToggle(element, show) {
+        if (show) {
+            element.style.display = 'block';
+            element.style.opacity = '0';
+            element.style.transform = 'translateY(-10px)';
+            
+            setTimeout(() => {
+                element.style.transition = 'all 0.3s ease';
+                element.style.opacity = '1';
+                element.style.transform = 'translateY(0)';
+            }, 10);
+        } else {
+            element.style.transition = 'all 0.3s ease';
+            element.style.opacity = '0';
+            element.style.transform = 'translateY(-10px)';
+            
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 300);
+        }
+    }
+});
 </script>
 {% endblock %}

@@ -2046,6 +2046,7 @@ CREATE TABLE public.usuario (
     is_staff boolean NOT NULL,
     is_active boolean NOT NULL,
     date_joined timestamp with time zone NOT NULL,
+    fk_emp_car integer,
     fk_cliente integer,
     fk_proveedor integer
 );
@@ -4471,6 +4472,13 @@ ALTER TABLE ONLY public.metodo_pago
 
 
 --
+-- Name: metodo_pago metodo_pago_fk_usuario; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+ALTER TABLE ONLY public.metodo_pago
+    ADD CONSTRAINT metodo_pago_fk_usuario FOREIGN KEY (fk_usuario) REFERENCES public.usuario(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
 -- Name: pago_efectivo pago_efectivo_fk_metodo_pago_5cfe4bc4_fk_metodo_pago_met_pag_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -4756,6 +4764,9 @@ ALTER TABLE ONLY public.tipo_evento
 
 ALTER TABLE ONLY public.usuario
     ADD CONSTRAINT usuario_fk_cliente_4ae4519a_fk_cliente_cli_id FOREIGN KEY (fk_cliente) REFERENCES public.cliente(cli_id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE ONLY public.usuario
+    ADD CONSTRAINT usuario_fk_emp_car_4ae4519a_fk_empleado_emp_id FOREIGN KEY (fk_emp_car) REFERENCES public.emp_car(id) DEFERRABLE INITIALLY DEFERRED;
 
 
 --

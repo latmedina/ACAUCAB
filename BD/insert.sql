@@ -1715,7 +1715,6 @@ INSERT INTO public.empleado VALUES (8, 'V25123456', 'Patricia', 'Alejandra', 'Su
 INSERT INTO public.empleado VALUES (9, 'V26234567', 'Fernando', 'Jose', 'Delgado', 'Jimenez', 'Centro Comercial 369, Caracas', '1986-01-30', 'M', 360);
 INSERT INTO public.empleado VALUES (10, 'V27345678', 'Gabriela', 'Antonieta', 'Vega', 'Paredes', 'Zona Industrial 741, Ciudad Bolivar', '1994-06-12', 'F', 95);
 
-
 --
 -- Data for Name: asistencia; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -2603,55 +2602,54 @@ INSERT INTO public.cerv_car VALUES (583, 'Sabor ligero y cuerpo liviano.', 3, 7)
 -- Data for Name: presentacion; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-INSERT INTO public.presentacion VALUES (4, 'Mito Candileja', 330.00, 'Botella de Vidrio', 'cerveza-polar_pLdZjYs.png', 2.90, 24.00, 6.50, 4);
-INSERT INTO public.presentacion VALUES (9, 'Candileja 500ml', 500.00, 'Botella de Vidrio', 'cerveza-solera_kriek_mQ2MMu9.jpg', 3.40, 25.00, 6.80, 4);
-INSERT INTO public.presentacion VALUES (2, 'Dos Leones', 330.00, 'Botella de Vidrio', 'corona combo.png', 2.80, 22.00, 6.00, 2);
-INSERT INTO public.presentacion VALUES (6, 'Barricas Saison', 750.00, 'Botella de Vidrio con Corcho', 'collection-title-escerveza-1-43248638099783.jpg.webp', 5.50, 29.00, 8.00, 6);
+INSERT INTO public.presentacion VALUES (4, 'Mito Candileja', 330.00, 'Botella de Vidrio', 'cerveza-solera_kriek.jpg', 2.90, 24.00, 6.50, 4);
+INSERT INTO public.presentacion VALUES (9, 'Candileja 500ml', 500.00, 'Botella de Vidrio', 'cerveza-solera_kriek.jpg', 3.40, 25.00, 6.80, 4);
+INSERT INTO public.presentacion VALUES (2, 'Dos Leones', 330.00, 'Botella de Vidrio', 'dd19673e43356f035d6ba2c7e4112bba.jpg', 2.80, 22.00, 6.00, 2);
+INSERT INTO public.presentacion VALUES (6, 'Barricas Saison', 750.00, 'Botella de Vidrio con Corcho', 'e63538cb1d265bd6f545846a54f3506e.jpg', 5.50, 29.00, 8.00, 6);
 INSERT INTO public.presentacion VALUES (3, 'Benitz', 355.00, 'Botella de Vidrio', '942dc9d6-034e-4632-9a79-f48febf55596_nube-220582656a0a30e3bf16161669860019-480-0.jpg', 3.00, 23.00, 6.20, 3);
 INSERT INTO public.presentacion VALUES (8, 'Estilo Lata', 330.00, 'Lata de Aluminio', '1656110108632-8712000017941.png', 2.40, 11.50, 6.00, 1);
-INSERT INTO public.presentacion VALUES (10, 'Benitz Pack x6', 1980.00, 'Pack de 6 Botellas', 'collection-title-escerveza-1-43248638099783.jpg.webp', 16.50, 24.00, 18.00, 3);
+INSERT INTO public.presentacion VALUES (10, 'Benitz Pack x6', 1980.00, 'Pack de 6 Botellas', 'b068d450b8590f2f593f80cf81029734.jpg', 16.50, 24.00, 18.00, 3);
 INSERT INTO public.presentacion VALUES (7, 'Aldarra Mantuana', 355.00, 'Lata de Aluminio', '1223128.png', 2.70, 12.20, 6.60, 7);
-INSERT INTO public.presentacion VALUES (1, 'Estilo', 330.00, 'Botella de Vidrio', 'collection-title-escerveza-21707000741988.jpg.webp', 2.50, 22.00, 6.00, 1);
-INSERT INTO public.presentacion VALUES (5, 'Lago A&D', 330.00, 'Botella de Vidrio', 'corona_combo.png', 3.10, 22.50, 6.00, 5);
-INSERT INTO public.presentacion VALUES (11, 'Pilsner Urquell 330ml', 330.00, 'Botella de Vidrio', 'placeholder.png', 1.80, 4.50, 4.40, 8);
-INSERT INTO public.presentacion VALUES (12, 'Spezial Rauchbier 500ml', 500.00, 'Botella de Vidrio', 'placeholder.png', 2.20, 5.50, 4.80, 9);
-INSERT INTO public.presentacion VALUES (13, 'Dortmunder Gold 330ml', 330.00, 'Lata de Aluminio', 'placeholder.png', 1.90, 4.80, 5.00, 10);
-INSERT INTO public.presentacion VALUES (14, 'Köstritzer Schwarzbier 500ml', 500.00, 'Botella de Vidrio', 'placeholder.png', 2.10, 5.20, 4.80, 11);
-INSERT INTO public.presentacion VALUES (15, 'Ottakringer Vienna Lager 500ml', 500.00, 'Lata de Aluminio', 'placeholder.png', 2.00, 5.00, 5.20, 12);
-INSERT INTO public.presentacion VALUES (16, 'Paulaner Salvator 330ml', 330.00, 'Botella de Vidrio', 'placeholder.png', 2.50, 6.00, 7.90, 13);
-INSERT INTO public.presentacion VALUES (17, 'Sierra Nevada Pale Ale 355ml', 355.00, 'Botella de Vidrio', 'placeholder.png', 2.30, 5.80, 5.60, 14);
-INSERT INTO public.presentacion VALUES (18, 'Anchor Porter 355ml', 355.00, 'Botella de Vidrio', 'placeholder.png', 2.40, 5.90, 5.60, 15);
-INSERT INTO public.presentacion VALUES (19, 'Weihenstephaner Hefeweissbier 500ml', 500.00, 'Botella de Vidrio', 'placeholder.png', 2.60, 6.50, 5.40, 16);
-INSERT INTO public.presentacion VALUES (20, 'Guinness Draught 440ml', 440.00, 'Lata de Aluminio con Nitrógeno', 'placeholder.png', 2.00, 5.00, 4.20, 17);
-INSERT INTO public.presentacion VALUES (21, 'Chimay Blue 330ml', 330.00, 'Botella de Vidrio', 'placeholder.png', 3.50, 8.00, 9.00, 18);
-INSERT INTO public.presentacion VALUES (22, 'Duvel 330ml', 330.00, 'Botella de Vidrio', 'placeholder.png', 3.20, 7.50, 8.50, 19);
-INSERT INTO public.presentacion VALUES (23, 'Orval 330ml', 330.00, 'Botella de Vidrio', 'placeholder.png', 3.30, 7.80, 6.20, 20);
-INSERT INTO public.presentacion VALUES (24, 'Fuller''s London Porter 500ml', 500.00, 'Botella de Vidrio', 'placeholder.png', 2.80, 6.80, 5.40, 21);
-INSERT INTO public.presentacion VALUES (25, 'La Chouffe 330ml', 330.00, 'Botella de Vidrio', 'placeholder.png', 3.10, 7.20, 8.00, 22);
-INSERT INTO public.presentacion VALUES (26, 'Thomas Hardy''s Ale 330ml', 330.00, 'Botella de Vidrio', 'placeholder.png', 4.50, 10.00, 11.70, 23);
-INSERT INTO public.presentacion VALUES (27, 'Hoegaarden Witbier 330ml', 330.00, 'Botella de Vidrio', 'placeholder.png', 2.20, 5.50, 4.90, 24);
-INSERT INTO public.presentacion VALUES (28, 'Pilsner Checa Artesanal 500ml', 500.00, 'Botella de Vidrio', 'placeholder.png', 2.30, 5.60, 5.00, 25);
-INSERT INTO public.presentacion VALUES (29, 'Uerige Alt 330ml', 330.00, 'Botella de Vidrio', 'placeholder.png', 2.40, 5.80, 4.70, 26);
-INSERT INTO public.presentacion VALUES (30, 'Fuller''s ESB 500ml', 500.00, 'Botella de Vidrio', 'placeholder.png', 2.90, 7.00, 5.90, 27);
-INSERT INTO public.presentacion VALUES (31, 'Lindemans Kriek 250ml', 250.00, 'Botella de Vidrio', 'placeholder.png', 2.70, 6.50, 3.50, 28);
-INSERT INTO public.presentacion VALUES (32, 'Pliny the Elder 510ml', 510.00, 'Botella de Vidrio', 'placeholder.png', 5.00, 12.00, 8.00, 29);
-INSERT INTO public.presentacion VALUES (33, 'North Coast Old Rasputin 355ml', 355.00, 'Botella de Vidrio', 'placeholder.png', 3.80, 9.00, 9.00, 30);
-INSERT INTO public.presentacion VALUES (34, 'Bell''s Two Hearted Ale 355ml', 355.00, 'Lata de Aluminio', 'placeholder.png', 2.90, 7.00, 7.00, 31);
-INSERT INTO public.presentacion VALUES (35, 'Smithwick''s Red Ale 500ml', 500.00, 'Lata de Aluminio', 'placeholder.png', 2.10, 5.20, 4.50, 32);
-INSERT INTO public.presentacion VALUES (36, 'Augustiner-Bräu Helles 500ml', 500.00, 'Botella de Vidrio', 'placeholder.png', 2.30, 5.60, 5.20, 33);
-INSERT INTO public.presentacion VALUES (37, 'Spaten Oktoberfest 355ml', 355.00, 'Botella de Vidrio', 'placeholder.png', 2.20, 5.40, 5.90, 34);
-INSERT INTO public.presentacion VALUES (38, 'Dogfish Head Punkin Ale 355ml', 355.00, 'Botella de Vidrio', 'placeholder.png', 3.00, 7.20, 7.00, 35);
-INSERT INTO public.presentacion VALUES (39, 'Left Hand Milk Stout 355ml', 355.00, 'Lata de Aluminio con Nitrógeno', 'placeholder.png', 2.80, 6.80, 6.00, 36);
-INSERT INTO public.presentacion VALUES (40, 'Schneider Weisse Original 500ml', 500.00, 'Botella de Vidrio', 'placeholder.png', 2.70, 6.60, 5.40, 37);
-INSERT INTO public.presentacion VALUES (41, 'Saison Dupont 375ml', 375.00, 'Botella de Vidrio con Corcho', 'placeholder.png', 3.40, 8.00, 6.50, 38);
-INSERT INTO public.presentacion VALUES (42, 'Dark Ale Genérica 330ml', 330.00, 'Botella de Vidrio', 'placeholder.png', 1.90, 4.80, 5.50, 39);
-INSERT INTO public.presentacion VALUES (43, 'Cerveza de Abadía Genérica 330ml', 330.00, 'Botella de Vidrio', 'placeholder.png', 2.80, 6.80, 6.80, 40);
-INSERT INTO public.presentacion VALUES (44, 'Ámbar Belga Genérica 330ml', 330.00, 'Botella de Vidrio', 'placeholder.png', 2.60, 6.40, 6.50, 41);
-INSERT INTO public.presentacion VALUES (45, 'Flamenca Ale Genérica 330ml', 330.00, 'Botella de Vidrio', 'placeholder.png', 2.50, 6.20, 6.00, 42);
-INSERT INTO public.presentacion VALUES (46, 'English Pale Ale Genérica 500ml', 500.00, 'Lata de Aluminio', 'placeholder.png', 2.20, 5.30, 5.00, 43);
-INSERT INTO public.presentacion VALUES (47, 'Red Ale Genérica 355ml', 355.00, 'Lata de Aluminio', 'placeholder.png', 2.00, 5.00, 5.20, 44);
-INSERT INTO public.presentacion VALUES (48, 'The Murphy''s Irish Stout 500ml', 500.00, 'Lata de Aluminio con Nitrógeno', 'placeholder.png', 2.30, 5.50, 4.00, 45);
-
+INSERT INTO public.presentacion VALUES (1, 'Estilo', 330.00, 'Botella de Vidrio', 'c93378bdb8ccd43e1485cf56e6520a41.jpg', 2.50, 22.00, 6.00, 1);
+INSERT INTO public.presentacion VALUES (5, 'Lago A&D', 330.00, 'Botella de Vidrio', 'db95c4d82ad0bc3f87f1d0d630faa144.jpg', 3.10, 22.50, 6.00, 5);
+INSERT INTO public.presentacion VALUES (11, 'Pilsner Urquell 330ml', 330.00, 'Botella de Vidrio', '7554f439f815d0584b51e9f257c3459a.jpg', 1.80, 4.50, 4.40, 8);
+INSERT INTO public.presentacion VALUES (12, 'Spezial Rauchbier 500ml', 500.00, 'Botella de Vidrio', '8836be9f6528c31e2df548ff536f0ea2.jpg', 2.20, 5.50, 4.80, 9);
+INSERT INTO public.presentacion VALUES (13, 'Dortmunder Gold 330ml', 330.00, 'Lata de Aluminio', '92b363117974dee5db8fa94702e9b21a.jpg', 1.90, 4.80, 5.00, 10);
+INSERT INTO public.presentacion VALUES (14, 'Köstritzer Schwarzbier 500ml', 500.00, 'Botella de Vidrio', '67cc223b0c0d7c0bbc8d78f57be05919.jpg', 2.10, 5.20, 4.80, 11);
+INSERT INTO public.presentacion VALUES (15, 'Ottakringer Vienna Lager 500ml', 500.00, 'Lata de Aluminio', '56c51bd3b3cc610e16b2f537b91912d1.jpg', 2.00, 5.00, 5.20, 12);
+INSERT INTO public.presentacion VALUES (16, 'Paulaner Salvator 330ml', 330.00, 'Botella de Vidrio', '5bdad03b9534402c814b1917542c9854.jpg', 2.50, 6.00, 7.90, 13);
+INSERT INTO public.presentacion VALUES (17, 'Sierra Nevada Pale Ale 355ml', 355.00, 'Botella de Vidrio', 'Artesanal_Tempus.jpg', 2.30, 5.80, 5.60, 14);
+INSERT INTO public.presentacion VALUES (18, 'Anchor Porter 355ml', 355.00, 'Botella de Vidrio', 'e1bc5fb3-2f02-4be9-9a5f-c7d5a7fd7d8e.png', 2.40, 5.90, 5.60, 15);
+INSERT INTO public.presentacion VALUES (19, 'Weihenstephaner Hefeweissbier 500ml', 500.00, 'Botella de Vidrio', 'cerveza-solera_kriek.jpg', 2.60, 6.50, 5.40, 16);
+INSERT INTO public.presentacion VALUES (20, 'Guinness Draught 440ml', 440.00, 'Lata de Aluminio con Nitrógeno', 'dd19673e43356f035d6ba2c7e4112bba.jpg', 2.00, 5.00, 4.20, 17);
+INSERT INTO public.presentacion VALUES (21, 'Chimay Blue 330ml', 330.00, 'Botella de Vidrio', 'e63538cb1d265bd6f545846a54f3506e.jpg', 3.50, 8.00, 9.00, 18);
+INSERT INTO public.presentacion VALUES (22, 'Duvel 330ml', 330.00, 'Botella de Vidrio', 'b068d450b8590f2f593f80cf81029734.jpg', 3.20, 7.50, 8.50, 19);
+INSERT INTO public.presentacion VALUES (23, 'Orval 330ml', 330.00, 'Botella de Vidrio', 'c93378bdb8ccd43e1485cf56e6520a41.jpg', 3.30, 7.80, 6.20, 20);
+INSERT INTO public.presentacion VALUES (24, 'Fuller''s London Porter 500ml', 500.00, 'Botella de Vidrio', 'db95c4d82ad0bc3f87f1d0d630faa144.jpg', 2.80, 6.80, 5.40, 21);
+INSERT INTO public.presentacion VALUES (25, 'La Chouffe 330ml', 330.00, 'Botella de Vidrio', '7554f439f815d0584b51e9f257c3459a.jpg', 3.10, 7.20, 8.00, 22);
+INSERT INTO public.presentacion VALUES (26, 'Thomas Hardy''s Ale 330ml', 330.00, 'Botella de Vidrio', '8836be9f6528c31e2df548ff536f0ea2.jpg', 4.50, 10.00, 11.70, 23);
+INSERT INTO public.presentacion VALUES (27, 'Hoegaarden Witbier 330ml', 330.00, 'Botella de Vidrio', '92b363117974dee5db8fa94702e9b21a.jpg', 2.20, 5.50, 4.90, 24);
+INSERT INTO public.presentacion VALUES (28, 'Pilsner Checa Artesanal 500ml', 500.00, 'Botella de Vidrio', '67cc223b0c0d7c0bbc8d78f57be05919.jpg', 2.30, 5.60, 5.00, 25);
+INSERT INTO public.presentacion VALUES (29, 'Uerige Alt 330ml', 330.00, 'Botella de Vidrio', '56c51bd3b3cc610e16b2f537b91912d1.jpg', 2.40, 5.80, 4.70, 26);
+INSERT INTO public.presentacion VALUES (30, 'Fuller''s ESB 500ml', 500.00, 'Botella de Vidrio', '5bdad03b9534402c814b1917542c9854.jpg', 2.90, 7.00, 5.90, 27);
+INSERT INTO public.presentacion VALUES (31, 'Lindemans Kriek 250ml', 250.00, 'Botella de Vidrio', 'Artesanal_Tempus.jpg', 2.70, 6.50, 3.50, 28);
+INSERT INTO public.presentacion VALUES (32, 'Pliny the Elder 510ml', 510.00, 'Botella de Vidrio', '942dc9d6-034e-4632-9a79-f48febf55596_nube-220582656a0a30e3bf16161669860019-480-0.jpg', 5.00, 12.00, 8.00, 29);
+INSERT INTO public.presentacion VALUES (33, 'North Coast Old Rasputin 355ml', 355.00, 'Botella de Vidrio', 'cerveza-solera_kriek.jpg', 3.80, 9.00, 9.00, 30);
+INSERT INTO public.presentacion VALUES (34, 'Bell''s Two Hearted Ale 355ml', 355.00, 'Lata de Aluminio', '1656110108632-8712000017941.png', 2.90, 7.00, 7.00, 31);
+INSERT INTO public.presentacion VALUES (35, 'Smithwick''s Red Ale 500ml', 500.00, 'Lata de Aluminio', '1223128.png', 2.10, 5.20, 4.50, 32);
+INSERT INTO public.presentacion VALUES (36, 'Augustiner-Bräu Helles 500ml', 500.00, 'Botella de Vidrio', 'dd19673e43356f035d6ba2c7e4112bba.jpg', 2.30, 5.60, 5.20, 33);
+INSERT INTO public.presentacion VALUES (37, 'Spaten Oktoberfest 355ml', 355.00, 'Botella de Vidrio', 'e63538cb1d265bd6f545846a54f3506e.jpg', 2.20, 5.40, 5.90, 34);
+INSERT INTO public.presentacion VALUES (38, 'Dogfish Head Punkin Ale 355ml', 355.00, 'Botella de Vidrio', 'b068d450b8590f2f593f80cf81029734.jpg', 3.00, 7.20, 7.00, 35);
+INSERT INTO public.presentacion VALUES (39, 'Left Hand Milk Stout 355ml', 355.00, 'Lata de Aluminio con Nitrógeno', 'c93378bdb8ccd43e1485cf56e6520a41.jpg', 2.80, 6.80, 6.00, 36);
+INSERT INTO public.presentacion VALUES (40, 'Schneider Weisse Original 500ml', 500.00, 'Botella de Vidrio', 'db95c4d82ad0bc3f87f1d0d630faa144.jpg', 2.70, 6.60, 5.40, 37);
+INSERT INTO public.presentacion VALUES (41, 'Saison Dupont 375ml', 375.00, 'Botella de Vidrio con Corcho', '7554f439f815d0584b51e9f257c3459a.jpg', 3.40, 8.00, 6.50, 38);
+INSERT INTO public.presentacion VALUES (42, 'Dark Ale Genérica 330ml', 330.00, 'Botella de Vidrio', '8836be9f6528c31e2df548ff536f0ea2.jpg', 1.90, 4.80, 5.50, 39);
+INSERT INTO public.presentacion VALUES (43, 'Cerveza de Abadía Genérica 330ml', 330.00, 'Botella de Vidrio', '92b363117974dee5db8fa94702e9b21a.jpg', 2.80, 6.80, 6.80, 40);
+INSERT INTO public.presentacion VALUES (44, 'Ámbar Belga Genérica 330ml', 330.00, 'Botella de Vidrio', '67cc223b0c0d7c0bbc8d78f57be05919.jpg', 2.60, 6.40, 6.50, 41);
+INSERT INTO public.presentacion VALUES (45, 'Flamenca Ale Genérica 330ml', 330.00, 'Botella de Vidrio', '56c51bd3b3cc610e16b2f537b91912d1.jpg', 2.50, 6.20, 6.00, 42);
+INSERT INTO public.presentacion VALUES (46, 'English Pale Ale Genérica 500ml', 500.00, 'Lata de Aluminio', '5bdad03b9534402c814b1917542c9854.jpg', 2.20, 5.30, 5.00, 43);
+INSERT INTO public.presentacion VALUES (47, 'Red Ale Genérica 355ml', 355.00, 'Lata de Aluminio', 'Artesanal_Tempus.jpg', 2.00, 5.00, 5.20, 44);
+INSERT INTO public.presentacion VALUES (48, 'The Murphy''s Irish Stout 500ml', 500.00, 'Lata de Aluminio con Nitrógeno', 'e1bc5fb3-2f02-4be9-9a5f-c7d5a7fd7d8e.png', 2.30, 5.50, 4.00, 45); 
 
 --
 -- Data for Name: cargo; Type: TABLE DATA; Schema: public; Owner: postgres
@@ -2866,41 +2864,41 @@ INSERT INTO public.pre_alm VALUES (48, 5.50, 100, 8, NULL, 48);
 -- Data for Name: usuario; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-INSERT INTO public.usuario VALUES (1, 'pbkdf2_sha256$216000$admin001$hashplaceholder1', NULL, true, 'admin001', '', '', 'admin@acaucab.com', true, true, '2025-06-20 03:07:55.427589-04', NULL, NULL);
-INSERT INTO public.usuario VALUES (2, 'pbkdf2_sha256$216000$maria456$hashplaceholder2', NULL, false, 'gerente_maria', '', '', 'maria.gonzalez@acaucab.com', true, true, '2025-06-20 03:07:55.427589-04', NULL, NULL);
-INSERT INTO public.usuario VALUES (3, 'pbkdf2_sha256$216000$jose789$hashplaceholder3', NULL, false, 'almacen_jose', '', '', 'jose.rodriguez@acaucab.com', true, true, '2025-06-20 03:07:55.427589-04', NULL, NULL);
-INSERT INTO public.usuario VALUES (4, 'pbkdf2_sha256$216000$ana012$hashplaceholder4', NULL, false, 'marketing_ana', '', '', 'ana.fernandez@acaucab.com', true, true, '2025-06-20 03:07:55.427589-04', NULL, NULL);
-INSERT INTO public.usuario VALUES (5, 'pbkdf2_sha256$216000$luis345$hashplaceholder5', NULL, false, 'logistica_luis', '', '', 'luis.torres@acaucab.com', true, true, '2025-06-20 03:07:55.427589-04', NULL, NULL);
-INSERT INTO public.usuario VALUES (6, 'pbkdf2_sha256$216000$carmen678$hashplaceholder6', NULL, false, 'ventas_carmen', '', '', 'carmen.herrera@acaucab.com', true, true, '2025-06-20 03:07:55.427589-04', NULL, NULL);
-INSERT INTO public.usuario VALUES (7, 'pbkdf2_sha256$216000$ricardo901$hashplaceholder7', NULL, false, 'vendedor_ricardo', '', '', 'ricardo.mendoza@acaucab.com', true, true, '2025-06-20 03:07:55.427589-04', NULL, NULL);
-INSERT INTO public.usuario VALUES (8, 'pbkdf2_sha256$216000$patricia234$hashplaceholder8', NULL, false, 'cerveza_patricia', '', '', 'patricia.suarez@acaucab.com', true, true, '2025-06-20 03:07:55.427589-04', NULL, NULL);
-INSERT INTO public.usuario VALUES (9, 'pbkdf2_sha256$216000$fernando567$hashplaceholder9', NULL, false, 'admin_fernando', '', '', 'fernando.delgado@acaucab.com', true, true, '2025-06-20 03:07:55.427589-04', NULL, NULL);
-INSERT INTO public.usuario VALUES (10, 'pbkdf2_sha256$216000$gabriela890$hashplaceholder10', NULL, false, 'caja_gabriela', '', '', 'gabriela.vega@acaucab.com', true, true, '2025-06-20 03:07:55.427589-04', NULL, NULL);
-INSERT INTO public.usuario VALUES (11, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_carlos', 'Carlos', 'Rodríguez', 'carlos.rodriguez@email.com', false, true, '2025-06-20 03:07:55.427589-04', 1, NULL);
-INSERT INTO public.usuario VALUES (12, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_maria', 'María', 'González', 'maria.gonzalez@email.com', false, true, '2025-06-20 03:07:55.427589-04', 2, NULL);
-INSERT INTO public.usuario VALUES (13, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_jose', 'José', 'Fernández', 'jose.fernandez@email.com', false, true, '2025-06-20 03:07:55.427589-04', 3, NULL);
-INSERT INTO public.usuario VALUES (14, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_ana', 'Ana', 'Sánchez', 'ana.sanchez@email.com', false, true, '2025-06-20 03:07:55.427589-04', 4, NULL);
-INSERT INTO public.usuario VALUES (15, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_luis', 'Luis', 'Ramírez', 'luis.ramirez@email.com', false, true, '2025-06-20 03:07:55.427589-04', 5, NULL);
-INSERT INTO public.usuario VALUES (16, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_carmen', 'Carmen', 'Herrera', 'carmen.herrera@email.com', false, true, '2025-06-20 03:07:55.427589-04', 6, NULL);
-INSERT INTO public.usuario VALUES (17, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_pedro', 'Pedro', 'Castillo', 'pedro.castillo@email.com', false, true, '2025-06-20 03:07:55.427589-04', 7, NULL);
-INSERT INTO public.usuario VALUES (18, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_rosa', 'Rosa', 'Mendoza', 'rosa.mendoza@email.com', false, true, '2025-06-20 03:07:55.427589-04', 8, NULL);
-INSERT INTO public.usuario VALUES (19, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_miguel', 'Miguel', 'Torres', 'miguel.torres@email.com', false, true, '2025-06-20 03:07:55.427589-04', 9, NULL);
-INSERT INTO public.usuario VALUES (20, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_luisa', 'Luisa', 'Moreno', 'luisa.moreno@email.com', false, true, '2025-06-20 03:07:55.427589-04', 10, NULL);
-INSERT INTO public.usuario VALUES (21, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_roberto', 'Roberto', 'Gutiérrez', 'roberto.gutierrez@email.com', false, true, '2025-06-20 03:07:55.427589-04', 11, NULL);
-INSERT INTO public.usuario VALUES (22, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_elena', 'Elena', 'Navarro', 'elena.navarro@email.com', false, true, '2025-06-20 03:07:55.427589-04', 12, NULL);
-INSERT INTO public.usuario VALUES (23, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_jorge', 'Jorge', 'Ramos', 'jorge.ramos@email.com', false, true, '2025-06-20 03:07:55.427589-04', 13, NULL);
-INSERT INTO public.usuario VALUES (24, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_patricia', 'Patricia', 'Vega', 'patricia.vega@email.com', false, true, '2025-06-20 03:07:55.427589-04', 14, NULL);
-INSERT INTO public.usuario VALUES (25, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_fernando', 'Fernando', 'Delgado', 'fernando.delgado@email.com', false, true, '2025-06-20 03:07:55.427589-04', 15, NULL);
-INSERT INTO public.usuario VALUES (26, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_gabriela', 'Gabriela', 'Campos', 'gabriela.campos@email.com', false, true, '2025-06-20 03:07:55.427589-04', 16, NULL);
-INSERT INTO public.usuario VALUES (27, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_andres', 'Andrés', 'Suárez', 'andres.suarez@email.com', false, true, '2025-06-20 03:07:55.427589-04', 17, NULL);
-INSERT INTO public.usuario VALUES (28, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_beatriz', 'Beatriz', 'Flores', 'beatriz.flores@email.com', false, true, '2025-06-20 03:07:55.427589-04', 18, NULL);
-INSERT INTO public.usuario VALUES (29, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_ricardo', 'Ricardo', 'Medina', 'ricardo.medina@email.com', false, true, '2025-06-20 03:07:55.427589-04', 19, NULL);
-INSERT INTO public.usuario VALUES (30, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_maritza', 'Maritza', 'Ponce', 'maritza.ponce@email.com', false, true, '2025-06-20 03:07:55.427589-04', 20, NULL);
-INSERT INTO public.usuario VALUES (31, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'prov_maltas', 'Ventas', 'Maltas Andinas', 'ventas@maltasandinas.com', false, true, '2025-06-20 03:07:55.427589-04', NULL, 1);
-INSERT INTO public.usuario VALUES (32, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'prov_lupulos', 'Comercial', 'Lúpulos Caribe', 'comercial@lupuloscaribe.com', false, true, '2025-06-20 03:07:55.427589-04', NULL, 2);
-INSERT INTO public.usuario VALUES (33, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'prov_levaduras', 'Info', 'Levaduras Gourmet', 'info@levadurasgourmet.com', false, true, '2025-06-20 03:07:55.427589-04', NULL, 3);
-INSERT INTO public.usuario VALUES (34, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'prov_envases', 'Pedidos', 'Envases Premium', 'pedidos@envasespremium.com', false, true, '2025-06-20 03:07:55.427589-04', NULL, 4);
-INSERT INTO public.usuario VALUES (35, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'prov_tecnologia', 'Soporte', 'BeerTech', 'soporte@beertech.com', false, true, '2025-06-20 03:07:55.427589-04', NULL, 5);
+INSERT INTO public.usuario VALUES (1, 'pbkdf2_sha256$216000$admin001$hashplaceholder1', NULL, true, 'admin001', '', '', 'admin@acaucab.com', true, true, '2025-06-20 03:07:55.427589-04', NULL, NULL, NULL);
+INSERT INTO public.usuario VALUES (2, 'pbkdf2_sha256$216000$maria456$hashplaceholder2', NULL, false, 'gerente_maria', '', '', 'maria.gonzalez@acaucab.com', true, true, '2025-06-20 03:07:55.427589-04', NULL, NULL, 2);
+INSERT INTO public.usuario VALUES (3, 'pbkdf2_sha256$216000$jose789$hashplaceholder3', NULL, false, 'almacen_jose', '', '', 'jose.rodriguez@acaucab.com', true, true, '2025-06-20 03:07:55.427589-04', NULL, NULL, 3);
+INSERT INTO public.usuario VALUES (4, 'pbkdf2_sha256$216000$ana012$hashplaceholder4', NULL, false, 'marketing_ana', '', '', 'ana.fernandez@acaucab.com', true, true, '2025-06-20 03:07:55.427589-04', NULL, NULL, 4);
+INSERT INTO public.usuario VALUES (5, 'pbkdf2_sha256$216000$luis345$hashplaceholder5', NULL, false, 'logistica_luis', '', '', 'luis.torres@acaucab.com', true, true, '2025-06-20 03:07:55.427589-04', NULL, NULL, 5);
+INSERT INTO public.usuario VALUES (6, 'pbkdf2_sha256$216000$carmen678$hashplaceholder6', NULL, false, 'ventas_carmen', '', '', 'carmen.herrera@acaucab.com', true, true, '2025-06-20 03:07:55.427589-04', NULL, NULL, 6);
+INSERT INTO public.usuario VALUES (7, 'pbkdf2_sha256$216000$ricardo901$hashplaceholder7', NULL, false, 'vendedor_ricardo', '', '', 'ricardo.mendoza@acaucab.com', true, true, '2025-06-20 03:07:55.427589-04', NULL, NULL, 7);
+INSERT INTO public.usuario VALUES (8, 'pbkdf2_sha256$216000$patricia234$hashplaceholder8', NULL, false, 'cerveza_patricia', '', '', 'patricia.suarez@acaucab.com', true, true, '2025-06-20 03:07:55.427589-04', NULL, NULL, 8);
+INSERT INTO public.usuario VALUES (9, 'pbkdf2_sha256$216000$fernando567$hashplaceholder9', NULL, false, 'admin_fernando', '', '', 'fernando.delgado@acaucab.com', true, true, '2025-06-20 03:07:55.427589-04', NULL, NULL, 9);
+INSERT INTO public.usuario VALUES (10, 'pbkdf2_sha256$216000$gabriela890$hashplaceholder10', NULL, false, 'caja_gabriela', '', '', 'gabriela.vega@acaucab.com', true, true, '2025-06-20 03:07:55.427589-04', NULL, NULL, 10);
+INSERT INTO public.usuario VALUES (11, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_carlos', 'Carlos', 'Rodríguez', 'carlos.rodriguez@email.com', false, true, '2025-06-20 03:07:55.427589-04', 1, NULL, NULL);
+INSERT INTO public.usuario VALUES (12, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_maria', 'María', 'González', 'maria.gonzalez@email.com', false, true, '2025-06-20 03:07:55.427589-04', 2, NULL, NULL);
+INSERT INTO public.usuario VALUES (13, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_jose', 'José', 'Fernández', 'jose.fernandez@email.com', false, true, '2025-06-20 03:07:55.427589-04', 3, NULL, NULL);
+INSERT INTO public.usuario VALUES (14, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_ana', 'Ana', 'Sánchez', 'ana.sanchez@email.com', false, true, '2025-06-20 03:07:55.427589-04', 4, NULL, NULL);
+INSERT INTO public.usuario VALUES (15, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_luis', 'Luis', 'Ramírez', 'luis.ramirez@email.com', false, true, '2025-06-20 03:07:55.427589-04', 5, NULL, NULL);
+INSERT INTO public.usuario VALUES (16, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_carmen', 'Carmen', 'Herrera', 'carmen.herrera@email.com', false, true, '2025-06-20 03:07:55.427589-04', 6, NULL, NULL);
+INSERT INTO public.usuario VALUES (17, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_pedro', 'Pedro', 'Castillo', 'pedro.castillo@email.com', false, true, '2025-06-20 03:07:55.427589-04', 7, NULL, NULL);
+INSERT INTO public.usuario VALUES (18, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_rosa', 'Rosa', 'Mendoza', 'rosa.mendoza@email.com', false, true, '2025-06-20 03:07:55.427589-04', 8, NULL, NULL);
+INSERT INTO public.usuario VALUES (19, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_miguel', 'Miguel', 'Torres', 'miguel.torres@email.com', false, true, '2025-06-20 03:07:55.427589-04', 9, NULL, NULL);
+INSERT INTO public.usuario VALUES (20, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_luisa', 'Luisa', 'Moreno', 'luisa.moreno@email.com', false, true, '2025-06-20 03:07:55.427589-04', 10, NULL, NULL);
+INSERT INTO public.usuario VALUES (21, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_roberto', 'Roberto', 'Gutiérrez', 'roberto.gutierrez@email.com', false, true, '2025-06-20 03:07:55.427589-04', 11, NULL, NULL);
+INSERT INTO public.usuario VALUES (22, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_elena', 'Elena', 'Navarro', 'elena.navarro@email.com', false, true, '2025-06-20 03:07:55.427589-04', 12, NULL, NULL);
+INSERT INTO public.usuario VALUES (23, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_jorge', 'Jorge', 'Ramos', 'jorge.ramos@email.com', false, true, '2025-06-20 03:07:55.427589-04', 13, NULL, NULL);
+INSERT INTO public.usuario VALUES (24, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_patricia', 'Patricia', 'Vega', 'patricia.vega@email.com', false, true, '2025-06-20 03:07:55.427589-04', 14, NULL, NULL);
+INSERT INTO public.usuario VALUES (25, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_fernando', 'Fernando', 'Delgado', 'fernando.delgado@email.com', false, true, '2025-06-20 03:07:55.427589-04', 15, NULL, NULL);
+INSERT INTO public.usuario VALUES (26, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_gabriela', 'Gabriela', 'Campos', 'gabriela.campos@email.com', false, true, '2025-06-20 03:07:55.427589-04', 16, NULL, NULL);
+INSERT INTO public.usuario VALUES (27, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_andres', 'Andrés', 'Suárez', 'andres.suarez@email.com', false, true, '2025-06-20 03:07:55.427589-04', 17, NULL, NULL);
+INSERT INTO public.usuario VALUES (28, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_beatriz', 'Beatriz', 'Flores', 'beatriz.flores@email.com', false, true, '2025-06-20 03:07:55.427589-04', 18, NULL, NULL);
+INSERT INTO public.usuario VALUES (29, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_ricardo', 'Ricardo', 'Medina', 'ricardo.medina@email.com', false, true, '2025-06-20 03:07:55.427589-04', 19, NULL, NULL);
+INSERT INTO public.usuario VALUES (30, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'cliente_maritza', 'Maritza', 'Ponce', 'maritza.ponce@email.com', false, true, '2025-06-20 03:07:55.427589-04', 20, NULL, NULL);
+INSERT INTO public.usuario VALUES (31, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'prov_maltas', 'Ventas', 'Maltas Andinas', 'ventas@maltasandinas.com', false, true, '2025-06-20 03:07:55.427589-04', NULL, 1, NULL);
+INSERT INTO public.usuario VALUES (32, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'prov_lupulos', 'Comercial', 'Lúpulos Caribe', 'comercial@lupuloscaribe.com', false, true, '2025-06-20 03:07:55.427589-04', NULL, 2, NULL);
+INSERT INTO public.usuario VALUES (33, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'prov_levaduras', 'Info', 'Levaduras Gourmet', 'info@levadurasgourmet.com', false, true, '2025-06-20 03:07:55.427589-04', NULL, 3, NULL);
+INSERT INTO public.usuario VALUES (34, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'prov_envases', 'Pedidos', 'Envases Premium', 'pedidos@envasespremium.com', false, true, '2025-06-20 03:07:55.427589-04', NULL, 4, NULL);
+INSERT INTO public.usuario VALUES (35, 'pbkdf2_sha256$216000$pass123$d4fc03e0071047d1dabb99e35aceafc9c35484ac22728700df8021e228af7c22', NULL, false, 'prov_tecnologia', 'Soporte', 'BeerTech', 'soporte@beertech.com', false, true, '2025-06-20 03:07:55.427589-04', NULL, 5, NULL);
 
 
 --

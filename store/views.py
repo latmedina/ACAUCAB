@@ -7,7 +7,7 @@ from django.contrib import messages
 from .models import (
     presentacion, venta_online, detalle_venta_online, pre_alm, 
     metodo_pago, pago, moneda, historico_moneda, tienda, 
-    inventario, venta_fisica, detalle_venta_fisica, cliente, proveedor, empleado, emp_car
+    inventario, venta_fisica, detalle_venta_fisica, cliente, proveedor, empleado, emp_car, usuario, lugar
 )
 from django.db import connection
 from django.contrib.auth import authenticate, login, logout
@@ -1187,9 +1187,25 @@ def crear_usuario_view(request, tipo, id_entidad):
 def registrar_cliente_view(request):
     if request.method == 'POST':
         form = ClienteForm(request.POST)
+        # Inicializar los querysets de municipio y parroquia si vienen datos
+        if 'estado' in request.POST and request.POST['estado']:
+            try:
+                estado_id = request.POST['estado']
+                municipios = lugar.objects.filter(fk_lugar_id=estado_id, lug_tipo='municipio')
+                form.fields['municipio'].queryset = municipios
+                
+                if 'municipio' in request.POST and request.POST['municipio']:
+                    municipio_id = request.POST['municipio']
+                    parroquias = lugar.objects.filter(fk_lugar_id=municipio_id, lug_tipo='parroquia')
+                    form.fields['parroquia'].queryset = parroquias
+            except (ValueError, lugar.DoesNotExist):
+                pass
+        
         if form.is_valid():
-            cliente = form.save()
-            return redirect('crear_usuario', tipo='cliente', id_entidad=cliente.cli_id)
+            cliente_obj = form.save()
+            return redirect('crear_usuario', tipo='cliente', id_entidad=cliente_obj.cli_id)
+        else:
+            print("Errores del formulario:", form.errors)
     else:
         form = ClienteForm()
     return render(request, 'registro_cliente.html', {'form': form})
@@ -1198,20 +1214,37 @@ def registrar_cliente_view(request):
 def registrar_empleado_view(request):
     if request.method == 'POST':
         form = EmpleadoForm(request.POST)
+        
+        # Inicializar los querysets de municipio y parroquia si vienen datos
+        if 'estado' in request.POST and request.POST['estado']:
+            try:
+                estado_id = request.POST['estado']
+                municipios = lugar.objects.filter(fk_lugar_id=estado_id, lug_tipo='municipio')
+                form.fields['municipio'].queryset = municipios
+                
+                if 'municipio' in request.POST and request.POST['municipio']:
+                    municipio_id = request.POST['municipio']
+                    parroquias = lugar.objects.filter(fk_lugar_id=municipio_id, lug_tipo='parroquia')
+                    form.fields['parroquia'].queryset = parroquias
+            except (ValueError, lugar.DoesNotExist):
+                pass
+        
         if form.is_valid():
-            empleado = form.save()
+            empleado_obj = form.save()
 
             # Crear emp_car (relación empleado-cargo) con valores por defecto (ajustar según tus reglas)
             from .models import emp_car  # Importar aquí para evitar problemas de carga circular
             emp_car.objects.create(
-                fk_empleado=empleado,
+                fk_empleado=empleado_obj,
                 fk_cargo_id=1,  # Asignar ID de cargo por defecto (ajusta esto)
                 fk_departamento=1,  # ID por defecto para departamento
                 fk_tienda=1,  # ID por defecto para tienda
                 emp_car_fecha_inicio=date.today()
             )
 
-            return redirect('crear_usuario', tipo='empleado', id_entidad=empleado.emp_id)
+            return redirect('crear_usuario', tipo='empleado', id_entidad=empleado_obj.emp_id)
+        else:
+            print("Errores del formulario EmpleadoForm:", form.errors)
     else:
         form = EmpleadoForm()
     return render(request, 'registro_empleado.html', {'form': form})
@@ -1220,9 +1253,26 @@ def registrar_empleado_view(request):
 def registrar_proveedor_view(request):
     if request.method == 'POST':
         form = ProveedorForm(request.POST)
+        
+        # Inicializar los querysets de municipio y parroquia si vienen datos
+        if 'estado' in request.POST and request.POST['estado']:
+            try:
+                estado_id = request.POST['estado']
+                municipios = lugar.objects.filter(fk_lugar_id=estado_id, lug_tipo='municipio')
+                form.fields['municipio'].queryset = municipios
+                
+                if 'municipio' in request.POST and request.POST['municipio']:
+                    municipio_id = request.POST['municipio']
+                    parroquias = lugar.objects.filter(fk_lugar_id=municipio_id, lug_tipo='parroquia')
+                    form.fields['parroquia'].queryset = parroquias
+            except (ValueError, lugar.DoesNotExist):
+                pass
+        
         if form.is_valid():
-            proveedor = form.save()
-            return redirect('crear_usuario', tipo='proveedor', id_entidad=proveedor.pro_id)
+            proveedor_obj = form.save()
+            return redirect('crear_usuario', tipo='proveedor', id_entidad=proveedor_obj.pro_id)
+        else:
+            print("Errores del formulario ProveedorForm:", form.errors)
     else:
         form = ProveedorForm()
     return render(request, 'registro_proveedor.html', {'form': form})
@@ -1238,3 +1288,36 @@ def home_view(request):
         'grupos': grupos,
         'permisos': permisos,
     })
+
+# VISTAS AJAX PARA SELECTOR JERÁRQUICO DE LUGAR
+@csrf_exempt
+def load_municipios(request):
+    """Vista AJAX para cargar municipios según el estado seleccionado"""
+    estado_id = request.GET.get('estado_id')
+    municipios = lugar.objects.filter(
+        fk_lugar_id=estado_id,
+        lug_tipo='municipio'
+    ).order_by('lug_nombre')
+    
+    municipios_data = [
+        {'id': municipio.lug_id, 'nombre': municipio.lug_nombre}
+        for municipio in municipios
+    ]
+    
+    return JsonResponse({'municipios': municipios_data})
+
+@csrf_exempt
+def load_parroquias(request):
+    """Vista AJAX para cargar parroquias según el municipio seleccionado"""
+    municipio_id = request.GET.get('municipio_id')
+    parroquias = lugar.objects.filter(
+        fk_lugar_id=municipio_id,
+        lug_tipo='parroquia'
+    ).order_by('lug_nombre')
+    
+    parroquias_data = [
+        {'id': parroquia.lug_id, 'nombre': parroquia.lug_nombre}
+        for parroquia in parroquias
+    ]
+    
+    return JsonResponse({'parroquias': parroquias_data})
