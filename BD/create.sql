@@ -4765,6 +4765,8 @@ ALTER TABLE ONLY public.tipo_evento
 ALTER TABLE ONLY public.usuario
     ADD CONSTRAINT usuario_fk_cliente_4ae4519a_fk_cliente_cli_id FOREIGN KEY (fk_cliente) REFERENCES public.cliente(cli_id) DEFERRABLE INITIALLY DEFERRED;
 
+ALTER TABLE ONLY public.usuario
+    ADD CONSTRAINT usuario_fk_emp_car_4ae4519a_fk_empleado_emp_id FOREIGN KEY (fk_emp_car) REFERENCES public.emp_car(id) DEFERRABLE INITIALLY DEFERRED;
 
 
 
