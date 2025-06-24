@@ -87,3 +87,14 @@ def crear_usuario_sql(username, email, password, tipo, id_entidad, emp_car_id=No
             first_name,
             last_name
         ])
+
+def modificar_usuario_sql(id_usuario, username, email, password, first_name, last_name):
+    with connection.cursor() as cursor:
+        cursor.callproc('modificar_usuario', [
+            id_usuario,
+            username,
+            email,
+            password,
+            first_name,
+            last_name
+        ])
