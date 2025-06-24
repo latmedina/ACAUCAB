@@ -4,6 +4,10 @@ import json
 from django.utils import timezone
 from django.contrib.auth.models import User, Group
 from django.contrib import messages
+from django.db import connection, transaction
+from django.http import JsonResponse, HttpResponseNotFound
+from django.http import JsonResponse, HttpResponse, HttpResponseNotFound
+from django.core.serializers.json import DjangoJSONEncoder
 from .models import (
     presentacion, venta_online, detalle_venta_online, pre_alm, 
     metodo_pago, pago, moneda, historico_moneda, tienda, 
@@ -1321,3 +1325,43 @@ def load_parroquias(request):
     ]
     
     return JsonResponse({'parroquias': parroquias_data})
+
+def vista_factura(request):
+    # Asegúrate de que tu archivo 'factura_reporte.html' esté en tu carpeta de templates
+        return render(request, 'factura_reporte.html')
+
+def generar_reporte_venta_api(request, venta_id):
+    """
+    API endpoint que obtiene los datos para un reporte de venta específico.
+    """
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+    try:
+        with connection.cursor() as cursor:
+            print(f"Ejecutando consulta para venta_id: {venta_id}")
+            cursor.execute("SELECT obtener_datos_reporte_venta(%s);", [venta_id])
+            result = cursor.fetchone()
+            
+            if result is None or result[0] is None:
+                print(f"No se encontró resultado en la BD para venta_id: {venta_id}")
+                return HttpResponseNotFound(f'No se encontraron datos para la venta con ID {venta_id}')
+
+            # El resultado es un diccionario de Python
+            report_data = result[0]
+            print("Datos obtenidos de la BD correctamente. Procediendo a serializar.")
+            # print(f"Datos: {report_data}") # Descomenta esta línea si necesitas ver el diccionario completo
+
+            # LA CORRECCIÓN: Convertimos manualmente a JSON
+            # Esto nos da más control y nos ayuda a aislar el error.
+            json_output = json.dumps(report_data, cls=DjangoJSONEncoder)
+            
+            print("Serialización a JSON exitosa. Enviando respuesta.")
+            
+            # Devolvemos una HttpResponse con el tipo de contenido correcto.
+            return HttpResponse(json_output, content_type='application/json')
+
+    except Exception as e:
+        # Este bloque capturará cualquier error durante el proceso
+        print(f"¡ERROR! Ocurrió una excepción en la vista: {e}")
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
