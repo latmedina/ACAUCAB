@@ -1,0 +1,117 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/autopago.css' %}">
+<div class="autopago-container">
+    <div class="autopago-wrapper">
+        <div class="autopago-card">
+            <div class="autopago-header">
+                <div class="autopago-logo">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <h1>Sistema de Autopago ACAUCAB</h1>
+                <p>Seleccione su tipo de cliente para continuar</p>
+            </div>
+            
+            <div class="cliente-selection-container">
+                <div class="cliente-options-row">
+                    <!-- Cliente Natural -->
+                    <div class="cliente-option-wrapper">
+                        <div class="cliente-option-card natural" onclick="seleccionarTipoCliente('NATURAL')" data-tipo="NATURAL">
+                            <div class="cliente-icon">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <h4 class="cliente-title">Cliente Natural</h4>
+                            <p class="cliente-description">
+                                Persona natural con cédula de identidad venezolana
+                            </p>
+                            <div class="cliente-features">
+                                <i class="fas fa-id-card"></i> Identificación con CI
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Cliente Jurídico -->
+                    <div class="cliente-option-wrapper">
+                        <div class="cliente-option-card juridico" onclick="seleccionarTipoCliente('JURIDICO')" data-tipo="JURIDICO">
+                            <div class="cliente-icon">
+                                <i class="fas fa-building"></i>
+                            </div>
+                            <h4 class="cliente-title">Cliente Jurídico</h4>
+                            <p class="cliente-description">
+                                Empresa o persona jurídica registrada
+                            </p>
+                            <div class="cliente-features">
+                                <i class="fas fa-building"></i> Identificación con RIF
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Información adicional -->
+                <div class="autopago-alert alert-info">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <i class="fas fa-info-circle" style="font-size: 2rem;"></i>
+                        <div>
+                            <h6 style="margin-bottom: 0.5rem; font-weight: 600;">¿Primera vez usando el autopago?</h6>
+                            <p style="margin-bottom: 0;">
+                                Debe estar registrado en nuestro sistema. Si no tiene cuenta, 
+                                contacte a nuestro personal de atención al cliente.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Botón de volver -->
+                <div style="text-align: center; margin-top: 1.5rem;">
+                    <a href="{% url 'store_view' 'fisica' %}" class="btn btn-secondary" 
+                       style="border-radius: 15px; padding: 0.8rem 1.5rem; text-decoration: none;">
+                        <i class="fas fa-arrow-left" style="margin-right: 0.5rem;"></i>
+                        Volver a la Tienda
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<script>
+function seleccionarTipoCliente(tipo) {
+    // Añadir efecto visual de selección
+    const button = document.querySelector(`[data-tipo="${tipo}"]`);
+    button.classList.add('disabled');
+    button.innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border text-primary mb-3" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <h5>Procesando...</h5>
+        </div>
+    `;
+    
+    // Redirigir después de un breve delay para mostrar el feedback
+    setTimeout(() => {
+        window.location.href = `/autopago/login/?tipo=${tipo}`;
+    }, 1000);
+}
+
+// Añadir efectos de sonido si están disponibles
+document.addEventListener('DOMContentLoaded', function() {
+    const buttons = document.querySelectorAll('.btn-cliente');
+    
+    buttons.forEach(button => {
+        button.addEventListener('mouseenter', function() {
+            // Efecto de hover suave
+            this.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        });
+    });
+});
+</script>
+
+<!-- FontAwesome para los iconos -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %} 

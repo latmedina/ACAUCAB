@@ -1,0 +1,265 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/autopago.css' %}">
+<div class="autopago-container">
+    <div class="autopago-wrapper">
+        <div class="autopago-card">
+            <div class="autopago-header">
+                <div class="autopago-logo">
+                    {% if tipo_cliente == 'NATURAL' %}
+                        <i class="fas fa-user"></i>
+                    {% else %}
+                        <i class="fas fa-building"></i>
+                    {% endif %}
+                </div>
+                <h1>Iniciar Sesión</h1>
+                <p>
+                    Cliente {{ tipo_cliente|title }}
+                    {% if tipo_cliente == 'NATURAL' %}
+                        - Ingrese su Cédula
+                    {% else %}
+                        - Ingrese su RIF
+                    {% endif %}
+                </p>
+            </div>
+            
+            <div class="login-form-container">
+                <div class="login-form-wrapper">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="autopago-alert alert-{{ message.tags }}">
+                                <i class="fas fa-exclamation-triangle" style="margin-right: 0.5rem;"></i>
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <form method="post" id="loginForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="tipo_cliente" value="{{ tipo_cliente }}">
+                        
+                        <div class="form-group-autopago">
+                            <label for="documento" style="font-weight: 600; margin-bottom: 0.5rem; display: block;">
+                                {% if tipo_cliente == 'NATURAL' %}
+                                    <i class="fas fa-id-card" style="margin-right: 0.5rem; color: var(--autopago-primary);"></i>
+                                    Cédula de Identidad
+                                {% else %}
+                                    <i class="fas fa-building" style="margin-right: 0.5rem; color: var(--autopago-success);"></i>
+                                    Registro de Información Fiscal (RIF)
+                                {% endif %}
+                            </label>
+                            <div class="input-group-autopago">
+                                {% if tipo_cliente == 'NATURAL' %}
+                                    <span class="input-group-text-lg-autopago">
+                                        <i class="fas fa-id-card"></i>
+                                    </span>
+                                    <input type="text" 
+                                           class="form-control-lg-autopago" 
+                                           id="documento" 
+                                           name="documento" 
+                                           placeholder="Ej: V12345678" 
+                                           maxlength="12"
+                                           pattern="[VEJPvejp][0-9]{7,8}"
+                                           title="Formato válido: V12345678 o E12345678"
+                                           required
+                                           autocomplete="off">
+                                {% else %}
+                                    <span class="input-group-text-lg-autopago" style="background: var(--autopago-success);">
+                                        <i class="fas fa-building"></i>
+                                    </span>
+                                    <input type="text" 
+                                           class="form-control-lg-autopago" 
+                                           id="documento" 
+                                           name="documento" 
+                                           placeholder="Ej: J123456789" 
+                                           maxlength="12"
+                                           pattern="[JGjg][0-9]{9}"
+                                           title="Formato válido: J123456789 o G123456789"
+                                           required
+                                           autocomplete="off">
+                                {% endif %}
+                            </div>
+                            <div style="font-size: 0.9rem; color: #6c757d; margin-top: 0.5rem;">
+                                {% if tipo_cliente == 'NATURAL' %}
+                                    <i class="fas fa-info-circle" style="margin-right: 0.25rem;"></i>
+                                    Formato: V o E seguido de 7-8 dígitos (sin puntos ni espacios)
+                                {% else %}
+                                    <i class="fas fa-info-circle" style="margin-right: 0.25rem;"></i>
+                                    Formato: J o G seguido de 9 dígitos (sin puntos ni espacios)
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 1.5rem;">
+                            <button type="submit" class="btn-autopago" id="btnIngresar">
+                                <i class="fas fa-sign-in-alt" style="margin-right: 0.5rem;"></i>
+                                Buscar Cliente
+                            </button>
+                        </div>
+                        
+                        <!-- Información de ayuda -->
+                        <div class="autopago-alert alert-info">
+                            <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                                <i class="fas fa-lightbulb" style="font-size: 2rem; color: var(--autopago-info);"></i>
+                                <div>
+                                    <h6 style="margin-bottom: 0.5rem; font-weight: 600;">Instrucciones</h6>
+                                    <ul style="margin-bottom: 0; font-size: 0.9rem; padding-left: 1.2rem;">
+                                        <li>Ingrese su documento sin puntos, espacios ni guiones</li>
+                                        <li>Asegúrese de que esté registrado en nuestro sistema</li>
+                                        <li>Si no puede acceder, contacte a nuestro personal</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <!-- Botones de navegación -->
+                    <div style="display: flex; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap;">
+                        <a href="{% url 'autopago_inicio' %}" 
+                           style="flex: 1; min-width: 140px; background: #6c757d; color: white; border-radius: 15px; padding: 0.8rem 1rem; text-decoration: none; text-align: center; border: 1px solid #6c757d; transition: all 0.3s ease;">
+                            <i class="fas fa-arrow-left" style="margin-right: 0.5rem;"></i>
+                            Volver
+                        </a>
+                        <a href="{% url 'store_view' 'fisica' %}" 
+                           style="flex: 1; min-width: 140px; background: transparent; color: var(--autopago-primary); border-radius: 15px; padding: 0.8rem 1rem; text-decoration: none; text-align: center; border: 1px solid var(--autopago-primary); transition: all 0.3s ease;">
+                            <i class="fas fa-home" style="margin-right: 0.5rem;"></i>
+                            Inicio
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Footer de seguridad -->
+                <div style="background: #f8f9fa; text-align: center; padding: 1rem; border-radius: 0 0 var(--autopago-border-radius-lg) var(--autopago-border-radius-lg);">
+                    <small style="color: #6c757d;">
+                        <i class="fas fa-shield-alt" style="margin-right: 0.25rem;"></i>
+                        Sus datos están protegidos y seguros
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('loginForm');
+    const documentoInput = document.getElementById('documento');
+    const btnIngresar = document.getElementById('btnIngresar');
+    const tipoCliente = '{{ tipo_cliente }}';
+    
+    // Validación en tiempo real
+    documentoInput.addEventListener('input', function() {
+        this.value = this.value.toUpperCase();
+        validateDocumento();
+    });
+    
+    // Auto-formateo para facilitar escritura
+    documentoInput.addEventListener('keypress', function(e) {
+        const char = String.fromCharCode(e.which);
+        const currentValue = this.value;
+        
+        // Permitir solo letras al inicio y números después
+        if (currentValue.length === 0) {
+            if (tipoCliente === 'NATURAL' && !/[VEJPvejp]/.test(char)) {
+                e.preventDefault();
+                return;
+            }
+            if (tipoCliente === 'JURIDICO' && !/[JGjg]/.test(char)) {
+                e.preventDefault();
+                return;
+            }
+        } else if (currentValue.length >= 1 && !/[0-9]/.test(char)) {
+            e.preventDefault();
+            return;
+        }
+    });
+    
+    function validateDocumento() {
+        const value = documentoInput.value;
+        let isValid = false;
+        
+        if (tipoCliente === 'NATURAL') {
+            isValid = /^[VEJPvejp][0-9]{7,8}$/.test(value);
+        } else {
+            isValid = /^[JGjg][0-9]{9}$/.test(value);
+        }
+        
+        if (isValid) {
+            documentoInput.classList.remove('is-invalid');
+            documentoInput.classList.add('is-valid');
+        } else if (value.length > 0) {
+            documentoInput.classList.remove('is-valid');
+            documentoInput.classList.add('is-invalid');
+        } else {
+            documentoInput.classList.remove('is-valid', 'is-invalid');
+        }
+        
+        btnIngresar.disabled = !isValid;
+    }
+    
+    // Manejo del envío del formulario
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (!documentoInput.value) {
+            showAlert('Por favor, ingrese su documento de identificación.', 'warning');
+            documentoInput.focus();
+            return;
+        }
+        
+        // Validar formato antes de enviar
+        validateDocumento();
+        if (documentoInput.classList.contains('is-invalid')) {
+            showAlert('El formato del documento no es válido.', 'danger');
+            documentoInput.focus();
+            return;
+        }
+        
+        // Mostrar estado de carga
+        btnIngresar.disabled = true;
+        btnIngresar.innerHTML = `
+            <div class="spinner-border spinner-border-sm me-2" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            Buscando cliente...
+        `;
+        
+        // Enviar formulario
+        setTimeout(() => {
+            this.submit();
+        }, 500);
+    });
+    
+    function showAlert(message, type) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        alertDiv.innerHTML = `
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        const form = document.getElementById('loginForm');
+        form.insertBefore(alertDiv, form.firstChild);
+        
+        // Auto-dismiss después de 5 segundos
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
+            }
+        }, 5000);
+    }
+    
+    // Focus automático en el campo de documento
+    documentoInput.focus();
+});
+</script>
+
+<!-- FontAwesome para los iconos -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %} 
