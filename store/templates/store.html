@@ -15,8 +15,8 @@
 <div class="row" id="products-container">
     {% for product in products %}
     <div class="col-lg-4 product-item" data-product-name="{{ product.prese_nombre|lower }}">
-        {% if product.prese_imagen %}
-        <img class="thumbnail" src="{{ product.prese_imagen.url }}">
+                            {% if product.prese_imagen %}
+                        <img class="thumbnail" src="{{ product.get_imagen_url }}">
         {% endif %}
         <div class="box-element product">
             <h6><strong>{{ product.prese_nombre }}</strong></h6>
