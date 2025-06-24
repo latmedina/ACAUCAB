@@ -770,7 +770,8 @@ class tipo_evento(models.Model):
 class usuario(AbstractUser):
     fk_cliente = models.ForeignKey(cliente, on_delete=models.DO_NOTHING, db_column='fk_cliente', null=True, blank=True)
     fk_proveedor = models.ForeignKey('proveedor', on_delete=models.DO_NOTHING, db_column='fk_proveedor', null=True, blank=True)
-    
+    fk_emp_car = models.ForeignKey('emp_car', on_delete=models.DO_NOTHING, db_column='fk_emp_car', null=True, blank=True)
+
     class Meta:
         db_table = 'usuario'  # Esto cambia el nombre de la tabla a 'usuario'
 

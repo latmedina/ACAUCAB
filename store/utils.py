@@ -1,5 +1,7 @@
 import json
 from .models import *
+from django.contrib.auth.hashers import make_password
+from django.db import connection
 
 def sessionCart(request):
     cart = request.session.get('cart', {})
@@ -71,3 +73,17 @@ def guestOrder(request, data):
 	print(f"Simulando creación de pedido para invitado: {name} - {email}")
 	
 	return None, None
+
+def crear_usuario_sql(username, email, password, tipo, id_entidad, emp_car_id=None, first_name='', last_name=''):
+    hashed_password = make_password(password)
+    with connection.cursor() as cursor:
+        cursor.callproc('registrar_usuario', [
+            username,
+            email,
+            hashed_password,
+            tipo,
+            id_entidad,
+            emp_car_id,
+            first_name,
+            last_name
+        ])

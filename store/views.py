@@ -7,16 +7,16 @@ from django.contrib import messages
 from .models import (
     presentacion, venta_online, detalle_venta_online, pre_alm, 
     metodo_pago, pago, moneda, historico_moneda, tienda, 
-    inventario, venta_fisica, detalle_venta_fisica, cliente, usuario
+    inventario, venta_fisica, detalle_venta_fisica, cliente, proveedor, empleado, emp_car
 )
 from django.db import connection
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from .forms import CustomUserCreationForm
 from django.views.decorators.csrf import csrf_exempt
 from decimal import Decimal
 from datetime import datetime, date
-
+from .forms import ClienteForm, EmpleadoForm, ProveedorForm
+from .utils import crear_usuario_sql
 
 def validate_expiration_date(exp_date_str):
     """Valida que la fecha de vencimiento no sea anterior a la actual"""
@@ -1143,18 +1143,89 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
-def registro(request):
+
+def crear_usuario_view(request, tipo, id_entidad):
     if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+
+        # ✅ Obtener nombres automáticamente según el tipo
+        first_name = ''
+        last_name = ''
+        emp_car_id = None
+
+        if tipo == 'cliente':
+            entidad = cliente.objects.get(pk=id_entidad)
+            first_name = entidad.cli_nat_pnombre or ''
+            last_name = entidad.cli_nat_papellido or ''
+        
+        elif tipo == 'proveedor':
+            entidad = proveedor.objects.get(pk=id_entidad)
+            first_name = entidad.prov_nombre or ''
+            last_name = ''  # Si aplica
+        
+        elif tipo == 'empleado':
+            entidad = empleado.objects.get(pk=id_entidad)
+            first_name = entidad.emp_pnombre or ''
+            last_name = entidad.emp_papellido or ''
+            
+            empcar = emp_car.objects.filter(fk_empleado_id=id_entidad).order_by('-emp_car_fecha_inicio').first()
+            emp_car_id = empcar.id if empcar else None  # usa .id o emp_car_id según tu modelo
+
+        # ✅ Llamar a la función con todo incluido
+        crear_usuario_sql(username, email, password, tipo, id_entidad, emp_car_id, first_name, last_name)
+
+        return redirect('login')
+
+    return render(request, 'registro.html', {
+        'tipo': tipo,
+        'id_entidad': id_entidad
+    })
+
+# Vista para registrar un cliente
+def registrar_cliente_view(request):
+    if request.method == 'POST':
+        form = ClienteForm(request.POST)
         if form.is_valid():
-            usuario = form.save()
-            grupo_cliente, _ = Group.objects.get_or_create(name='Cliente')
-            usuario.groups.add(grupo_cliente)
-            login(request, usuario)
-            return redirect('home')
+            cliente = form.save()
+            return redirect('crear_usuario', tipo='cliente', id_entidad=cliente.cli_id)
     else:
-        form = CustomUserCreationForm(request.POST)
-    return render(request, 'registro.html', {'form': form})
+        form = ClienteForm()
+    return render(request, 'registro_cliente.html', {'form': form})
+
+# Vista para registrar un empleado
+def registrar_empleado_view(request):
+    if request.method == 'POST':
+        form = EmpleadoForm(request.POST)
+        if form.is_valid():
+            empleado = form.save()
+
+            # Crear emp_car (relación empleado-cargo) con valores por defecto (ajustar según tus reglas)
+            from .models import emp_car  # Importar aquí para evitar problemas de carga circular
+            emp_car.objects.create(
+                fk_empleado=empleado,
+                fk_cargo_id=1,  # Asignar ID de cargo por defecto (ajusta esto)
+                fk_departamento=1,  # ID por defecto para departamento
+                fk_tienda=1,  # ID por defecto para tienda
+                emp_car_fecha_inicio=date.today()
+            )
+
+            return redirect('crear_usuario', tipo='empleado', id_entidad=empleado.emp_id)
+    else:
+        form = EmpleadoForm()
+    return render(request, 'registro_empleado.html', {'form': form})
+
+# Vista para registrar un proveedor
+def registrar_proveedor_view(request):
+    if request.method == 'POST':
+        form = ProveedorForm(request.POST)
+        if form.is_valid():
+            proveedor = form.save()
+            return redirect('crear_usuario', tipo='proveedor', id_entidad=proveedor.pro_id)
+    else:
+        form = ProveedorForm()
+    return render(request, 'registro_proveedor.html', {'form': form})
 
 # HOME
 @login_required(login_url='login')
