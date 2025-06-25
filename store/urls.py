@@ -29,6 +29,7 @@ urlpatterns = [
     # Métodos de pago
     path('payment-method/', views.payment_method_view, name='payment_method'),
     path('process-payment-method/', views.process_payment_method, name='process_payment_method'),
+    path('get-saved-payment-methods/', views.get_saved_payment_methods, name='get_saved_payment_methods'),
     path('currency-rates/', views.currency_rates_view, name='currency_rates'),
 
     # Autenticación
