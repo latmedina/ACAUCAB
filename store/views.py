@@ -1910,14 +1910,43 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user:
             login(request, user)
-            # Redirigir al checkout si viene desde el carrito
             next_url = request.GET.get('next')
             if next_url:
                 return redirect(next_url)
+            # Verificar si el usuario es empleado
+            usuario_obj = get_object_or_404(usuario, pk=user.id)
+            if usuario_obj.fk_emp_car:
+                return redirect('empleado_home')  # Cambia 'empleado_home' por el nombre de tu vista/template de empleados
             return redirect('home')
         else:
             return render(request, 'login.html', {'error': 'Credenciales inválidas'})
     return render(request, 'login.html')
+
+@login_required
+def empleado_home(request):
+    """
+    Muestra la página de inicio para empleados, obteniendo el cargo del usuario
+    y pasándolo a la plantilla para mostrar las opciones correspondientes.
+    """
+    cargo = None
+    try:
+        with connection.cursor() as cursor:
+            # Llama a la función de la base de datos para obtener el cargo
+            cursor.execute("SELECT public.obtener_cargo_por_usuario(%s);", [request.user.id])
+            result = cursor.fetchone()
+            
+            if result:
+                cargo = result[0]
+
+    except Exception as e:
+        # Manejo de errores en caso de que la función falle
+        print(f"Error obteniendo el cargo del empleado: {e}")
+        cargo = None
+
+    context = {
+        'cargo': cargo
+    }
+    return render(request, 'empleado_home.html', context)
 
 def logout_view(request):
     logout(request)
@@ -2490,3 +2519,4 @@ def vista_factura_directa(request, venta_id):
     except Exception as e:
         print(f"Error al generar factura directa: {e}")
         return HttpResponse(f"<h1>Error al generar la factura</h1><p>{e}</p>", status=500)
+

@@ -143,6 +143,84 @@ CREATE TRIGGER tr_otorgar_puntos_venta_fisica
     FOR EACH ROW
     EXECUTE FUNCTION fn_otorgar_puntos_venta_fisica();
 
+
+-- =====================================================
+-- TRIGGER: OTORGAR PUNTOS AUTOMÁTICAMENTE EN VENTAS FÍSICAS
+-- =====================================================
+-- Este trigger se ejecuta automáticamente cuando se inserta un registro 
+-- en la tabla venta_fisica y otorga puntos al cliente basándose en el 10% del monto total
+
+-- Función para otorgar puntos por venta física
+CREATE OR REPLACE FUNCTION fn_otorgar_puntos_venta_fisica()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_monto_puntos DECIMAL(12,2);
+    v_valor_punto INTEGER;
+    v_puntos_otorgados INTEGER;
+    v_puntos_actuales INTEGER;
+BEGIN
+    -- Validar que la venta tiene un cliente asociado
+    IF NEW.fk_cliente IS NULL THEN
+        -- No hay cliente, no se otorgan puntos pero no es un error
+        RETURN NEW;
+    END IF;
+    
+    -- Validar que el monto total sea positivo
+    IF NEW.ven_fis_total <= 0 THEN
+        -- Monto inválido, no se otorgan puntos pero no es un error
+        RETURN NEW;
+    END IF;
+    
+    -- Calcular el 10% del monto total de la venta
+    v_monto_puntos := NEW.ven_fis_total * 0.10;
+    
+    -- Obtener el último valor histórico del punto
+    SELECT his_pre_pun_valor 
+    INTO v_valor_punto
+    FROM historico_precio_punto 
+    ORDER BY his_pre_pun_fecha_hora DESC 
+    LIMIT 1;
+    
+    -- Verificar que existe un precio histórico de puntos
+    IF NOT FOUND OR v_valor_punto IS NULL OR v_valor_punto <= 0 THEN
+        -- No hay precio de puntos configurado, no se otorgan puntos pero no es un error
+        RETURN NEW;
+    END IF;
+    
+    -- Calcular los puntos a otorgar (dividir monto entre valor del punto)
+    v_puntos_otorgados := FLOOR(v_monto_puntos / v_valor_punto);
+    
+    -- Solo otorgar puntos si el resultado es mayor a 0
+    IF v_puntos_otorgados > 0 THEN
+        -- Obtener puntos actuales del cliente
+        SELECT COALESCE(cli_cantidad_puntos, 0) 
+        INTO v_puntos_actuales
+        FROM cliente 
+        WHERE cli_id = NEW.fk_cliente;
+        
+        -- Actualizar los puntos del cliente
+        UPDATE cliente 
+        SET cli_cantidad_puntos = v_puntos_actuales + v_puntos_otorgados
+        WHERE cli_id = NEW.fk_cliente;
+        
+        -- Verificar que el update fue exitoso
+        IF NOT FOUND THEN
+            RAISE EXCEPTION 'Error al actualizar puntos del cliente con ID: %', NEW.fk_cliente;
+        END IF;
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Crear el trigger que se ejecuta después de cada INSERT en venta_fisica
+DROP TRIGGER IF EXISTS tr_otorgar_puntos_venta_fisica ON venta_fisica;
+
+CREATE TRIGGER tr_otorgar_puntos_venta_fisica
+    AFTER INSERT ON venta_fisica
+    FOR EACH ROW
+    EXECUTE FUNCTION fn_otorgar_puntos_venta_fisica();
+
 -- =====================================================
 -- COMENTARIOS Y DOCUMENTACIÓN
 -- =====================================================

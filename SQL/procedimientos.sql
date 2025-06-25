@@ -530,6 +530,28 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- obtener cargo por usuario empleado
+CREATE OR REPLACE FUNCTION public.obtener_cargo_por_usuario(p_usuario_id INT)
+RETURNS VARCHAR AS $$
+DECLARE
+    v_cargo_nombre VARCHAR;
+BEGIN
+    SELECT
+        c.car_nombre
+    INTO v_cargo_nombre
+    FROM public.usuario u
+    JOIN public.emp_car ec ON u.fk_empleado = ec.fk_empleado
+    JOIN public.cargo c ON ec.fk_cargo = c.car_id
+    WHERE u.id = p_usuario_id
+    -- Se asume que el cargo más reciente es el que no tiene fecha de fin.
+    -- O se puede ordenar por fecha de inicio descendente.
+    ORDER BY ec.emp_car_fecha_inicio DESC
+    LIMIT 1;
+
+    RETURN v_cargo_nombre;
+END;
+$$ LANGUAGE plpgsql;
+
 
 -- ===========================================
 -- FUNCION: modificar_usuario

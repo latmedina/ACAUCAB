@@ -277,3 +277,5 @@ EXCEPTION
         RAISE EXCEPTION 'Error al procesar pago con puntos: %', SQLERRM;
 END;
 $$ LANGUAGE plpgsql;
+
+

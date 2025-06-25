@@ -1,0 +1,156 @@
+{% extends "main.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    .hero-section {
+        background: linear-gradient(#0d6efd, rgba(26, 61, 126, 0.8)), url('https://placehold.co/1200x400/333333/FFFFFF?text=ACAUCAB') no-repeat center center;
+        background-size: cover;
+        padding: 60px 20px;
+        color: white;
+        text-align: center;
+        border-radius: 8px;
+    }
+    .hero-section h1 {
+        font-weight: 700;
+        font-size: 2.5rem;
+        color: white;
+    }
+    .hero-section p {
+        font-size: 1.2rem;
+        max-width: 600px;
+        margin: 10px auto 0;
+    }
+    .menu-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 25px;
+        margin-top: 40px;
+    }
+    .menu-card {
+        background-color: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        transition: transform 0.3s, box-shadow 0.3s;
+        text-decoration: none;
+        color: #333;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    .menu-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    .card-icon {
+        font-size: 3rem;
+        padding: 30px 20px;
+        text-align: center;
+        background-color: #1a237e;
+        color: #ffc107;
+    }
+    .card-content {
+        padding: 20px;
+        flex-grow: 1;
+    }
+    .card-content h5 {
+        font-weight: 700;
+        color: #1a237e;
+    }
+    .card-content p {
+        font-size: 0.95rem;
+        color: #666;
+    }
+</style>
+
+<div class="container py-5">
+    <section class="hero-section">
+        <h1>Bienvenido, {{ request.user.first_name|default:request.user.username }}</h1>
+        <p>Tu cargo es: <strong>{{ cargo|default:"No asignado" }}</strong>. Selecciona una opción para comenzar.</p>
+    </section>
+
+    <div class="menu-container">
+        
+        <!-- ============================================== -->
+        <!-- OPCIONES PARA CAJERO Y GERENTE (ACCESO COMÚN) -->
+        <!-- ============================================== -->
+        {% if cargo == 'Cajero' or cargo == 'Gerente' %}
+        <a href="{% url 'store_view' 'fisica' %}" class="menu-card">
+            <div class="card-icon">
+                <i class="fas fa-cash-register"></i>
+            </div>
+            <div class="card-content">
+                <h5>Punto de Venta</h5>
+                <p>Accede al catálogo de productos para registrar ventas físicas.</p>
+            </div>
+        </a>
+        {% endif %}
+
+        <!-- ============================================== -->
+        <!-- OPCIONES EXCLUSIVAS PARA GERENTE -->
+        <!-- ============================================== -->
+        {% if cargo == 'Gerente' %}
+        <a href="{% url 'vista_reporte_productores' %}" class="menu-card">
+            <div class="card-icon">
+                <i class="fas fa-chart-bar"></i>
+            </div>
+            <div class="card-content">
+                <h5>Reporte de Eventos</h5>
+                <p>Ver el listado de productores que participaron en eventos.</p>
+            </div>
+        </a>
+
+        <a href="{% url 'vista_reporte_eficiencia' %}" class="menu-card">
+            <div class="card-icon">
+                <i class="fas fa-shipping-fast"></i>
+            </div>
+            <div class="card-content">
+                <h5>Eficiencia de Despacho</h5>
+                <p>Calcular el tiempo promedio de despacho para pedidos online.</p>
+            </div>
+        </a>
+
+        <a href="{% url 'vista_reporte_ofertas' %}" class="menu-card">
+             <div class="card-icon">
+                <i class="fas fa-tags"></i>
+            </div>
+            <div class="card-content">
+                <h5>Histórico de Ofertas</h5>
+                <p>Consultar las ofertas y descuentos en un período de tiempo.</p>
+            </div>
+        </a>
+
+        <a href="{% url 'vista_reporte_incumplimiento' %}" class="menu-card">
+             <div class="card-icon">
+                <i class="fas fa-user-clock"></i>
+            </div>
+            <div class="card-content">
+                <h5>Incumplimiento Horario</h5>
+                <p>Revisar llegadas tardes y salidas tempranas de los empleados.</p>
+            </div>
+        </a>
+
+        <a href="{% url 'vista_reporte_ordenes_pendientes' %}" class="menu-card">
+            <div class="card-icon">
+                <i class="fas fa-file-invoice-dollar"></i>
+            </div>
+            <div class="card-content">
+                <h5>Órdenes por Aprobar</h5>
+                <p>Ver las órdenes de compra que están pendientes de aprobación.</p>
+            </div>
+        </a>
+        {% endif %}
+        
+        <!-- Mensaje si no hay opciones disponibles -->
+        {% if not cargo %}
+        <div class="col-12">
+            <div class="alert alert-warning">
+                No tienes un cargo asignado o no hay opciones disponibles para tu rol. Contacta a un administrador.
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

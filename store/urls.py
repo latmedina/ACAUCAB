@@ -70,6 +70,9 @@ urlpatterns = [
     path('historial-compras/<int:id_usuario>/', views.vista_historial_compras, name='historial-compras'),
     path('api/historial/usuario/<int:id_usuario>/', views.historial_compras_api, name='api_historial_compras'),
 
+    # Interfaz de empleado
+    path('empleado/home/', views.empleado_home, name='empleado_home'),
+
     # AJAX para selector jerárquico de lugar
     path('ajax/load-municipios/', views.load_municipios, name='ajax_load_municipios'),
     path('ajax/load-parroquias/', views.load_parroquias, name='ajax_load_parroquias'),
