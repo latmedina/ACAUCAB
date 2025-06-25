@@ -40,6 +40,7 @@ urlpatterns = [
     path('registrar/proveedor/', views.registrar_proveedor_view, name='registrar_proveedor'),
     path('registrar/usuario/<str:tipo>/<int:id_entidad>/', views.crear_usuario_view, name='crear_usuario'),
     path('modificar-usuario/<int:usuario_id>/', views.modificar_usuario_view, name='modificar_usuario'),
+    path('eliminar_usuario/<int:id_usuario>/', views.eliminar_usuario_view, name='eliminar_usuario'),
 
 
     path('factura/', views.vista_factura, name='vista_factura'),

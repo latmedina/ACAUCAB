@@ -125,12 +125,18 @@
                     <i class="fas fa-times"></i>
                     Cancelar
                 </a>
-                <button type="submit" class="btn-primary">
-                    <i class="fas fa-save"></i>
-                    Guardar Cambios
-                </button>
+                <form method="POST" action="{% url 'eliminar_usuario' usuario.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                    </form>
             </div>
         </form>
+
+
+
     </div>
 </div>
+
+
+
 {% endblock %}

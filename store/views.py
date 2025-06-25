@@ -21,7 +21,7 @@ from django.views.decorators.csrf import csrf_exempt
 from decimal import Decimal
 from datetime import datetime, date
 from .forms import ClienteForm, EmpleadoForm, ProveedorForm
-from .utils import crear_usuario_sql, modificar_usuario_sql
+from .utils import crear_usuario_sql, modificar_usuario_sql, eliminar_usuario_sql
 
 def validate_expiration_date(exp_date_str):
     """Valida que la fecha de vencimiento no sea anterior a la actual"""
@@ -1517,6 +1517,25 @@ def modificar_usuario_view(request, usuario_id):
         'usuario': user_obj
     })
 
+from django.contrib.auth import logout
+from django.shortcuts import redirect
+
+@login_required
+def eliminar_usuario_view(request, id_usuario):
+    print(f"Vista eliminar_usuario llamada. Método: {request.method}")
+    if request.method == 'POST':
+        print(f"Eliminando usuario con ID {id_usuario}")
+        eliminar_usuario_sql(id_usuario)
+
+        # Si el usuario que se eliminó es el que está logueado:
+        if request.user.id == id_usuario:
+            logout(request)
+            return redirect('login')  # Te lleva al login
+
+        return redirect('store')  # O donde prefieras si eliminás a otro usuario
+    else:
+        print("Vista llamada por GET, no se elimina nada.")
+        return redirect('/')
 
 # HOME
 @login_required(login_url='login')
