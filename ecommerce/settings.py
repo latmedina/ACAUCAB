@@ -26,8 +26,8 @@ SECRET_KEY = 'django-insecure-ub!ne0a(8e$9(=#091qq6w(n6#d-r@+w8tv6p9+o@k)l!1kb%_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '05ea-38-114-120-210.ngrok-free.app']
-CSRF_TRUSTED_ORIGINS = ['https://05ea-38-114-120-210.ngrok-free.app']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'c2f2-51-77-64-149.ngrok-free.app']
+CSRF_TRUSTED_ORIGINS = ['https://c2f2-51-77-64-149.ngrok-free.app']
 
 
 # Application definition
@@ -86,9 +86,9 @@ WSGI_APPLICATION = 'ecommerce.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'ACAUCAB',
+        'NAME': 'ACAUCAB2',
         'USER': 'postgres',
-        'PASSWORD': '123456',
+        'PASSWORD': '1234',
         'HOST': 'localhost',
         'PORT': '5432',
     }
