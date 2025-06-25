@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 import json
+import math
 from django.utils import timezone
 from django.contrib.auth.models import User, Group
 from django.contrib import messages
@@ -11,7 +12,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 import traceback
 from .models import (
     presentacion, venta_online, detalle_venta_online, pre_alm, 
-    metodo_pago, pago, moneda, historico_moneda, tienda, 
+    metodo_pago, pago, moneda, historico_moneda, historico_precio_punto, tienda, 
     inventario, venta_fisica, detalle_venta_fisica, cliente, proveedor, empleado, emp_car, usuario, lugar
 )
 from django.db import connection
@@ -21,7 +22,7 @@ from django.views.decorators.csrf import csrf_exempt
 from decimal import Decimal
 from datetime import datetime, date
 from .forms import ClienteForm, EmpleadoForm, ProveedorForm
-from .utils import crear_usuario_sql, modificar_usuario_sql
+from .utils import crear_usuario_sql, modificar_usuario_sql, eliminar_usuario_sql
 
 def validate_expiration_date(exp_date_str):
     """Valida que la fecha de vencimiento no sea anterior a la actual"""
@@ -56,16 +57,13 @@ def validate_payment_data(tipo_pago, data):
                 errors.append('Denominación inválida')
                 
     elif tipo_pago == 'cheque':
-        num_cheque = data.get('num_cheque')
+        num_cheque = data.get('num_cheque', '').strip()
         if not num_cheque:
             errors.append('Número de cheque requerido')
-        else:
-            try:
-                cheque_int = int(num_cheque)
-                if cheque_int <= 0:
-                    errors.append('El número de cheque debe ser mayor a 0')
-            except (ValueError, TypeError):
-                errors.append('Número de cheque inválido')
+        elif len(num_cheque) < 1:
+            errors.append('El número de cheque debe tener al menos 1 carácter')
+        elif len(num_cheque) > 50:
+            errors.append('El número de cheque no puede exceder 50 caracteres')
                 
     elif tipo_pago == 'tarjeta_debito':
         numero = data.get('numero', '').replace(' ', '')
@@ -703,22 +701,25 @@ def processOrder(request):
     if not detalles:
         return JsonResponse({'status': 'error', 'message': 'No hay productos válidos en el carrito'}, status=400)
 
-    # Calcular total
-    total_venta = sum(d['precio_unitario'] * d['cantidad'] for d in detalles)
+    # Calcular total en USD
+    total_venta_usd = sum(d['precio_unitario'] * d['cantidad'] for d in detalles)
+    
+    # Convertir total a bolívares
+    total_venta_bolivares = convert_price_to_bolivars(Decimal(str(total_venta_usd)))
     
     tienda_obj = tienda.objects.first()
-    if total_venta <= 0:
+    if total_venta_usd <= 0:
         return JsonResponse({'status': 'error', 'message': 'Total de la venta inválido'}, status=400)
         
     # Verificar si el usuario tiene un cliente asociado
     if not request.user.fk_cliente:
         return JsonResponse({'status': 'error', 'message': 'Usuario debe tener un cliente asociado para ventas físicas'}, status=400)
 
-    # Crear venta física (no online)
+    # Crear venta física (no online) con total en bolívares
     venta_id = ejecutar_registro_venta_fisica(
         cliente_id=request.user.fk_cliente.cli_id,
         tienda_id=tienda_obj.tie_id,
-        total=total_venta
+        total_bolivares=float(total_venta_bolivares)
     )
 
     venta = venta_fisica.objects.get(ven_fis_id=venta_id)
@@ -734,7 +735,7 @@ def processOrder(request):
 
     # Guardar el ID de venta en la sesión para usar en el método de pago
     request.session['pending_venta_id'] = venta.ven_fis_id
-    request.session['pending_total'] = float(total_venta)
+    request.session['pending_total'] = float(total_venta_usd)  # Mantener en USD para compatibilidad con métodos de pago
     request.session['pending_tipo'] = 'fisica'
     # NO limpiar el carrito aquí - se limpiará después del pago exitoso
 
@@ -745,15 +746,15 @@ def processOrder(request):
         'redirect_to_payment': True
     })
 
-def ejecutar_registro_venta_fisica(cliente_id, tienda_id, total):
+def ejecutar_registro_venta_fisica(cliente_id, tienda_id, total_bolivares):
             with connection.cursor() as cursor:
-                cursor.execute("SELECT registrar_venta_fisica(%s, %s, %s);", [cliente_id, tienda_id, total])
+                cursor.execute("SELECT registrar_venta_fisica(%s, %s, %s);", [cliente_id, tienda_id, total_bolivares])
                 nueva_venta_id = cursor.fetchone()[0]
             return nueva_venta_id
 
 @csrf_exempt
 def process_order_view(request, tipo):
-    """Procesar orden generalizada (física/online) - Ahora diferencia entre ambos tipos"""
+    """Validar orden y preparar datos para pago - NO crear venta aún"""
     if request.method != 'POST':
         return JsonResponse({'status': 'error'}, status=400)
 
@@ -762,17 +763,17 @@ def process_order_view(request, tipo):
     cart_key = 'cart_fisica' if tipo == 'fisica' else 'cart'
     cart = request.session.get(cart_key, {})
 
-    tienda_obj = tienda.objects.first()
+    if not cart:
+        return JsonResponse({'status': 'error', 'message': 'Carrito vacío'}, status=400)
 
     if tipo == 'fisica':
-        # Lógica para venta física - USA SOLO TABLA INVENTARIO
-        detalles, total_venta = [], 0
+        # Validar inventario físico pero NO crear venta aún
+        detalles_validados, total_venta = [], 0
         errores_inventario = []
         
         for pid, cantidad in cart.items():
             try:
                 producto = presentacion.objects.get(pk=int(pid))
-                # Para venta física, usar SOLO tabla inventario (precio y cantidad)
                 inventario_item = inventario.objects.filter(fk_presentacion=producto).first()
                 
                 if not inventario_item:
@@ -786,20 +787,20 @@ def process_order_view(request, tipo):
                     )
                     continue
                 
-                detalles.append({
-                    'producto': producto, 
-                    'inventario': inventario_item,
-                    'cantidad': cantidad
+                detalles_validados.append({
+                    'producto_id': producto.prese_id,
+                    'inventario_id': inventario_item.inv_id,
+                    'cantidad': cantidad,
+                    'precio_unitario': float(inventario_item.inv_precio_unitario)
                 })
                 
-                # Precio viene del inventario, NO de pre_alm
                 subtotal = inventario_item.inv_precio_unitario * cantidad
                 total_venta += subtotal
+                
             except presentacion.DoesNotExist:
                 errores_inventario.append(f'Producto con ID {pid} no encontrado')
                 continue
 
-        # Si hay errores de inventario, retornar todos los errores
         if errores_inventario:
             return JsonResponse({
                 'status': 'error', 
@@ -807,38 +808,13 @@ def process_order_view(request, tipo):
                 'errores': errores_inventario
             }, status=400)
 
-        if total_venta <= 0:
-            return JsonResponse({'status': 'error', 'message': 'Venta inválida - no hay productos válidos en el carrito'}, status=400)
-
-        # Verificar si el usuario tiene un cliente asociado
+        # Verificar cliente asociado
         if not request.user.fk_cliente:
             return JsonResponse({'status': 'error', 'message': 'Usuario debe tener un cliente asociado para ventas físicas'}, status=400)
-
-        # Crear venta física
-        venta_id = ejecutar_registro_venta_fisica(
-            cliente_id=request.user.fk_cliente.cli_id,
-            tienda_id=tienda_obj.tie_id,
-            total=total_venta
-        )
-
-        venta = venta_fisica.objects.get(ven_fis_id=venta_id)
-        
-        # Crear detalles de venta física
-        for d in detalles:
-            detalle_venta_fisica.objects.create(
-                fk_venta_fisica=venta,
-                fk_inventario=d['inventario'],
-                det_ven_fis_cantidad=d['cantidad'],
-                det_ven_fis_precio_unitario=d['inventario'].inv_precio_unitario
-            )
-
-        # Guardar el ID de venta en la sesión para usar en el método de pago
-        request.session['pending_venta_id'] = venta.ven_fis_id
-        venta_id = venta.ven_fis_id
         
     else:
-        # Lógica para venta online con validaciones de stock
-        detalles, total_venta = [], 0
+        # Validar stock online pero NO crear venta aún
+        detalles_validados, total_venta = [], 0
         errores_stock = []
         
         for pid, cantidad in cart.items():
@@ -857,19 +833,20 @@ def process_order_view(request, tipo):
                     )
                     continue
                 
-                detalles.append({
-                    'producto': producto, 
-                    'prealm': prealm,
-                    'cantidad': cantidad
+                detalles_validados.append({
+                    'producto_id': producto.prese_id,
+                    'prealm_id': prealm.pre_alm_id,
+                    'cantidad': cantidad,
+                    'precio_unitario': float(prealm.pre_alm_precio)
                 })
                 
                 subtotal = prealm.pre_alm_precio * cantidad
                 total_venta += subtotal
+                
             except presentacion.DoesNotExist:
                 errores_stock.append(f'Producto con ID {pid} no encontrado')
                 continue
 
-        # Si hay errores de stock, retornar todos los errores
         if errores_stock:
             return JsonResponse({
                 'status': 'error', 
@@ -877,52 +854,596 @@ def process_order_view(request, tipo):
                 'errores': errores_stock
             }, status=400)
 
-        if total_venta <= 0:
-            return JsonResponse({'status': 'error', 'message': 'Venta inválida - no hay productos válidos en el carrito'}, status=400)
+    if total_venta <= 0:
+        return JsonResponse({'status': 'error', 'message': 'Orden inválida - no hay productos válidos en el carrito'}, status=400)
 
-        # Crear venta online
-        venta = venta_online.objects.create(
-            ven_onl_fecha=timezone.now(),
-            ven_onl_total=total_venta,
-            fk_usuario=request.user,
-            fk_tienda=tienda_obj
-        )
-        
-        # Crear detalles de venta online
-        for d in detalles:
-            detalle_venta_online.objects.create(
-                fk_venta_online=venta,
-                fk_pre_alm=d['prealm'],
-                det_ven_onl_cantidad=d['cantidad'],
-                det_ven_onl_precio=d['prealm'].pre_alm_precio
-            )
-
-        # Guardar el ID de venta en la sesión para usar en el método de pago
-        request.session['pending_venta_id'] = venta.ven_onl_id
-        venta_id = venta.ven_onl_id
-
-    request.session['pending_total'] = float(total_venta)
-    request.session['pending_tipo'] = tipo  # Guardar el tipo para referencia
-    # NO limpiar el carrito aquí - se limpiará después del pago exitoso
+    # Guardar datos validados en sesión para crear venta después del pago
+    request.session['pending_order_data'] = {
+        'tipo': tipo,
+        'detalles': detalles_validados,
+        'total': float(total_venta),
+        'cart_key': cart_key
+    }
+    
+    # NO crear venta ni limpiar carrito - se hará después del pago exitoso
 
     return JsonResponse({
         'status': 'ok', 
-        'message': 'Venta registrada', 
-        'venta_id': venta_id,
+        'message': 'Orden validada correctamente', 
+        'total': float(total_venta),
         'redirect_to_payment': True
     })
 
-# MÉTODOS DE PAGO
+# MÉTODOS DE PAGO MÚLTIPLES
 @login_required
 def payment_method_view(request):
-    """Vista para seleccionar y configurar el método de pago"""
-    venta_id = request.session.get('pending_venta_id')
-    total = request.session.get('pending_total')
-    pending_tipo = request.session.get('pending_tipo', 'fisica')
+    """Vista para seleccionar y configurar múltiples métodos de pago"""
+    order_data = request.session.get('pending_order_data')
     
-    if not venta_id or not total:
-        # Redirigir al checkout del tipo correcto
-        return redirect('checkout_view', tipo=pending_tipo)
+    if not order_data:
+        # No hay orden pendiente, redirigir al inicio
+        return redirect('store_view', tipo='fisica')
+    
+    # Extraer datos de la orden
+    total = order_data['total']
+    pending_tipo = order_data['tipo']
+    
+    # Calcular total en bolívares para usar como moneda base
+    total_usd = Decimal(str(total))
+    total_bs = convert_price_to_bolivars(total_usd)
+    
+    # Obtener todas las monedas disponibles
+    monedas_disponibles = []
+    
+    for moneda_obj in moneda.objects.all():
+        # Obtener el último histórico de esta moneda
+        ultimo_historico = historico_moneda.objects.filter(
+            fk_moneda=moneda_obj
+        ).order_by('-his_mon_fecha_hora').first()
+        
+        if ultimo_historico:                    
+            monedas_disponibles.append({
+                'id': moneda_obj.mon_id,
+                'tipo': moneda_obj.mon_tipo,
+                'valor_cambio': ultimo_historico.his_valor_cambio,
+                'fecha_actualizacion': ultimo_historico.his_mon_fecha_hora
+            })
+    
+    # Obtener puntos disponibles del usuario usando función SQL
+    puntos_disponibles = 0
+    valor_punto = 0
+    
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT * FROM public.obtener_info_puntos_usuario(%s) 
+                AS (cliente_id INTEGER, puntos_disponibles INTEGER, valor_punto INTEGER)
+            """, [request.user.id])
+            result = cursor.fetchone()
+            if result:
+                puntos_disponibles = result[1] or 0
+                valor_punto = result[2] or 0
+            
+    except Exception as e:
+        print(f"Error obteniendo puntos del usuario: {e}")
+    
+    # Inicializar sesión de pagos parciales si no existe
+    if 'partial_payments' not in request.session:
+        request.session['partial_payments'] = []
+    
+    context = {
+        'total': total,
+        'total_bs': float(total_bs),
+        'dollar_rate': get_dollar_exchange_rate(),
+        'tipo': pending_tipo,
+        'monedas_disponibles': monedas_disponibles,
+        'tipos_pago': ['efectivo', 'cheque', 'tarjeta_debito', 'tarjeta_credito', 'puntos'],
+        'puntos_disponibles': puntos_disponibles,
+        'valor_punto': valor_punto
+    }
+    
+    return render(request, 'payment_method.html', context)
+
+@csrf_exempt
+@login_required
+def get_applied_payments(request):
+    """Vista para obtener los pagos parciales ya aplicados"""
+    if request.method != 'GET':
+        return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
+    
+    try:
+        partial_payments = request.session.get('partial_payments', [])
+        total_paid = sum(float(payment['monto_bolivares']) for payment in partial_payments)
+        
+        return JsonResponse({
+            'status': 'success',
+            'payments': partial_payments,
+            'total_paid': total_paid
+        })
+        
+    except Exception as e:
+        print(f"Error obteniendo pagos aplicados: {e}")
+        return JsonResponse({'status': 'error', 'message': 'Error interno del servidor'}, status=500)
+
+@csrf_exempt
+@login_required
+def add_partial_payment(request):
+    """Vista para agregar un pago parcial a la sesión"""
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        print(f"=== ADD_PARTIAL_PAYMENT - Datos recibidos del frontend: {data}")
+        
+        # Validaciones básicas
+        amount = float(data.get('payment_amount', 0))
+        currency_id = data.get('payment_currency')
+        payment_method = data.get('selected_payment_method')
+        amount_bolivares = float(data.get('amount_bolivares', 0))
+        currency_type = data.get('currency_type')
+        
+        print(f"Método de pago: {payment_method}")
+        
+        if amount <= 0:
+            return JsonResponse({'status': 'error', 'message': 'El monto debe ser mayor a 0'}, status=400)
+        
+        if not currency_id or not payment_method:
+            return JsonResponse({'status': 'error', 'message': 'Debe seleccionar moneda y método de pago'}, status=400)
+        
+        # Verificar que no exceda el total restante
+        order_data = request.session.get('pending_order_data')
+        if not order_data:
+            return JsonResponse({'status': 'error', 'message': 'No hay orden pendiente'}, status=400)
+        
+        total_bs = convert_price_to_bolivars(Decimal(str(order_data['total'])))
+        partial_payments = request.session.get('partial_payments', [])
+        total_paid = sum(float(payment['monto_bolivares']) for payment in partial_payments)
+        total_remaining = float(total_bs) - total_paid
+        
+        if amount_bolivares > total_remaining + 0.01:
+            return JsonResponse({'status': 'error', 'message': 'El monto excede lo que resta por pagar'}, status=400)
+        
+        # Preparar datos del pago parcial
+        payment_data = {
+            'monto_original': amount,
+            'monto_bolivares': amount_bolivares,
+            'moneda_id': currency_id,
+            'moneda_tipo': currency_type,
+            'tipo_pago': payment_method,
+            'timestamp': timezone.now().isoformat()
+        }
+        
+        # Verificar si se está usando método guardado
+        use_saved_method = data.get('use_saved_method', False)
+        saved_method_id = data.get('saved_method_id')
+        
+        if use_saved_method and saved_method_id:
+            # Usar método guardado - obtener los datos del método guardado
+            try:
+                metodo_guardado = metodo_pago.objects.get(
+                    met_pag_id=saved_method_id,
+                    fk_usuario=request.user
+                )
+                
+                # Agregar datos del método guardado según su tipo
+                if metodo_guardado.met_pag_tipo_pago == 'tarjeta_debito':
+                    payment_data.update({
+                        'numero': str(metodo_guardado.tar_deb_numero),
+                        'vencimiento': metodo_guardado.tar_deb_vencimiento.isoformat(),
+                        'banco': metodo_guardado.tar_deb_banco,
+                        'saved_method_id': saved_method_id
+                    })
+                elif metodo_guardado.met_pag_tipo_pago == 'tarjeta_credito':
+                    payment_data.update({
+                        'numero': str(metodo_guardado.tar_cre_numero),
+                        'vencimiento': metodo_guardado.tar_cre_vencimiento.isoformat(),
+                        'saved_method_id': saved_method_id
+                    })
+                elif metodo_guardado.met_pag_tipo_pago == 'cheque':
+                    payment_data.update({
+                        'num_cheque': metodo_guardado.che_num_cheque,
+                        'saved_method_id': saved_method_id
+                    })
+                
+            except metodo_pago.DoesNotExist:
+                return JsonResponse({'status': 'error', 'message': 'Método de pago guardado no encontrado'}, status=404)
+        else:
+            # Nuevo método - validar y agregar campos específicos según el método de pago
+            validation_errors = validate_payment_data(payment_method, data)
+            if validation_errors:
+                return JsonResponse({'status': 'error', 'message': '; '.join(validation_errors)}, status=400)
+            
+            # Agregar campos específicos según el método de pago
+            if payment_method == 'efectivo':
+                payment_data['denominacion'] = data.get('denominacion')
+                
+            elif payment_method == 'cheque':
+                payment_data['num_cheque'] = data.get('num_cheque', '').strip()
+                
+            elif payment_method == 'tarjeta_debito':
+                # El frontend envía con nombres genéricos: numero, vencimiento, banco
+                numero = (data.get('numero', '') or data.get('numero_debito', '')).replace(' ', '')
+                vencimiento = data.get('vencimiento') or data.get('vencimiento_debito')
+                banco = data.get('banco', '').strip()
+                
+                print(f"  TARJETA DÉBITO - numero: '{numero}', vencimiento: '{vencimiento}', banco: '{banco}'")
+                print(f"  Datos originales: numero='{data.get('numero')}', vencimiento='{data.get('vencimiento')}', banco='{data.get('banco')}'")
+                
+                payment_data.update({
+                    'numero': numero,
+                    'vencimiento': vencimiento,
+                    'banco': banco
+                })
+                
+            elif payment_method == 'tarjeta_credito':
+                # El frontend envía con nombres genéricos: numero, vencimiento
+                numero = (data.get('numero', '') or data.get('numero_credito', '')).replace(' ', '')
+                vencimiento = data.get('vencimiento') or data.get('vencimiento_credito')
+                
+                print(f"  TARJETA CRÉDITO - numero: '{numero}', vencimiento: '{vencimiento}'")
+                print(f"  Datos originales: numero='{data.get('numero')}', vencimiento='{data.get('vencimiento')}'")
+                
+                payment_data.update({
+                    'numero': numero,
+                    'vencimiento': vencimiento
+                })
+                
+            elif payment_method == 'puntos':
+                # Para puntos, calcular cuántos puntos se necesitan
+                valor_punto = 0
+                try:
+                    with connection.cursor() as cursor:
+                        cursor.execute("""
+                            SELECT * FROM public.obtener_info_puntos_usuario(%s) 
+                            AS (cliente_id INTEGER, puntos_disponibles INTEGER, valor_punto INTEGER)
+                        """, [request.user.id])
+                        result = cursor.fetchone()
+                        if result:
+                            valor_punto = result[2] or 0
+                except Exception as e:
+                    return JsonResponse({'status': 'error', 'message': f'Error obteniendo valor del punto: {str(e)}'}, status=500)
+                
+                if valor_punto <= 0:
+                    return JsonResponse({'status': 'error', 'message': 'No hay precio de puntos configurado'}, status=400)
+                
+                puntos_necesarios = int(math.ceil(amount_bolivares / valor_punto))
+                payment_data['puntos_utilizados'] = puntos_necesarios
+                payment_data['valor_punto'] = valor_punto
+        
+        # Agregar el pago a la lista de pagos parciales
+        if 'partial_payments' not in request.session:
+            request.session['partial_payments'] = []
+        
+        print(f"Datos finales a guardar en sesión: {payment_data}")
+        request.session['partial_payments'].append(payment_data)
+        request.session.modified = True
+        print(f"Lista de pagos en sesión: {request.session['partial_payments']}")
+        
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Pago parcial agregado correctamente',
+            'payment_data': payment_data
+        })
+        
+    except Exception as e:
+        print(f"Error agregando pago parcial: {e}")
+        return JsonResponse({'status': 'error', 'message': f'Error interno del servidor: {str(e)}'}, status=500)
+
+@csrf_exempt
+@login_required
+def remove_partial_payment(request):
+    """Vista para eliminar un pago parcial de la sesión"""
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        payment_index = data.get('payment_index')
+        
+        if payment_index is None:
+            return JsonResponse({'status': 'error', 'message': 'Índice de pago requerido'}, status=400)
+        
+        partial_payments = request.session.get('partial_payments', [])
+        
+        if 0 <= payment_index < len(partial_payments):
+            removed_payment = partial_payments.pop(payment_index)
+            request.session['partial_payments'] = partial_payments
+            request.session.modified = True
+            
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Pago eliminado correctamente',
+                'removed_payment': removed_payment
+            })
+        else:
+            return JsonResponse({'status': 'error', 'message': 'Índice de pago inválido'}, status=400)
+        
+    except Exception as e:
+        print(f"Error eliminando pago parcial: {e}")
+        return JsonResponse({'status': 'error', 'message': 'Error interno del servidor'}, status=500)
+
+@csrf_exempt
+@login_required
+def finalize_multiple_payment_purchase(request):
+    """Vista para finalizar la compra con múltiples métodos de pago"""
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
+    
+    try:
+        print("=== INICIANDO FINALIZACIÓN DE COMPRA MÚLTIPLE ===")
+        order_data = request.session.get('pending_order_data')
+        partial_payments = request.session.get('partial_payments', [])
+        
+        print(f"Order data: {order_data}")
+        print(f"Partial payments: {partial_payments}")
+        
+        if not order_data:
+            print("ERROR: No hay orden pendiente")
+            return JsonResponse({'status': 'error', 'message': 'No hay orden pendiente'}, status=400)
+        
+        if not partial_payments:
+            print("ERROR: No hay pagos aplicados")
+            return JsonResponse({'status': 'error', 'message': 'No hay pagos aplicados'}, status=400)
+        
+        # Verificar que el total esté completamente cubierto
+        total_bs = convert_price_to_bolivars(Decimal(str(order_data['total'])))
+        total_paid = sum(float(payment['monto_bolivares']) for payment in partial_payments)
+        
+        if total_paid < float(total_bs) - 0.01:
+            return JsonResponse({'status': 'error', 'message': f'Faltan {float(total_bs) - total_paid:.2f} Bs por pagar'}, status=400)
+        
+        with transaction.atomic():
+            print("Iniciando transacción...")
+            
+            # CREAR LA VENTA
+            print("Creando venta...")
+            venta_fisica_obj, venta_online_obj = create_sale_from_order_data(order_data, request.user)
+            print(f"Venta creada - Física: {venta_fisica_obj}, Online: {venta_online_obj}")
+            
+            # CREAR CADA MÉTODO DE PAGO Y SU PAGO CORRESPONDIENTE
+            created_payments = []
+            
+            for i, payment_data in enumerate(partial_payments):
+                print(f"\n--- Procesando pago {i+1}/{len(partial_payments)} ---")
+                print(f"Datos del pago: {payment_data}")
+                
+                # Crear método de pago usando la función existente
+                print("Creando método de pago...")
+                metodo_pago_obj = create_payment_method_from_partial_data(request.user, payment_data)
+                
+                if isinstance(metodo_pago_obj, JsonResponse):
+                    print(f"ERROR: Fallo al crear método de pago para {payment_data['tipo_pago']}")
+                    raise Exception(f'Error creando método de pago: {payment_data["tipo_pago"]}')
+                
+                print(f"Método de pago creado con ID: {metodo_pago_obj.met_pag_id}")
+                
+                # Preparar IDs para el registro de pago
+                venta_fisica_id = venta_fisica_obj.ven_fis_id if venta_fisica_obj else None
+                venta_online_id = venta_online_obj.ven_onl_id if venta_online_obj else None
+                
+                # Obtener moneda
+                try:
+                    moneda_obj = moneda.objects.get(mon_id=payment_data['moneda_id'])
+                    print(f"Moneda encontrada: {moneda_obj.mon_tipo} (ID: {moneda_obj.mon_id})")
+                except moneda.DoesNotExist:
+                    print(f"ERROR: Moneda no encontrada con ID: {payment_data['moneda_id']}")
+                    raise Exception(f'Moneda no encontrada: {payment_data["moneda_id"]}')
+                
+                # Registrar el pago usando la función SQL
+                if payment_data['tipo_pago'] == 'puntos':
+                    print("Procesando pago con puntos...")
+                    # Pago con puntos - usar función especial
+                    with connection.cursor() as cursor:
+                        cursor.execute("""
+                            SELECT * FROM public.procesar_pago_puntos(%s, %s, %s, %s)
+                            AS (pago_id INTEGER, metodo_pago_id INTEGER, puntos_utilizados INTEGER, puntos_restantes INTEGER, monto_pago DECIMAL)
+                        """, [request.user.id, payment_data['puntos_utilizados'], venta_fisica_id, venta_online_id])
+                        
+                        resultado = cursor.fetchone()
+                        if not resultado:
+                            print("ERROR: No se pudo procesar pago con puntos")
+                            raise Exception('Error procesando pago con puntos')
+                        
+                        pago_id = resultado[0]
+                        print(f"Pago con puntos creado con ID: {pago_id}")
+                else:
+                    print(f"Procesando pago normal. Monto: {payment_data['monto_original']}")
+                    # Pago normal
+                    with connection.cursor() as cursor:
+                        cursor.execute("""
+                            SELECT public.registrar_pago(%s, %s, %s, %s, %s)
+                        """, [
+                            float(payment_data['monto_original']), 
+                            metodo_pago_obj.met_pag_id, 
+                            venta_fisica_id, 
+                            venta_online_id, 
+                            moneda_obj.mon_id
+                        ])
+                        
+                        result = cursor.fetchone()
+                        if not result or not result[0]:
+                            print("ERROR: No se pudo registrar el pago")
+                            raise Exception('Error registrando pago')
+                        
+                        pago_id = result[0]
+                        print(f"Pago normal creado con ID: {pago_id}")
+                
+                created_payments.append({
+                    'pago_id': pago_id,
+                    'metodo_pago_id': metodo_pago_obj.met_pag_id,
+                    'monto_original': payment_data['monto_original'],
+                    'monto_bolivares': payment_data['monto_bolivares'],
+                    'moneda': payment_data['moneda_tipo'],
+                    'tipo_pago': payment_data['tipo_pago']
+                })
+                print(f"Pago {i+1} procesado exitosamente")
+            
+            print(f"Todos los pagos procesados. Total: {len(created_payments)}")
+        
+        # Limpiar la sesión
+        cart_key = order_data['cart_key']
+        request.session.pop('pending_order_data', None)
+        request.session.pop('partial_payments', None)
+        request.session[cart_key] = {}  # Limpiar el carrito
+        
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Compra finalizada exitosamente',
+            'venta_id': venta_fisica_obj.ven_fis_id if venta_fisica_obj else venta_online_obj.ven_onl_id,
+            'total_pagos': len(created_payments),
+            'pagos_creados': created_payments,
+            'redirect_url': f'/store/{order_data["tipo"]}/'
+        })
+        
+    except Exception as e:
+        print(f"Error finalizando compra múltiple: {e}")
+        return JsonResponse({'status': 'error', 'message': f'Error finalizando compra: {str(e)}'}, status=500)
+
+def create_payment_method_from_partial_data(user, payment_data):
+    """Función para crear un método de pago desde los datos de un pago parcial"""
+    try:
+        print(f"create_payment_method_from_partial_data - Datos recibidos: {payment_data}")
+        tipo_pago = payment_data['tipo_pago']
+        print(f"Tipo de pago: {tipo_pago}")
+        
+        # Si hay saved_method_id, usar el método guardado existente
+        if 'saved_method_id' in payment_data:
+            print(f"Usando método guardado con ID: {payment_data['saved_method_id']}")
+            try:
+                metodo_guardado = metodo_pago.objects.get(
+                    met_pag_id=payment_data['saved_method_id'],
+                    fk_usuario=user
+                )
+                print(f"Método guardado encontrado: {metodo_guardado.met_pag_id}")
+                # Retornar un objeto mock con el ID del método guardado
+                class MockMetodoPago:
+                    def __init__(self, met_pag_id):
+                        self.met_pag_id = met_pag_id
+                        
+                return MockMetodoPago(metodo_guardado.met_pag_id)
+                
+            except metodo_pago.DoesNotExist:
+                print(f"ERROR: Método guardado no encontrado: {payment_data['saved_method_id']}")
+                return JsonResponse({'status': 'error', 'message': 'Método de pago guardado no encontrado'}, status=404)
+        
+        # Si no hay método guardado, crear uno nuevo
+        print("Creando nuevo método de pago...")
+        # Preparar parámetros para la función SQL
+        usuario_id = user.id
+        tar_deb_numero = None
+        tar_deb_vencimiento = None
+        tar_deb_banco = None
+        tar_cre_numero = None
+        tar_cre_vencimiento = None
+        efe_denominacion = None
+        che_num_cheque = None
+        his_pre_pun_id = None
+        
+        if tipo_pago == 'efectivo':
+            print(f"Procesando efectivo - denominación: {payment_data.get('denominacion')}")
+            efe_denominacion = int(payment_data.get('denominacion'))
+            
+        elif tipo_pago == 'cheque':
+            print(f"Procesando cheque - número: {payment_data.get('num_cheque')}")
+            che_num_cheque = payment_data.get('num_cheque', '').strip()
+            
+        elif tipo_pago == 'tarjeta_debito':
+            # Intentar obtener datos con ambos formatos (genérico y específico)
+            numero = (payment_data.get('numero', '') or payment_data.get('numero_debito', '')).replace(' ', '')
+            vencimiento = payment_data.get('vencimiento') or payment_data.get('vencimiento_debito')
+            banco = (payment_data.get('banco', '') or payment_data.get('banco_debito', '')).strip()
+            
+            print(f"Procesando tarjeta débito - número: {numero}, vencimiento: {vencimiento}, banco: {banco}")
+            print(f"Datos originales recibidos: numero='{payment_data.get('numero')}', numero_debito='{payment_data.get('numero_debito')}', vencimiento='{payment_data.get('vencimiento')}', vencimiento_debito='{payment_data.get('vencimiento_debito')}'")
+            
+            if not numero or not vencimiento or not banco:
+                print(f"ERROR: Faltan datos para tarjeta de débito")
+                print(f"  - numero: '{numero}'")
+                print(f"  - vencimiento: '{vencimiento}'")
+                print(f"  - banco: '{banco}'")
+                print(f"  - datos completos: {payment_data}")
+                return JsonResponse({'status': 'error', 'message': 'Faltan datos requeridos para tarjeta de débito'}, status=400)
+            
+            tar_deb_numero = int(numero)
+            tar_deb_vencimiento = datetime.strptime(vencimiento, '%Y-%m-%d').date()
+            tar_deb_banco = banco
+            
+        elif tipo_pago == 'tarjeta_credito':
+            # Intentar obtener datos con ambos formatos (genérico y específico)
+            numero = (payment_data.get('numero', '') or payment_data.get('numero_credito', '')).replace(' ', '')
+            vencimiento = payment_data.get('vencimiento') or payment_data.get('vencimiento_credito')
+            
+            print(f"Procesando tarjeta crédito - número: {numero}, vencimiento: {vencimiento}")
+            print(f"Datos originales recibidos: numero='{payment_data.get('numero')}', numero_credito='{payment_data.get('numero_credito')}', vencimiento='{payment_data.get('vencimiento')}', vencimiento_credito='{payment_data.get('vencimiento_credito')}'")
+            
+            if not numero or not vencimiento:
+                print(f"ERROR: Faltan datos para tarjeta de crédito")
+                print(f"  - numero: '{numero}'")
+                print(f"  - vencimiento: '{vencimiento}'")
+                print(f"  - datos completos: {payment_data}")
+                return JsonResponse({'status': 'error', 'message': 'Faltan datos requeridos para tarjeta de crédito'}, status=400)
+            
+            tar_cre_numero = int(numero)
+            tar_cre_vencimiento = datetime.strptime(vencimiento, '%Y-%m-%d').date()
+        
+        # Llamar a la función SQL para registrar el método de pago
+        print(f"Llamando función SQL con parámetros:")
+        print(f"  - usuario_id: {usuario_id}")
+        print(f"  - tipo_pago: {tipo_pago}")
+        print(f"  - tar_deb_numero: {tar_deb_numero}")
+        print(f"  - tar_deb_vencimiento: {tar_deb_vencimiento}")
+        print(f"  - tar_deb_banco: {tar_deb_banco}")
+        print(f"  - tar_cre_numero: {tar_cre_numero}")
+        print(f"  - tar_cre_vencimiento: {tar_cre_vencimiento}")
+        print(f"  - efe_denominacion: {efe_denominacion}")
+        print(f"  - che_num_cheque: {che_num_cheque}")
+        print(f"  - his_pre_pun_id: {his_pre_pun_id}")
+        
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT public.registrar_metodo_pago(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, [
+                usuario_id, tipo_pago, tar_deb_numero, tar_deb_vencimiento, tar_deb_banco,
+                tar_cre_numero, tar_cre_vencimiento, efe_denominacion, che_num_cheque, his_pre_pun_id
+            ])
+            
+            result = cursor.fetchone()
+            print(f"Resultado de la función SQL: {result}")
+            
+            if result and result[0]:
+                metodo_pago_id = result[0]
+                print(f"Método de pago creado exitosamente con ID: {metodo_pago_id}")
+                # Retornar un objeto mock para compatibilidad con el código existente
+                class MockMetodoPago:
+                    def __init__(self, met_pag_id):
+                        self.met_pag_id = met_pag_id
+                        
+                return MockMetodoPago(metodo_pago_id)
+            else:
+                print("ERROR: La función SQL no retornó un ID válido")
+                return JsonResponse({'status': 'error', 'message': 'Error al crear el método de pago'}, status=500)
+            
+    except (ValueError, TypeError) as e:
+        print(f"ERROR ValueError/TypeError: {e}")
+        return JsonResponse({'status': 'error', 'message': f'Error en los datos del método de pago: {str(e)}'}, status=400)
+    except Exception as e:
+        print(f"ERROR Exception: {e}")
+        return JsonResponse({'status': 'error', 'message': f'Error al registrar método de pago: {str(e)}'}, status=500)
+
+# FUNCIÓN ORIGINAL DE MÉTODOS DE PAGO (MANTENIDA PARA COMPATIBILIDAD)
+@login_required
+def payment_method_view_original(request):
+    """Vista original para un solo método de pago (mantenida para compatibilidad)"""
+    order_data = request.session.get('pending_order_data')
+    
+    if not order_data:
+        # No hay orden pendiente, redirigir al inicio
+        return redirect('store_view', tipo='fisica')
+    
+    # Extraer datos de la orden
+    total = order_data['total']
+    pending_tipo = order_data['tipo']
     
     # Obtener todas las monedas disponibles con su último valor de cambio
     monedas_disponibles = []
@@ -953,59 +1474,119 @@ def payment_method_view(request):
                 'fecha_actualizacion': ultimo_historico.his_mon_fecha_hora
             })
     
+    # Obtener puntos disponibles del usuario usando función SQL
+    puntos_disponibles = 0
+    valor_punto = 0
+    
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT * FROM public.obtener_info_puntos_usuario(%s) 
+                AS (cliente_id INTEGER, puntos_disponibles INTEGER, valor_punto INTEGER)
+            """, [request.user.id])
+            result = cursor.fetchone()
+            if result:
+                # result = (cliente_id, puntos_disponibles, valor_punto)
+                puntos_disponibles = result[1] or 0
+                valor_punto = result[2] or 0
+            
+    except Exception as e:
+        print(f"Error obteniendo puntos del usuario: {e}")
+    
     context = {
-        'venta_id': venta_id,
         'total': total,
+        'tipo': pending_tipo,
         'monedas_disponibles': monedas_disponibles,
-        'tipos_pago': ['efectivo', 'cheque', 'tarjeta_debito', 'tarjeta_credito']
+        'tipos_pago': ['efectivo', 'cheque', 'tarjeta_debito', 'tarjeta_credito', 'puntos'],
+        'puntos_disponibles': puntos_disponibles,
+        'valor_punto': valor_punto
     }
     
-    return render(request, 'payment_method.html', context)
+    return render(request, 'payment_method_original.html', context)
 
 @csrf_exempt
 @login_required
-def process_payment_method(request):
-    """Vista para procesar el método de pago seleccionado"""
+def get_saved_payment_methods(request):
+    """Vista para obtener los métodos de pago guardados del usuario (función original)"""
+    if request.method != 'GET':
+        return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
+    
+    try:
+        # Obtener métodos de pago del usuario (excluyendo cheque, efectivo y puntos)
+        metodos_guardados = metodo_pago.objects.filter(
+            fk_usuario=request.user
+        ).exclude(
+            met_pag_tipo_pago__in=['efectivo', 'puntos', 'cheque']
+        ).order_by('-met_pag_id')
+        
+        # Organizar por tipo de método
+        methods_by_type = {
+            'tarjeta_debito': [],
+            'tarjeta_credito': []
+        }
+        
+        for metodo in metodos_guardados:
+            method_data = {
+                'id': metodo.met_pag_id,
+                'tipo_pago': metodo.met_pag_tipo_pago
+            }
+                
+            if metodo.met_pag_tipo_pago == 'tarjeta_debito' and metodo.tar_deb_numero:
+                method_data.update({
+                    'tar_deb_numero': metodo.tar_deb_numero,
+                    'tar_deb_vencimiento': metodo.tar_deb_vencimiento.isoformat() if metodo.tar_deb_vencimiento else None,
+                    'tar_deb_banco': metodo.tar_deb_banco
+                })
+                methods_by_type['tarjeta_debito'].append(method_data)
+                
+            elif metodo.met_pag_tipo_pago == 'tarjeta_credito' and metodo.tar_cre_numero:
+                method_data.update({
+                    'tar_cre_numero': metodo.tar_cre_numero,
+                    'tar_cre_vencimiento': metodo.tar_cre_vencimiento.isoformat() if metodo.tar_cre_vencimiento else None
+                })
+                methods_by_type['tarjeta_credito'].append(method_data)
+        
+        return JsonResponse({
+            'status': 'success',
+            'methods': methods_by_type
+        })
+        
+    except Exception as e:
+        print(f"Error obteniendo métodos guardados: {e}")
+        return JsonResponse({'status': 'error', 'message': 'Error interno del servidor'}, status=500)
+
+@csrf_exempt
+@login_required
+def process_payment_method_original(request):
+    """Vista original para procesar un solo método de pago"""
     if request.method != 'POST':
         return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
     
     try:
         data = json.loads(request.body)
-        venta_id = request.session.get('pending_venta_id')
-        total = request.session.get('pending_total')
-        pending_tipo = request.session.get('pending_tipo', 'fisica')
+        order_data = request.session.get('pending_order_data')
         
-        if not venta_id or not total:
-            return JsonResponse({'status': 'error', 'message': 'No hay venta pendiente'}, status=400)
+        if not order_data:
+            return JsonResponse({'status': 'error', 'message': 'No hay orden pendiente'}, status=400)
         
-        # Obtener la venta según el tipo
-        venta_fisica_obj = None
-        venta_online_obj = None
-        
-        if pending_tipo == 'fisica':
-            try:
-                venta_fisica_obj = venta_fisica.objects.get(ven_fis_id=venta_id)
-            except venta_fisica.DoesNotExist:
-                return JsonResponse({'status': 'error', 'message': 'Venta física no encontrada'}, status=404)
-        else:
-            try:
-                venta_online_obj = venta_online.objects.get(ven_onl_id=venta_id)
-            except venta_online.DoesNotExist:
-                return JsonResponse({'status': 'error', 'message': 'Venta online no encontrada'}, status=404)
+        # Extraer datos de la orden
+        total = order_data['total']
+        pending_tipo = order_data['tipo']
+        detalles = order_data['detalles']
+        cart_key = order_data['cart_key']
         
         tipo_pago = data.get('tipo_pago')
         moneda_id = data.get('moneda_id')
         
-        if not moneda_id:
-            return JsonResponse({'status': 'error', 'message': 'Debe seleccionar una moneda'}, status=400)
-        
         if not tipo_pago:
             return JsonResponse({'status': 'error', 'message': 'Debe seleccionar un tipo de pago'}, status=400)
         
-        # Validar datos del método de pago
-        validation_errors = validate_payment_data(tipo_pago, data)
-        if validation_errors:
-            return JsonResponse({'status': 'error', 'message': '; '.join(validation_errors)}, status=400)
+        # Manejar pago con puntos
+        if tipo_pago == 'puntos':
+            return process_points_payment(request, data, order_data, total, pending_tipo)
+        
+        if not moneda_id:
+            return JsonResponse({'status': 'error', 'message': 'Debe seleccionar una moneda'}, status=400)
         
         # Obtener la moneda seleccionada
         try:
@@ -1033,60 +1614,55 @@ def process_payment_method(request):
             total_bs = convert_price_to_bolivars(total_decimal)
             monto_convertido = total_bs / ultimo_historico.his_valor_cambio
         
-        # Crear el método de pago según el tipo seleccionado
-        metodo_pago_data = {
-            'met_pag_tipo_pago': tipo_pago
-        }
+        # Determinar si usar método guardado o crear nuevo
+        use_saved_method = data.get('use_saved_method', False)
+        metodo_pago_obj = None
         
-        try:
-            if tipo_pago == 'efectivo':
-                metodo_pago_data['efe_denominacion'] = int(data.get('denominacion'))
-                
-            elif tipo_pago == 'cheque':
-                metodo_pago_data['che_num_cheque'] = int(data.get('num_cheque'))
-                
-            elif tipo_pago == 'tarjeta_debito':
-                numero = data.get('numero', '').replace(' ', '')
-                vencimiento = data.get('vencimiento')
-                banco = data.get('banco', '').strip()
-                
-                metodo_pago_data.update({
-                    'tar_deb_numero': int(numero),
-                    'tar_deb_vencimiento': datetime.strptime(vencimiento, '%Y-%m-%d').date(),
-                    'tar_deb_banco': banco
-                })
-                
-            elif tipo_pago == 'tarjeta_credito':
-                numero = data.get('numero', '').replace(' ', '')
-                vencimiento = data.get('vencimiento')
-                
-                metodo_pago_data.update({
-                    'tar_cre_numero': int(numero),
-                    'tar_cre_vencimiento': datetime.strptime(vencimiento, '%Y-%m-%d').date()
-                })
-        except (ValueError, TypeError) as e:
-            return JsonResponse({'status': 'error', 'message': f'Error en los datos del método de pago: {str(e)}'}, status=400)
+        if use_saved_method and data.get('saved_method_id'):
+            # Usar método guardado
+            try:
+                metodo_pago_obj = metodo_pago.objects.get(
+                    met_pag_id=data.get('saved_method_id'),
+                    fk_usuario=request.user
+                )
+            except metodo_pago.DoesNotExist:
+                return JsonResponse({'status': 'error', 'message': 'Método de pago guardado no encontrado'}, status=404)
+        else:
+            # Crear nuevo método de pago
+            metodo_pago_obj = create_new_payment_method(request.user, tipo_pago, data)
+            if isinstance(metodo_pago_obj, JsonResponse):
+                return metodo_pago_obj  # Error en la creación
         
-        # Crear el método de pago
-        metodo_pago_obj = metodo_pago.objects.create(**metodo_pago_data)
+        # CREAR LA VENTA SOLO AQUÍ - después de todas las validaciones
+        venta_fisica_obj, venta_online_obj = create_sale_from_order_data(order_data, request.user)
         
-        # Crear el registro de pago con el monto convertido
-        # El modelo pago puede referenciar tanto venta_fisica como venta_online
-        pago_obj = pago.objects.create(
-            pag_monto=monto_convertido,
-            pag_fecha=timezone.now(),
-            fk_metodo_pago=metodo_pago_obj,
-            fk_venta_fisica=venta_fisica_obj,
-            fk_venta_online=venta_online_obj,
-            fk_moneda=moneda_obj
-        )
+        # Preparar IDs para el registro de pago
+        venta_fisica_id = venta_fisica_obj.ven_fis_id if venta_fisica_obj else None
+        venta_online_id = venta_online_obj.ven_onl_id if venta_online_obj else None
+        
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT public.registrar_pago(%s, %s, %s, %s, %s)
+            """, [
+                float(monto_convertido), metodo_pago_obj.met_pag_id, 
+                venta_fisica_id, venta_online_id, moneda_obj.mon_id
+            ])
+            
+            result = cursor.fetchone()
+            if not result or not result[0]:
+                return JsonResponse({'status': 'error', 'message': 'Error al registrar el pago'}, status=500)
+            
+            pago_id = result[0]
+            
+            # Crear objeto mock para compatibilidad
+            class MockPago:
+                def __init__(self, pag_id):
+                    self.pag_id = pag_id
+                    
+            pago_obj = MockPago(pago_id)
         
         # Limpiar la sesión - incluir el carrito ahora que el pago fue exitoso
-        cart_key = 'cart_fisica' if pending_tipo == 'fisica' else 'cart'
-        
-        request.session.pop('pending_venta_id', None)
-        request.session.pop('pending_total', None)
-        request.session.pop('pending_tipo', None)
+        request.session.pop('pending_order_data', None)
         request.session[cart_key] = {}  # Limpiar el carrito SOLO después del pago exitoso
         
         return JsonResponse({
@@ -1103,6 +1679,202 @@ def process_payment_method(request):
     except Exception as e:
         print(f"Error procesando pago: {e}")
         return JsonResponse({'status': 'error', 'message': 'Error interno del servidor'}, status=500)
+
+def process_points_payment(request, data, order_data, total, pending_tipo):
+    """Función para procesar pagos con puntos usando función SQL (función original)"""
+    try:
+        # Calcular puntos necesarios (convertir total USD a bolívares y luego a puntos)
+        total_bs = convert_price_to_bolivars(Decimal(str(total)))
+        
+        # Obtener el valor actual del punto para calcular puntos necesarios
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT * FROM public.obtener_info_puntos_usuario(%s) 
+                AS (cliente_id INTEGER, puntos_disponibles INTEGER, valor_punto INTEGER)
+            """, [request.user.id])
+            result = cursor.fetchone()
+            if not result:
+                return JsonResponse({'status': 'error', 'message': 'Cliente no encontrado'}, status=404)
+            
+            puntos_disponibles = result[1] or 0
+            valor_punto = result[2] or 0
+            
+            if puntos_disponibles == 0:
+                return JsonResponse({'status': 'error', 'message': 'No tienes puntos disponibles'}, status=400)
+            
+            if valor_punto == 0:
+                return JsonResponse({'status': 'error', 'message': 'No hay precio de puntos configurado'}, status=400)
+            
+            puntos_necesarios = int(math.ceil(float(total_bs) / valor_punto))
+            
+            if puntos_necesarios > puntos_disponibles:
+                return JsonResponse({
+                    'status': 'error', 
+                    'message': f'Puntos insuficientes. Necesitas {puntos_necesarios} puntos, pero tienes {puntos_disponibles}'
+                }, status=400)
+            
+            # CREAR LA VENTA SOLO AQUÍ - después de todas las validaciones
+            venta_fisica_obj, venta_online_obj = create_sale_from_order_data(order_data, request.user)
+            
+            # Procesar el pago con puntos usando la función SQL
+            venta_fisica_id = venta_fisica_obj.ven_fis_id if venta_fisica_obj else None
+            venta_online_id = venta_online_obj.ven_onl_id if venta_online_obj else None
+            
+            cursor.execute("""
+                SELECT * FROM public.procesar_pago_puntos(%s, %s, %s, %s)
+                AS (pago_id INTEGER, metodo_pago_id INTEGER, puntos_utilizados INTEGER, puntos_restantes INTEGER, monto_pago DECIMAL)
+            """, [request.user.id, puntos_necesarios, venta_fisica_id, venta_online_id])
+            
+            resultado = cursor.fetchone()
+            if not resultado:
+                return JsonResponse({'status': 'error', 'message': 'Error procesando el pago con puntos'}, status=500)
+            
+            # resultado = (pago_id, metodo_pago_id, puntos_utilizados, puntos_restantes, monto_pago)
+            pago_id = resultado[0]
+            puntos_utilizados = resultado[2]
+            puntos_restantes = resultado[3]
+        
+        # Limpiar la sesión
+        cart_key = order_data['cart_key']
+        
+        request.session.pop('pending_order_data', None)
+        request.session[cart_key] = {}
+        
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Pago con puntos procesado exitosamente',
+            'pago_id': pago_id,
+            'puntos_utilizados': puntos_utilizados,
+            'puntos_restantes': puntos_restantes,
+            'redirect_url': f'/store/{pending_tipo}/'
+        })
+        
+    except Exception as e:
+        print(f"Error procesando pago con puntos: {e}")
+        return JsonResponse({'status': 'error', 'message': f'Error procesando pago con puntos: {str(e)}'}, status=500)
+
+def create_sale_from_order_data(order_data, user):
+    """Crear venta y detalles basándose en los datos validados de la orden"""
+    tipo = order_data['tipo']
+    detalles = order_data['detalles']
+    total_usd = order_data['total']
+    
+    # Convertir total de USD a bolívares
+    total_bolivares = convert_price_to_bolivars(Decimal(str(total_usd)))
+    
+    tienda_obj = tienda.objects.first()
+    venta_fisica_obj = None
+    venta_online_obj = None
+    
+    try:
+        if tipo == 'fisica':
+            # Crear venta física con total en bolívares
+            venta_id = ejecutar_registro_venta_fisica(
+                cliente_id=user.fk_cliente.cli_id,
+                tienda_id=tienda_obj.tie_id,
+                total_bolivares=float(total_bolivares)
+            )
+            venta_fisica_obj = venta_fisica.objects.get(ven_fis_id=venta_id)
+            
+            # Crear detalles de venta física
+            for detalle in detalles:
+                inventario_obj = inventario.objects.get(inv_id=detalle['inventario_id'])
+                detalle_venta_fisica.objects.create(
+                    fk_venta_fisica=venta_fisica_obj,
+                    fk_inventario=inventario_obj,
+                    det_ven_fis_cantidad=detalle['cantidad'],
+                    det_ven_fis_precio_unitario=detalle['precio_unitario']
+                )
+        else:
+            # Crear venta online con total en bolívares
+            venta_online_obj = venta_online.objects.create(
+                ven_onl_fecha=timezone.now(),
+                ven_onl_total=float(total_bolivares),
+                fk_usuario=user,
+                fk_tienda=tienda_obj
+            )
+            
+            # Crear detalles de venta online
+            for detalle in detalles:
+                prealm_obj = pre_alm.objects.get(pre_alm_id=detalle['prealm_id'])
+                detalle_venta_online.objects.create(
+                    fk_venta_online=venta_online_obj,
+                    fk_pre_alm=prealm_obj,
+                    det_ven_onl_cantidad=detalle['cantidad'],
+                    det_ven_onl_precio=detalle['precio_unitario']
+                )
+        
+        return venta_fisica_obj, venta_online_obj
+        
+    except Exception as e:
+        raise Exception(f'Error creando venta: {str(e)}')
+
+def create_new_payment_method(user, tipo_pago, data):
+    """Función para crear un nuevo método de pago usando función SQL"""
+    try:
+        # Validar datos del método de pago
+        validation_errors = validate_payment_data(tipo_pago, data)
+        if validation_errors:
+            return JsonResponse({'status': 'error', 'message': '; '.join(validation_errors)}, status=400)
+        
+        # Preparar parámetros para la función SQL
+        usuario_id = user.id
+        tar_deb_numero = None
+        tar_deb_vencimiento = None
+        tar_deb_banco = None
+        tar_cre_numero = None
+        tar_cre_vencimiento = None
+        efe_denominacion = None
+        che_num_cheque = None
+        his_pre_pun_id = None
+        
+        if tipo_pago == 'efectivo':
+            efe_denominacion = int(data.get('denominacion'))
+            
+        elif tipo_pago == 'cheque':
+            che_num_cheque = data.get('num_cheque', '').strip()
+            
+        elif tipo_pago == 'tarjeta_debito':
+            numero = data.get('numero', '').replace(' ', '')
+            vencimiento = data.get('vencimiento')
+            banco = data.get('banco', '').strip()
+            
+            tar_deb_numero = int(numero)
+            tar_deb_vencimiento = datetime.strptime(vencimiento, '%Y-%m-%d').date()
+            tar_deb_banco = banco
+            
+        elif tipo_pago == 'tarjeta_credito':
+            numero = data.get('numero', '').replace(' ', '')
+            vencimiento = data.get('vencimiento')
+            
+            tar_cre_numero = int(numero)
+            tar_cre_vencimiento = datetime.strptime(vencimiento, '%Y-%m-%d').date()
+        
+        # Llamar a la función SQL para registrar el método de pago
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT public.registrar_metodo_pago(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, [
+                usuario_id, tipo_pago, tar_deb_numero, tar_deb_vencimiento, tar_deb_banco,
+                tar_cre_numero, tar_cre_vencimiento, efe_denominacion, che_num_cheque, his_pre_pun_id
+            ])
+            
+            result = cursor.fetchone()
+            if result and result[0]:
+                metodo_pago_id = result[0]
+                # Retornar un objeto mock para compatibilidad con el código existente
+                class MockMetodoPago:
+                    def __init__(self, met_pag_id):
+                        self.met_pag_id = met_pag_id
+                        
+                return MockMetodoPago(metodo_pago_id)
+            else:
+                return JsonResponse({'status': 'error', 'message': 'Error al crear el método de pago'}, status=500)
+            
+    except (ValueError, TypeError) as e:
+        return JsonResponse({'status': 'error', 'message': f'Error en los datos del método de pago: {str(e)}'}, status=400)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': f'Error al registrar método de pago: {str(e)}'}, status=500)
 
 def currency_rates_view(request):
     """Vista para mostrar las tasas de cambio actuales de todas las monedas"""
@@ -1293,12 +2065,37 @@ def modificar_usuario_view(request, id_usuario):
         last_name = request.POST.get('last_name')
 
         modificar_usuario_sql(id_usuario, username, email, password, first_name, last_name)
-        return redirect('/')
+        messages.success(request, 'Los datos del usuario han sido actualizados correctamente.')
+        return redirect('modificar_usuario', id_usuario=id_usuario)
+    
+    # Limpiar mensajes persistentes de login u otras vistas
+    storage = messages.get_messages(request)
+    for _ in storage:
+        pass  # Esto limpia todos los mensajes pendientes
 
     return render(request, 'modificar_usuario.html', {
         'usuario': user_obj
     })
 
+from django.contrib.auth import logout
+from django.shortcuts import redirect
+
+@login_required
+def eliminar_usuario_view(request, id_usuario):
+    print(f"Vista eliminar_usuario llamada. Método: {request.method}")
+    if request.method == 'POST':
+        print(f"Eliminando usuario con ID {id_usuario}")
+        eliminar_usuario_sql(id_usuario)
+
+        # Si el usuario que se eliminó es el que está logueado:
+        if request.user.id == id_usuario:
+            logout(request)
+            return redirect('login')  # Te lleva al login
+
+        return redirect('store')  # O donde prefieras si eliminás a otro usuario
+    else:
+        print("Vista llamada por GET, no se elimina nada.")
+        return redirect('/')
 
 # HOME
 @login_required(login_url='login')

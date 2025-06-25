@@ -26,9 +26,17 @@ urlpatterns = [
     path('checkout/', views.checkout, name='checkout'),
     path('process_order/', views.processOrder, name='process_order'),
 
-    # Métodos de pago
+    # Sistema de Múltiples Métodos de Pago
     path('payment-method/', views.payment_method_view, name='payment_method'),
-    path('process-payment-method/', views.process_payment_method, name='process_payment_method'),
+    path('get-applied-payments/', views.get_applied_payments, name='get_applied_payments'),
+    path('add-partial-payment/', views.add_partial_payment, name='add_partial_payment'),
+    path('remove-partial-payment/', views.remove_partial_payment, name='remove_partial_payment'),
+    path('finalize-multiple-payment-purchase/', views.finalize_multiple_payment_purchase, name='finalize_multiple_payment_purchase'),
+    
+    # Métodos de pago originales (compatibilidad)
+    path('payment-method-original/', views.payment_method_view_original, name='payment_method_original'),
+    path('process-payment-method/', views.process_payment_method_original, name='process_payment_method'),
+    path('get-saved-payment-methods/', views.get_saved_payment_methods, name='get_saved_payment_methods'),
     path('currency-rates/', views.currency_rates_view, name='currency_rates'),
 
     # Autenticación
@@ -38,9 +46,10 @@ urlpatterns = [
     path('registrar/empleado/', views.registrar_empleado_view, name='registrar_empleado'),
     path('registrar/proveedor/', views.registrar_proveedor_view, name='registrar_proveedor'),
     path('registrar/usuario/<str:tipo>/<int:id_entidad>/', views.crear_usuario_view, name='crear_usuario'),
-    path('modificar-usuario/<int:usuario_id>/', views.modificar_usuario_view, name='modificar_usuario'),
+    path('modificar_usuario/<int:usuario_id>/', views.modificar_usuario_view, name='modificar_usuario'),
+    path('eliminar_usuario/<int:id_usuario>/', views.eliminar_usuario_view, name='eliminar_usuario'),
 
-
+    # Reportes
     path('factura/', views.vista_factura, name='vista_factura'),
     path('api/reporte/venta/<int:venta_id>/', views.generar_reporte_venta_api, name='api_reporte_venta'),
     path('orden/', views.vista_orden_compra, name='vista_orden_compra'),

@@ -501,3 +501,129 @@ BEGIN
     WHERE id = p_id_usuario;
 END;
 $$ LANGUAGE plpgsql;
+
+-- ===========================================
+-- FUNCION: eliminar_usuario
+-- ===========================================
+
+CREATE OR REPLACE FUNCTION eliminar_usuario(p_id_usuario INTEGER)
+RETURNS VOID AS $$
+BEGIN
+    UPDATE usuario
+    SET is_active = FALSE
+    WHERE id = p_id_usuario;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Asegúrate de que el dueño sea postgres
+ALTER FUNCTION eliminar_usuario(INTEGER) OWNER TO postgres;
+
+-- ===========================================
+-- FUNCION: Crear_rol
+-- ===========================================
+
+CREATE OR REPLACE FUNCTION crear_rol(p_nombre VARCHAR)
+RETURNS VOID AS $$
+BEGIN
+    INSERT INTO rol (rol_nombre) VALUES (p_nombre);
+END;
+$$ LANGUAGE plpgsql;
+
+-- ===========================================
+-- FUNCION: Modificar_rol
+-- ===========================================
+
+CREATE OR REPLACE FUNCTION modificar_rol(p_id INTEGER, p_nuevo_nombre VARCHAR)
+RETURNS VOID AS $$
+BEGIN
+    UPDATE rol
+    SET rol_nombre = p_nuevo_nombre
+    WHERE rol_id = p_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ===========================================
+-- FUNCION: Eliminar_rol
+-- ===========================================
+
+CREATE OR REPLACE FUNCTION eliminar_rol(p_id INTEGER)
+RETURNS VOID AS $$
+BEGIN
+    DELETE FROM rol
+    WHERE rol_id = p_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ===========================================
+-- FUNCION: Asignar_rol_a_usuario
+-- ===========================================
+
+CREATE OR REPLACE FUNCTION asignar_rol_a_usuario(p_id_usuario INTEGER, p_id_rol INTEGER)
+RETURNS VOID AS $$
+BEGIN
+    UPDATE usuario
+    SET fk_rol = p_id_rol
+    WHERE id = p_id_usuario;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ===========================================
+-- FUNCION: Crear_Privilegio
+-- ===========================================
+
+CREATE OR REPLACE FUNCTION crear_privilegio(p_nombre VARCHAR)
+RETURNS VOID AS $$
+BEGIN
+    INSERT INTO privilegio (privilegio_nombre) VALUES (p_nombre);
+END;
+$$ LANGUAGE plpgsql;
+
+-- ===========================================
+-- FUNCION: Modificar_Privilegio
+-- ===========================================
+
+CREATE OR REPLACE FUNCTION modificar_privilegio(p_id INTEGER, p_nuevo_nombre VARCHAR)
+RETURNS VOID AS $$
+BEGIN
+    UPDATE privilegio
+    SET privilegio_nombre = p_nuevo_nombre
+    WHERE privilegio_id = p_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ===========================================
+-- FUNCION: Eliminar_Privilegio
+-- ===========================================
+
+CREATE OR REPLACE FUNCTION eliminar_privilegio(p_id INTEGER)
+RETURNS VOID AS $$
+BEGIN
+    DELETE FROM privilegio
+    WHERE privilegio_id = p_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ===========================================
+-- FUNCION: Asignar_privilegio_a_rol
+-- ===========================================
+
+CREATE OR REPLACE FUNCTION asignar_privilegio_a_rol(p_id_privilegio INTEGER, p_id_rol INTEGER)
+RETURNS VOID AS $$
+BEGIN
+    INSERT INTO rol_privilegio (fk_privilegio, fk_rol)
+    VALUES (p_id_privilegio, p_id_rol)
+    ON CONFLICT DO NOTHING;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ===========================================
+-- FUNCION: Quitar_privilegio_de_rol
+-- ===========================================
+
+CREATE OR REPLACE FUNCTION quitar_privilegio_de_rol(p_id_privilegio INTEGER, p_id_rol INTEGER)
+RETURNS VOID AS $$
+BEGIN
+    DELETE FROM rol_privilegio
+    WHERE fk_privilegio = p_id_privilegio AND fk_rol = p_id_rol;
+END;
+$$ LANGUAGE plpgsql;

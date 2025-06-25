@@ -1,0 +1,333 @@
+/* ==========================================================================
+   MODIFICAR USUARIO CSS - Estilos para formulario de modificación de usuario
+   Extiende estilos de registro-forms.css para mantener consistencia
+   ========================================================================== */
+
+/* Importar estilos base de registro-forms */
+@import url('registro-forms.css');
+
+/* Contenedor específico para modificar usuario */
+.modificar-usuario-container {
+    max-width: 600px; /* Más angosto que registro */
+    margin: 0 auto;
+    padding: 30px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Header del formulario de modificación */
+.modificar-usuario-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.modificar-usuario-header h2 {
+    color: #333;
+    font-size: 28px;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.modificar-usuario-header h2 i {
+    font-size: 24px;
+    padding: 8px;
+    border-radius: 8px;
+    background: rgba(23, 162, 184, 0.1);
+    color: #17a2b8;
+}
+
+.modificar-usuario-header .subtitle {
+    color: #666;
+    font-size: 16px;
+    margin-top: 8px;
+}
+
+/* Sección del formulario de modificación */
+.modificar-form-section {
+    margin-bottom: 30px;
+    padding: 25px;
+    background: linear-gradient(135deg, #e3f2fd, #ffffff);
+    border-radius: 12px;
+    border-left: 4px solid #17a2b8;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    animation: slideInUp 0.6s ease;
+}
+
+.modificar-form-section h3 {
+    color: #333 !important;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 20px 0;
+    display: flex;
+    align-items: center;
+    padding-bottom: 10px;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+}
+
+.modificar-form-section h3 i {
+    margin-right: 12px;
+    font-size: 20px;
+    padding: 8px;
+    border-radius: 8px;
+    background: rgba(23, 162, 184, 0.1);
+    color: #17a2b8;
+}
+
+/* Campos del formulario - heredando de registro-forms */
+.modificar-usuario-container .form-group {
+    margin-bottom: 24px;
+}
+
+.modificar-usuario-container .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+}
+
+.modificar-usuario-container .form-group label.required:after {
+    content: " *";
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.modificar-usuario-container .form-control {
+    width: 100% !important;
+    padding: 14px 16px !important;
+    border: 2px solid #e9ecef !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    transition: all 0.3s ease !important;
+    background-color: #fff !important;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.modificar-usuario-container .form-control:focus {
+    border-color: #17a2b8 !important;
+    box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.15) !important;
+    outline: none !important;
+    background-color: #ffffff !important;
+}
+
+.modificar-usuario-container .form-control:hover {
+    border-color: #c0c0c0 !important;
+}
+
+.modificar-usuario-container .form-control::placeholder {
+    color: #999 !important;
+    font-style: italic;
+}
+
+/* Campo de contraseña especial */
+.password-field {
+    position: relative;
+}
+
+.password-help {
+    font-size: 12px;
+    color: #6c757d;
+    margin-top: 5px;
+    display: flex;
+    align-items: center;
+    background: #f8f9fa;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border-left: 3px solid #17a2b8;
+}
+
+.password-help i {
+    margin-right: 8px;
+    color: #17a2b8;
+}
+
+/* Sección de información del usuario actual */
+.user-info-section {
+    background: linear-gradient(135deg, #f1f3f4, #ffffff);
+    padding: 20px;
+    border-radius: 12px;
+    border-left: 4px solid #28a745;
+    margin-bottom: 25px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.user-info-section h4 {
+    color: #333;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 15px 0;
+    display: flex;
+    align-items: center;
+}
+
+.user-info-section h4 i {
+    margin-right: 8px;
+    color: #28a745;
+}
+
+.current-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    font-size: 14px;
+}
+
+.current-info .info-item {
+    background: white;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+}
+
+.current-info .info-item strong {
+    color: #495057;
+    display: block;
+    margin-bottom: 4px;
+}
+
+/* Contenedor de botones */
+.modificar-btn-container {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 2px solid #f0f0f0;
+}
+
+.modificar-usuario-container .btn-primary {
+    background: linear-gradient(135deg, #17a2b8, #138496) !important;
+    border: none !important;
+    padding: 12px 30px !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    color: white !important;
+    transition: all 0.3s ease !important;
+    text-decoration: none !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modificar-usuario-container .btn-primary:hover {
+    background: linear-gradient(135deg, #138496, #0f6674) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3) !important;
+}
+
+.modificar-usuario-container .btn-secondary {
+    background: #6c757d !important;
+    border: none !important;
+    padding: 12px 30px !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    color: white !important;
+    transition: all 0.3s ease !important;
+    text-decoration: none !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modificar-usuario-container .btn-secondary:hover {
+    background: #545b62 !important;
+    transform: translateY(-2px);
+}
+
+/* Estados de validación */
+.modificar-usuario-container .form-control.is-valid {
+    border-color: #28a745 !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='m2.3 6.73.02-.02-.01-.02L1 4.67l.7-.7 1.1 1.1 2.1-2.1.7.7z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+}
+
+.modificar-usuario-container .form-control.is-invalid {
+    border-color: #dc3545 !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 4.6 1.4 1.4 1.4-1.4M8.6 7.4 7.2 6 8.6 4.6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+}
+
+/* Mensajes de éxito/error */
+.alert-container {
+    margin-bottom: 20px;
+}
+
+.alert-success {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border-left: 4px solid #28a745;
+}
+
+.alert-error {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border-left: 4px solid #dc3545;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .modificar-usuario-container {
+        margin: 10px;
+        padding: 20px;
+    }
+
+    .current-info {
+        grid-template-columns: 1fr;
+    }
+
+    .modificar-btn-container {
+        flex-direction: column;
+    }
+
+    .modificar-usuario-container .btn-primary,
+    .modificar-usuario-container .btn-secondary {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Animaciones */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Accesibilidad */
+.modificar-usuario-container .form-control:focus-visible {
+    outline: 2px solid #17a2b8;
+    outline-offset: 2px;
+}
+
+.modificar-usuario-container .btn-primary:focus-visible,
+.modificar-usuario-container .btn-secondary:focus-visible {
+    outline: 2px solid #17a2b8;
+    outline-offset: 2px;
+} 
