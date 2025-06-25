@@ -8,6 +8,7 @@ from django.db import connection, transaction
 from django.http import JsonResponse, HttpResponseNotFound
 from django.http import JsonResponse, HttpResponse, HttpResponseNotFound
 from django.core.serializers.json import DjangoJSONEncoder
+import traceback
 from .models import (
     presentacion, venta_online, detalle_venta_online, pre_alm, 
     metodo_pago, pago, moneda, historico_moneda, tienda, 
@@ -1476,3 +1477,49 @@ def vista_reporte_eficiencia(request):
     """
     # Asegúrate de crear la carpeta 'reportes' dentro de 'templates'
     return render(request, 'reportes/eficiencia_despacho.html')
+
+# Reporte Histórico de Ofertas
+def reporte_historico_ofertas_api(request):
+    """
+    API endpoint que devuelve las ofertas activas en un rango de fechas.
+    """
+    print("Iniciando llamada al API de histórico de ofertas...")
+    try:
+        # Obtener fechas desde los parámetros de la URL, con valores por defecto
+        fecha_inicio_str = request.GET.get('inicio', '1900-01-01')
+        fecha_fin_str = request.GET.get('fin', datetime.now().strftime('%Y-%m-%d'))
+        
+        print(f"Buscando ofertas entre {fecha_inicio_str} y {fecha_fin_str}")
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT public.obtener_historico_ofertas(%s::DATE, %s::DATE);",
+                [fecha_inicio_str, fecha_fin_str]
+            )
+            result = cursor.fetchone()
+            
+            if result is None or result[0] is None:
+                print("La consulta a la BD no devolvió resultados.")
+                return JsonResponse([], safe=False)
+
+            report_data = result[0]
+            print("Datos obtenidos de la BD correctamente. Enviando respuesta.")
+            return JsonResponse(report_data, encoder=DjangoJSONEncoder, safe=False)
+
+    except Exception as e:
+        # ¡ESTA PARTE ES LA MÁS IMPORTANTE!
+        # Imprimirá el error exacto en tu consola de Django.
+        print("\n¡Ocurrió un error grave en la vista del API de Ofertas!")
+        print("-----------------------------------------------------")
+        print(f"Tipo de Excepción: {type(e).__name__}")
+        print(f"Error: {e}")
+        # Imprime el traceback completo para un diagnóstico detallado
+        traceback.print_exc()
+        print("-----------------------------------------------------\n")
+        return JsonResponse({'error': f'Ocurrió un error en el servidor: {e}'}, status=500)
+
+def vista_reporte_ofertas(request):
+    """
+    Renderiza la página HTML para el reporte de histórico de ofertas.
+    """
+    return render(request, 'reportes/historico_ofertas.html')

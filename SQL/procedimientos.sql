@@ -275,6 +275,52 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- reporte 3
+CREATE OR REPLACE FUNCTION public.obtener_historico_ofertas(
+    p_fecha_inicio DATE,
+    p_fecha_fin DATE
+)
+RETURNS JSON AS $$
+DECLARE
+    v_reporte_data JSON;
+BEGIN
+    SELECT
+        COALESCE(json_agg(
+            json_build_object(
+                'oferta_nombre', o.ofe_nombre,
+                'oferta_descripcion', o.ofe_descripcion,
+                'descuento_porcentaje', o.of_procentaje,
+                'fecha_inicio', TO_CHAR(o.ofe_fecha_inicio, 'DD/MM/YYYY'),
+                'fecha_fin', TO_CHAR(o.ofe_fecha_fin, 'DD/MM/YYYY'),
+                -- Subconsulta para obtener los productos asociados a esta oferta
+                'productos_afectados', (
+                    -- Se combinan productos de inventario físico y de almacén online
+                    SELECT COALESCE(json_agg(DISTINCT prod.producto_nombre), '[]'::json)
+                    FROM (
+                        -- Productos del inventario físico
+                        SELECT pr.prese_nombre AS producto_nombre
+                        FROM public.inventario i
+                        JOIN public.presentacion pr ON i.fk_presentacion = pr.prese_id
+                        WHERE i.fk_oferta = o.ofe_id
+                        UNION
+                        -- Productos del almacén online
+                        SELECT pr.prese_nombre AS producto_nombre
+                        FROM public.pre_alm pa
+                        JOIN public.presentacion pr ON pa.fk_presentacion = pr.prese_id
+                        WHERE pa.fk_oferta = o.ofe_id
+                    ) AS prod
+                )
+            )
+        ), '[]'::json)
+    INTO v_reporte_data
+    FROM public.oferta o
+    -- La condición del WHERE filtra las ofertas que estuvieron activas en el rango
+    WHERE o.ofe_fecha_inicio <= p_fecha_fin AND o.ofe_fecha_fin >= p_fecha_inicio;
+
+    RETURN v_reporte_data;
+END;
+$$ LANGUAGE plpgsql;
+
 
 -- ===========================================
 -- FUNCION: modificar_usuario
