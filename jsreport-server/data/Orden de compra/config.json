@@ -1,0 +1,18 @@
+{
+    "name": "Orden de compra",
+    "engine": "handlebars",
+    "recipe": "chrome-pdf",
+    "data": null,
+    "shortid": "mN0IsrmCHy",
+    "chrome": {
+        "printBackground": true
+    },
+    "creationDate": {
+        "$$date": 1750793536179
+    },
+    "modificationDate": {
+        "$$date": 1750793536179
+    },
+    "_id": "llKpKsx9TZVu3UDG",
+    "$entitySet": "templates"
+}
