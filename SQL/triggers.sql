@@ -124,7 +124,11 @@ BEGIN
         UPDATE cliente 
         SET cli_cantidad_puntos = v_puntos_actuales + v_puntos_otorgados
         WHERE cli_id = NEW.fk_cliente;
-        
+
+        -- Actualizar el historico de puntos del cliente
+        INSERT INTO cuenta_punto (cue_pun_cantidad, fk_venta_fisica, fk_cliente)
+        VALUES (v_puntos_otorgados, NEW.ven_fis_id, NEW.fk_cliente);
+
         -- Verificar que el update fue exitoso
         IF NOT FOUND THEN
             RAISE EXCEPTION 'Error al actualizar puntos del cliente con ID: %', NEW.fk_cliente;
