@@ -180,3 +180,27 @@ $$ LANGUAGE plpgsql;
 -- ===========================================
 -- FUNCION: modificar_usuario
 -- ===========================================
+CREATE OR REPLACE FUNCTION modificar_usuario(
+    p_id_usuario INTEGER,
+    p_username TEXT,
+    p_email TEXT,
+    p_password TEXT,
+    p_first_name TEXT,
+    p_last_name TEXT
+)
+RETURNS VOID AS $$
+BEGIN
+    UPDATE usuario
+    SET 
+        username = p_username,
+        email = p_email,
+        first_name = p_first_name,
+        last_name = p_last_name,
+        password = CASE 
+            WHEN p_password IS NOT NULL AND p_password != '' 
+            THEN p_password
+            ELSE password
+        END
+    WHERE id = p_id_usuario;
+END;
+$$ LANGUAGE plpgsql;

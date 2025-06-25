@@ -20,6 +20,7 @@ from django.views.decorators.csrf import csrf_exempt
 from decimal import Decimal
 from datetime import datetime, date
 from .forms import ClienteForm, EmpleadoForm, ProveedorForm
+from .utils import crear_usuario_sql, modificar_usuario_sql
 
 def validate_expiration_date(exp_date_str):
     """Valida que la fecha de vencimiento no sea anterior a la actual"""
@@ -1281,7 +1282,7 @@ def registrar_proveedor_view(request):
     return render(request, 'registro_proveedor.html', {'form': form})
 
 def modificar_usuario_view(request, id_usuario):
-    usuario = usuario.objects.get(pk=id_usuario)
+    user_obj = usuario.objects.get(pk=id_usuario)
 
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -1291,10 +1292,10 @@ def modificar_usuario_view(request, id_usuario):
         last_name = request.POST.get('last_name')
 
         modificar_usuario_sql(id_usuario, username, email, password, first_name, last_name)
-        return redirect('perfil')  # o donde desees redirigir
+        return redirect('/')
 
     return render(request, 'modificar_usuario.html', {
-        'usuario': usuario
+        'usuario': user_obj
     })
 
 
