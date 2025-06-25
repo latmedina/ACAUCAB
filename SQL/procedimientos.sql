@@ -321,6 +321,102 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- reporte 4
+CREATE OR REPLACE FUNCTION public.obtener_reporte_incumplimiento_horario(
+    p_fecha_inicio DATE,
+    p_fecha_fin DATE
+)
+RETURNS JSON AS $$
+DECLARE
+    v_reporte_data JSON;
+BEGIN
+    WITH
+    -- 1. Se obtienen todas las incidencias, convirtiendo las horas a la zona horaria local
+    incidencias AS (
+        SELECT
+            a.fk_empleado,
+            e.emp_pnombre || ' ' || e.emp_papellido AS empleado_nombre,
+            h.hor_dia AS dia_semana,
+            (a.asi_fecha_hora_inico AT TIME ZONE 'America/Caracas')::DATE AS fecha,
+            h.hor_hora_inicio AS hora_entrada_pautada,
+            (a.asi_fecha_hora_inico AT TIME ZONE 'America/Caracas')::TIME AS hora_entrada_real,
+            h.hor_hora_fin AS hora_salida_pautada,
+            (a.asi_fecha_hora_fin AT TIME ZONE 'America/Caracas')::TIME AS hora_salida_real,
+            -- Se verifica si la entrada fue tarde usando la hora local
+            CASE
+                WHEN (a.asi_fecha_hora_inico AT TIME ZONE 'America/Caracas')::TIME > h.hor_hora_inicio
+                THEN 'Llegada Tarde'
+                ELSE NULL
+            END AS tipo_incidencia_entrada,
+            -- Se verifica si la salida fue temprano usando la hora local
+            CASE
+                WHEN a.asi_fecha_hora_fin IS NOT NULL AND (a.asi_fecha_hora_fin AT TIME ZONE 'America/Caracas')::TIME < h.hor_hora_fin
+                THEN 'Salida Temprano'
+                ELSE NULL
+            END AS tipo_incidencia_salida,
+            -- Se calcula la diferencia de tiempo para llegadas tardes
+            CASE
+                WHEN (a.asi_fecha_hora_inico AT TIME ZONE 'America/Caracas')::TIME > h.hor_hora_inicio
+                THEN (a.asi_fecha_hora_inico AT TIME ZONE 'America/Caracas')::TIME - h.hor_hora_inicio
+                ELSE '00:00:00'::INTERVAL
+            END AS diferencia_entrada,
+            -- Se calcula la diferencia de tiempo para salidas tempranas
+            CASE
+                WHEN a.asi_fecha_hora_fin IS NOT NULL AND (a.asi_fecha_hora_fin AT TIME ZONE 'America/Caracas')::TIME < h.hor_hora_fin
+                THEN h.hor_hora_fin - (a.asi_fecha_hora_fin AT TIME ZONE 'America/Caracas')::TIME
+                ELSE '00:00:00'::INTERVAL
+            END AS diferencia_salida
+        FROM public.asistencia a
+        JOIN public.empleado e ON a.fk_empleado = e.emp_id
+        JOIN public.emp_car_hor ech ON e.emp_id = ech.fk_empleado
+        JOIN public.horario h ON ech.fk_horario = h.hor_id
+        WHERE (a.asi_fecha_hora_inico AT TIME ZONE 'America/Caracas')::DATE BETWEEN p_fecha_inicio AND p_fecha_fin
+          AND h.hor_dia = CASE EXTRACT(ISODOW FROM (a.asi_fecha_hora_inico AT TIME ZONE 'America/Caracas'))
+                              WHEN 1 THEN 'Lunes' WHEN 2 THEN 'Martes' WHEN 3 THEN 'Miércoles'
+                              WHEN 4 THEN 'Jueves' WHEN 5 THEN 'Viernes' WHEN 6 THEN 'Sábado'
+                              WHEN 7 THEN 'Domingo'
+                          END
+    ),
+    -- 2. Se procesan las incidencias para listarlas
+    incumplimientos_procesados AS (
+        SELECT fk_empleado, empleado_nombre, fecha, 'Llegada Tarde' AS tipo,
+               'Entrada pautada: ' || hora_entrada_pautada || ', Entrada real: ' || hora_entrada_real AS detalle,
+               diferencia_entrada AS duracion
+        FROM incidencias WHERE tipo_incidencia_entrada IS NOT NULL
+        UNION ALL
+        SELECT fk_empleado, empleado_nombre, fecha, 'Salida Temprano' AS tipo,
+               'Salida pautada: ' || hora_salida_pautada || ', Salida real: ' || hora_salida_real AS detalle,
+               diferencia_salida AS duracion
+        FROM incidencias WHERE tipo_incidencia_salida IS NOT NULL
+    )
+    -- 3. Se agrupan todos los incumplimientos por empleado en un JSON
+    SELECT COALESCE(json_agg(
+        json_build_object(
+            'empleado_id', t.fk_empleado,
+            'empleado_nombre', t.empleado_nombre,
+            'incumplimientos', t.incidencias_agrupadas
+        )
+    ), '[]'::json)
+    INTO v_reporte_data
+    FROM (
+        SELECT
+            fk_empleado,
+            empleado_nombre,
+            json_agg(
+                json_build_object(
+                    'fecha', TO_CHAR(fecha, 'DD/MM/YYYY'),
+                    'tipo', tipo,
+                    'detalle', detalle,
+                    'duracion', TO_CHAR(duracion, 'HH24:MI:SS')
+                ) ORDER BY fecha
+            ) AS incidencias_agrupadas
+        FROM incumplimientos_procesados
+        GROUP BY fk_empleado, empleado_nombre
+    ) AS t;
+
+    RETURN v_reporte_data;
+END;
+$$ LANGUAGE plpgsql;
 
 -- ===========================================
 -- FUNCION: modificar_usuario

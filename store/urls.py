@@ -51,6 +51,8 @@ urlpatterns = [
     path('api/reportes/eficiencia-despacho/', views.reporte_eficiencia_despacho_api, name='api_reporte_eficiencia'),
     path('reporte3/', views.vista_reporte_ofertas, name='vista_reporte_ofertas'),
     path('api/reportes/historico-ofertas/', views.reporte_historico_ofertas_api, name='api_reporte_ofertas'),
+    path('reporte4', views.vista_reporte_incumplimiento, name='vista_reporte_incumplimiento'),
+    path('api/reportes/incumplimiento-horario/', views.reporte_incumplimiento_horario_api, name='api_reporte_incumplimiento'),
 
 
     path('modificar_usuario/<int:id_usuario>/', views.modificar_usuario_view, name='modificar_usuario'),
