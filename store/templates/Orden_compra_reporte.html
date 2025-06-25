@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orden de Compra</title>
+    <!-- Incluir la librería de Handlebars, que es usada por jsreport -->
+    <script src="https://cdn.jsdelivr.net/npm/handlebars@4.7.8/dist/handlebars.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 14px; color: #333; margin: 0; padding: 20px; background-color: #f4f4f4; }
+        .container { max-width: 800px; margin: auto; background-color: #fff; padding: 30px; border: 1px solid #ccc; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+        .header-section { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+        .company-info { text-align: left; }
+        .right-column { text-align: right; }
+        .company-info h2 { margin-top: 0; }
+        .main-title { font-size: 28px; font-weight: bold; color: #1a237e; margin: 0; white-space: nowrap; margin-bottom: 15px; }
+        .company-info p, .order-info p { margin: 0; line-height: 1.8; }
+        .order-info span { display: inline-block; border-bottom: 1px solid #333; min-width: 100px; margin-left: 10px; padding: 0 5px;}
+        .section { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .provider-info { border: 1px solid #ccc; padding: 15px; border-radius: 5px; display: flex; justify-content: space-between; }
+        .provider-info > div { width: 48%; }
+        .provider-info p { margin: 5px 0; display: flex; justify-content: space-between; }
+        .provider-info span { border-bottom: 1px solid #333; flex-grow: 1; margin-left: 10px; padding: 0 5px;}
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
+        th, td { border: 1px solid #000; padding: 5px; text-align: left; }
+        th { background-color: #f2f2f2; font-weight: bold; }
+        .col-id { width: 10%; }
+        .col-name { width: 45%; }
+        .col-qty, .col-price, .col-total { width: 15%; text-align: right; }
+        .totals-section { display: flex; justify-content: space-between; margin-top: 10px; }
+        .notes-box { border: 1px solid #000; padding: 10px; width: 50%; min-height: 100px; }
+        .totals-table { width: 45%; text-align: right; }
+        .totals-table p { margin: 10px 0; display: flex; justify-content: space-between; }
+        .totals-table span { border-bottom: 1px solid #333; min-width: 80px; text-align: right; padding: 0 5px; }
+        .totals-table strong { margin-right: 15px; }
+        .signatures { margin-top: 30px; display: flex; justify-content: space-around; }
+        .signature-box { text-align: center; width: 40%; }
+        .signature-box p { border-top: 1px solid #333; padding-top: 8px; margin-top: 40px; }
+    </style>
+</head>
+<body>
+
+    <!-- Controles para generar el reporte -->
+    <div style="max-width: 800px; margin: 20px auto; padding: 20px; background: #fff; border-radius: 8px;">
+        <h2 style="color: #1a237e;">Generar Orden de Compra</h2>
+        <div style="display: flex; gap: 10px;">
+            <input type="number" id="ordenIdInput" placeholder="Ingrese ID de la Solicitud de Compra" style="flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+            <button id="generarBtn" style="padding: 10px 20px; background-color: #1a237e; color: white; border: none; border-radius: 4px; cursor: pointer;">Generar</button>
+        </div>
+    </div>
+
+    <!-- Contenedor para el reporte renderizado -->
+    <div id="reporte-container"></div>
+
+    <!-- 
+        PLANTILLA HANDLEBARS (JSREPORT) PARA LA ORDEN DE COMPRA
+        Envuelta en {% verbatim %} para Django.
+    -->
+    {% verbatim %}
+    <script id="plantilla-orden" type="text/x-handlebars-template">
+        <div class="container">
+            <div class="header-section">
+                <div class="company-info">
+                    <h2>ACAUCAB</h2>
+                    <p>Asociación de Cerveceros Artesanales de la UCAB</p>
+                    <p>Final Avenida Teherán, Montalbán, Caracas, Distrito Capital, Venezuela.</p>
+                    <p>Código postal: 1020</p>
+                    <p>Tlf: 0412-1234567</p>
+                </div>
+                <div class="right-column">
+                    <h1 class="main-title">ORDEN DE COMPRA</h1>
+                    <div class="order-info">
+                        <p>Fecha <span>{{orden_info.fecha}}</span></p>
+                        <p>No. de orden <span>{{orden_info.id}}</span></p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section provider-info">
+                <div class="proveedor">
+                    <strong>Proveedor</strong>
+                    <p>Compañía<span>{{proveedor_info.nombre}}</span></p>
+                    <p>Teléfono<span>{{proveedor_info.telefono}}</span></p>
+                    <p>Dirección<span>{{proveedor_info.direccion}}</span></p>
+                </div>
+                <div class="enviar-a">
+                    <strong>Enviar a</strong>
+                    <p>Local<span>{{enviar_a_info.local}}</span></p>
+                    <p>Teléfono<span>{{enviar_a_info.telefono}}</span></p>
+                    <p>Dirección<span>{{enviar_a_info.direccion}}</span></p>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th class="col-id">ID</th>
+                        <th class="col-name">Nombre del producto</th>
+                        <th class="col-qty">Cantidad</th>
+                        <th class="col-price">Precio unitario</th>
+                        <th class="col-total">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each detalles}}
+                    <tr>
+                        <td>{{id}}</td>
+                        <td>{{producto}}</td>
+                        <td style="text-align: right;">{{cantidad}}</td>
+                        <td style="text-align: right;">{{formatCurrency precio_unitario}}</td>
+                        <td style="text-align: right;">{{formatCurrency total_linea}}</td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+
+            <div class="totals-section">
+                <div class="notes-box">
+                    <strong>Notas / Observaciones</strong>
+                    <div></div>
+                </div>
+                <div class="totals-table">
+                    <p><strong>SUBTOTAL</strong> <span>{{formatCurrency totales.subtotal}}</span></p>
+                    <p><strong>TOTAL IMPUESTOS (16%)</strong> <span>{{formatCurrency totales.impuestos}}</span></p>
+                    <p><strong>TOTAL</strong> <span>{{formatCurrency totales.total}}</span></p>
+                </div>
+            </div>
+
+            <footer class="signatures">
+                <div class="signature-box">
+                    <p>Autorizado por</p>
+                </div>
+                <div class="signature-box">
+                    <p>Firma</p>
+                </div>
+            </footer>
+        </div>
+    </script>
+    {% endverbatim %}
+
+    <script>
+    // Se espera a que todo el contenido de la página cargue antes de ejecutar el script.
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("Página cargada y script listo."); // Mensaje para depuración
+
+        // Helper para formatear números como moneda
+        Handlebars.registerHelper('formatCurrency', function(value) {
+            if (typeof value !== 'number') value = parseFloat(value);
+            return value ? '$' + value.toFixed(2) : '$0.00';
+        });
+
+        // Función asíncrona para generar la orden
+        async function generarOrdenDeCompra() {
+            const ordenId = document.getElementById('ordenIdInput').value;
+            const container = document.getElementById('reporte-container');
+
+            if (!ordenId) {
+                container.innerHTML = '<p style="color: red; text-align: center;">Por favor, ingrese un ID de solicitud.</p>';
+                return;
+            }
+            container.innerHTML = '<p style="text-align: center;">Generando orden de compra...</p>';
+
+            try {
+                // Se asegura que la URL coincida con la definida en urls.py
+                const response = await fetch(`/api/reporte/orden/${ordenId}/`);
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: Los datos de la orden no fueron encontrados.`);
+                }
+                const data = await response.json();
+
+                // Compila y renderiza la plantilla con los datos
+                const templateHtml = document.getElementById('plantilla-orden').innerHTML;
+                const template = Handlebars.compile(templateHtml);
+                container.innerHTML = template(data);
+
+            } catch (error) {
+                console.error('Error al generar la orden:', error);
+                container.innerHTML = `<p style="color: red; text-align: center;">${error.message}</p>`;
+            }
+        }
+
+        // Se asigna el evento 'click' al botón de manera segura
+        const generarBtn = document.getElementById('generarBtn');
+        if (generarBtn) {
+            generarBtn.addEventListener('click', generarOrdenDeCompra);
+        }
+    });
+    </script>
+</body>
+</html>

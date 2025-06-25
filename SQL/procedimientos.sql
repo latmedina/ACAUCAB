@@ -7,7 +7,7 @@
 -- FUNCION: registrar_venta_fisica
 -- ===========================================
 
-CREATE OR REPLACE FUNCTION registrar_venta_fisica(
+CREATE OR REPLACE FUNCTION public.registrar_venta_fisica(
     cliente_id INTEGER,
     tienda_id INTEGER,
     total NUMERIC
@@ -27,7 +27,7 @@ $$ LANGUAGE plpgsql;
 -- FUNCION: registrar_usuario
 -- ===========================================
 
-CREATE OR REPLACE FUNCTION registrar_usuario(
+CREATE OR REPLACE FUNCTION public.registrar_usuario(
     p_username TEXT,
     p_email TEXT,
     p_password TEXT,
@@ -66,6 +66,190 @@ BEGIN
     );
 END;
 $$ LANGUAGE plpgsql;
+
+-- factura de venta física
+CREATE OR REPLACE FUNCTION public.obtener_datos_reporte_venta(p_venta_id INT)
+RETURNS JSON AS $$
+DECLARE
+    v_reporte_data JSON;
+BEGIN
+    SELECT
+        -- Construye el objeto JSON principal
+        json_build_object(
+            -- Sección 'venta': contiene datos generales y totales de la factura
+            'venta', json_build_object(
+                'id', vf.ven_fis_id,
+                'fecha', TO_CHAR(vf.ven_fis_fecha, 'DD/MM/YYYY'),
+                'subtotal', vf.ven_fis_total / 1.16, -- Calcula la base imponible (asumiendo IVA 16%)
+                'iva', vf.ven_fis_total - (vf.ven_fis_total / 1.16), -- Calcula el monto del IVA
+                'total', vf.ven_fis_total
+            ),
+            -- Sección 'cliente': información del cliente que realizó la compra
+            'cliente', json_build_object(
+                'nombre', COALESCE(c.cli_nat_pnombre || ' ' || c.cli_nat_papellido, c.cli_jur_razon_social, 'No disponible'),
+                'rif', COALESCE(c.cli_rif, 'N/A'),
+                'direccion', COALESCE(c.cli_direccion_fisica, 'N/A'),
+                'telefono', (SELECT tel_numero::text FROM public.telefono WHERE fk_cliente = c.cli_id LIMIT 1) -- Subconsulta para obtener un teléfono
+            ),
+            -- Sección 'tienda': datos de la tienda donde se realizó la venta
+            'tienda', json_build_object(
+                'nombre', COALESCE(t.tie_nombre, 'No disponible'),
+                'direccion', COALESCE(t.tie_direccion, 'N/A')
+            ),
+            -- Sección 'detalles': una lista (array) de todos los productos en la venta
+            'detalles', (
+                SELECT COALESCE(json_agg(
+                    json_build_object(
+                        'id', p.prese_id, -- ID del producto/presentación
+                        'producto', p.prese_nombre,
+                        'cantidad', dvf.det_ven_fis_cantidad,
+                        'precio_unitario', dvf.det_ven_fis_precio_unitario,
+                        'total_linea', dvf.det_ven_fis_cantidad * dvf.det_ven_fis_precio_unitario
+                    )
+                ), '[]'::json) -- Si no hay detalles, devuelve un array JSON vacío
+                FROM public.detalle_venta_fisica dvf
+                JOIN public.inventario i ON dvf.fk_inventario = i.inv_id
+                JOIN public.presentacion p ON i.fk_presentacion = p.prese_id
+                WHERE dvf.fk_venta_fisica = vf.ven_fis_id
+            )
+        )
+    INTO v_reporte_data
+    FROM public.venta_fisica vf
+    -- Usamos LEFT JOIN para ser más robustos
+    LEFT JOIN public.cliente c ON vf.fk_cliente = c.cli_id
+    LEFT JOIN public.tienda t ON vf.fk_tienda = t.tie_id
+    WHERE vf.ven_fis_id = p_venta_id;
+
+    RETURN v_reporte_data;
+END;
+$$ LANGUAGE plpgsql;
+
+-- orden de compra
+CREATE OR REPLACE FUNCTION public.obtener_datos_orden_compra(p_solicitud_id INT)
+RETURNS JSON AS $$
+DECLARE
+    v_reporte_data JSON;
+BEGIN
+    SELECT
+        json_build_object(
+            'orden_info', json_build_object(
+                'id', sc.sol_com_id,
+                'fecha', TO_CHAR(sc.sol_com_fecha, 'DD/MM/YYYY')
+            ),
+            'proveedor_info', json_build_object(
+                'nombre', COALESCE(p.pro_razon_social, 'N/A'),
+                'telefono', (SELECT tel_numero::text FROM public.telefono WHERE fk_proveedor = p.pro_id LIMIT 1),
+                'direccion', COALESCE(p.pro_direccion_fiscal, 'N/A')
+            ),
+            'enviar_a_info', json_build_object(
+                'local', COALESCE(t.tie_nombre, 'Almacén Principal'),
+                'telefono', '0412-1234567', -- Teléfono de la empresa (puede ser dinámico si lo tienes en la tabla tienda)
+                'direccion', COALESCE(t.tie_direccion, 'Dirección de la empresa')
+            ),
+            'detalles', (
+                SELECT COALESCE(json_agg(
+                    json_build_object(
+                        'id', pr.prese_id,
+                        'producto', pr.prese_nombre,
+                        'cantidad', dc.det_com_cantidad,
+                        'precio_unitario', dc.det_com_precio_unitario,
+                        'total_linea', dc.det_com_cantidad * dc.det_com_precio_unitario
+                    )
+                ), '[]'::json)
+                FROM public.detalle_compra dc
+                JOIN public.presentacion pr ON dc.fk_presentacion = pr.prese_id
+                WHERE dc.fk_sol_com = sc.sol_com_id
+            ),
+            'totales', json_build_object(
+                'subtotal', sc.sol_com_total / 1.16,
+                'impuestos', sc.sol_com_total - (sc.sol_com_total / 1.16),
+                'total', sc.sol_com_total
+            )
+        )
+    INTO v_reporte_data
+    FROM public.solicitud_compra sc
+    LEFT JOIN public.proveedor p ON sc.fk_proveedor = p.pro_id
+    LEFT JOIN public.pre_alm pa ON sc.fk_pre_alm = pa.pre_alm_id
+    LEFT JOIN public.almacen a ON pa.fk_almacen = a.alm_id
+    LEFT JOIN public.tienda t ON a.fk_tienda = t.tie_id
+    WHERE sc.sol_com_id = p_solicitud_id;
+
+    RETURN v_reporte_data;
+END;
+$$ LANGUAGE plpgsql;
+
+-- reporte 1
+CREATE OR REPLACE FUNCTION public.obtener_datos_productores_eventos()
+RETURNS JSON AS $$
+DECLARE
+    v_reporte_data JSON;
+BEGIN
+    SELECT
+        -- json_agg agrupa todas las filas de eventos en un solo array JSON
+        COALESCE(json_agg(
+            json_build_object(
+                'evento_nombre', e.eve_nombre,
+                'evento_fecha', TO_CHAR(e.eve_fecha_hora, 'DD/MM/YYYY'),
+                'evento_lugar', l.lug_nombre,
+                -- Subconsulta para obtener los proveedores de cada evento
+                'proveedores', (
+                    SELECT COALESCE(json_agg(
+                        json_build_object(
+                            'proveedor_nombre', p.pro_razon_social,
+                            -- Subconsulta para obtener las cervezas de cada proveedor en este evento
+                            'cervezas_presentadas', (
+                                SELECT COALESCE(json_agg(
+                                    json_build_object(
+                                        'cerveza_nombre', pr.prese_nombre,
+                                        'cantidad', ee.exi_eve_cantidad
+                                    )
+                                ), '[]'::json)
+                                FROM public.existencia_evento ee
+                                JOIN public.presentacion pr ON ee.fk_presentacion = pr.prese_id
+                                -- CORRECCIÓN FINAL: Se une la existencia directamente con la tabla
+                                -- de relación evento-proveedor usando la clave foránea correcta.
+                                WHERE ee.fk_evento_proveedor = ep.eve_pro_id
+                            )
+                        )
+                    ), '[]'::json)
+                    FROM public.eve_pro ep
+                    JOIN public.proveedor p ON ep.fk_proveedor = p.pro_id
+                    WHERE ep.fk_evento = e.eve_id
+                )
+            )
+        ), '[]'::json)
+    INTO v_reporte_data
+    FROM public.evento e
+    LEFT JOIN public.lugar l ON e.fk_lugar = l.lug_id;
+
+    RETURN v_reporte_data;
+END;
+$$ LANGUAGE plpgsql;
+
 -- ===========================================
--- Puedes seguir agregando más funciones aquí
+-- FUNCION: modificar_usuario
 -- ===========================================
+CREATE OR REPLACE FUNCTION modificar_usuario(
+    p_id_usuario INTEGER,
+    p_username TEXT,
+    p_email TEXT,
+    p_password TEXT,
+    p_first_name TEXT,
+    p_last_name TEXT
+)
+RETURNS VOID AS $$
+BEGIN
+    UPDATE usuario
+    SET 
+        username = p_username,
+        email = p_email,
+        first_name = p_first_name,
+        last_name = p_last_name,
+        password = CASE 
+            WHEN p_password IS NOT NULL AND p_password != '' 
+            THEN p_password
+            ELSE password
+        END
+    WHERE id = p_id_usuario;
+END;
+$$ LANGUAGE plpgsql;

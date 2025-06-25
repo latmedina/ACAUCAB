@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Productores en Eventos</title>
+    <!-- Incluir jQuery (necesario para la paginación) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- Incluir la librería de paginación simplePagination.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/simplePagination.js/1.6/jquery.simplePagination.min.js"></script>
+    <!-- Incluir la librería de Handlebars -->
+    <script src="https://cdn.jsdelivr.net/npm/handlebars@4.7.8/dist/handlebars.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/simplePagination.js/1.6/simplePagination.min.css" />
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #f8f9fa; color: #343a40; }
+        .report-container { max-width: 900px; margin: auto; background-color: #fff; padding: 30px; box-shadow: 0 2px 15px rgba(0,0,0,0.1); border-radius: 8px; }
+        .report-header { text-align: center; border-bottom: 2px solid #dee2e6; padding-bottom: 20px; margin-bottom: 30px; }
+        .report-header h1 { color: #0d6efd; margin: 0; }
+        .report-header p { margin: 5px 0 0; font-size: 1rem; color: #6c757d; }
+        .event-block { margin-bottom: 40px; border: 1px solid #e9ecef; border-radius: 8px; overflow: hidden; }
+        .event-header { background-color: #0d6efd; color: white; padding: 15px; }
+        .event-header h2 { margin: 0; font-size: 1.5rem; }
+        .event-details { font-size: 0.9rem; opacity: 0.9; }
+        .provider-block { padding: 20px; border-bottom: 1px solid #e9ecef; }
+        .provider-block:last-child { border-bottom: none; }
+        .provider-header { font-size: 1.2rem; font-weight: bold; color: #343a40; margin-bottom: 15px; }
+        .beers-list { list-style: none; padding-left: 20px; }
+        .beers-list li { padding: 8px 0; display: flex; justify-content: space-between; border-bottom: 1px dashed #ced4da; }
+        .beers-list li:last-child { border-bottom: none; }
+        .beer-name { font-weight: 500; }
+        .beer-quantity { background-color: #e9ecef; padding: 3px 8px; border-radius: 4px; font-weight: bold; }
+        .no-data { text-align: center; padding: 40px; background-color: #f8f9fa; border-radius: 8px; }
+        /* Estilos para la paginación */
+        .pagination-container { display: flex; justify-content: center; margin-top: 30px; }
+        .simple-pagination ul { margin: 0; padding: 0; }
+        .simple-pagination li { display: inline-block; margin: 0 2px; }
+        .simple-pagination li a, .simple-pagination li span { border: 1px solid #0d6efd; color: #0d6efd; padding: 8px 12px; border-radius: 4px; text-decoration: none; }
+        .simple-pagination li.active span { background-color: #0d6efd; color: white; }
+    </style>
+</head>
+<body>
+
+    <!-- Contenedor principal donde se renderizarán los datos y la paginación -->
+    <div class="report-container">
+        <header class="report-header">
+            <h1>Reporte de Productores en Eventos</h1>
+            <p>Listado de eventos y la participación de los proveedores</p>
+        </header>
+        
+        <!-- Contenedor para los eventos de la página actual -->
+        <div id="reporte-content">
+            <p style="text-align: center;">Cargando datos del reporte...</p>
+        </div>
+
+        <!-- Contenedor para los controles de paginación -->
+        <div id="pagination-container" class="pagination-container"></div>
+    </div>
+
+    <!-- 
+        PLANTILLA HANDLEBARS PARA EL REPORTE
+        Envuelta en {% verbatim %} para que Django no la procese.
+    -->
+    {% verbatim %}
+    <script id="plantilla-reporte" type="text/x-handlebars-template">
+        {{#if this.length}}
+            {{#each this}}
+            <section class="event-block">
+                <header class="event-header">
+                    <h2>{{evento_nombre}}</h2>
+                    <div class="event-details">
+                        <span>Fecha: {{evento_fecha}}</span> | <span>Lugar: {{evento_lugar}}</span>
+                    </div>
+                </header>
+                <div class="providers-section">
+                    {{#if proveedores.length}}
+                        {{#each proveedores}}
+                        <div class="provider-block">
+                            <h3 class="provider-header">{{proveedor_nombre}}</h3>
+                            <ul class="beers-list">
+                                {{#if cervezas_presentadas.length}}
+                                    {{#each cervezas_presentadas}}
+                                    <li>
+                                        <span class="beer-name">{{cerveza_nombre}}</span>
+                                        <span class="beer-quantity">{{cantidad}} unidades</span>
+                                    </li>
+                                    {{/each}}
+                                {{else}}
+                                    <li>No se registraron cervezas para este productor.</li>
+                                {{/if}}
+                            </ul>
+                        </div>
+                        {{/each}}
+                    {{else}}
+                        <p style="padding: 20px;">No se registraron proveedores para este evento.</p>
+                    {{/if}}
+                </div>
+            </section>
+            {{/each}}
+        {{else}}
+            <div class="no-data">
+                <h3>No hay datos de eventos para mostrar.</h3>
+            </div>
+        {{/if}}
+    </script>
+    {% endverbatim %}
+
+    <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+        const contentContainer = document.getElementById('reporte-content');
+        const paginationContainer = document.getElementById('pagination-container');
+
+        try {
+            const response = await fetch('/api/reportes/productores-en-eventos/');
+            if (!response.ok) {
+                throw new Error(`Error ${response.status}: No se pudieron obtener los datos.`);
+            }
+            const allData = await response.json();
+
+            if (!allData || allData.length === 0) {
+                contentContainer.innerHTML = '<div class="no-data"><h3>No hay datos de eventos para mostrar.</h3></div>';
+                return;
+            }
+
+            const templateHtml = document.getElementById('plantilla-reporte').innerHTML;
+            const template = Handlebars.compile(templateHtml);
+
+            // Configuración de la paginación
+            const itemsPerPage = 3; // Muestra 3 eventos por página
+
+            $('#pagination-container').pagination({
+                items: allData.length,
+                itemsOnPage: itemsPerPage,
+                cssStyle: 'light-theme',
+                onPageClick: function(pageNumber) {
+                    const start = (pageNumber - 1) * itemsPerPage;
+                    const end = start + itemsPerPage;
+                    const pageData = allData.slice(start, end); // Corta los datos para la página actual
+                    contentContainer.innerHTML = template(pageData); // Renderiza solo los datos de la página
+                }
+            });
+
+        } catch (error) {
+            console.error('Error al generar el reporte:', error);
+            contentContainer.innerHTML = `<div class="no-data"><h3>Ocurrió un error al cargar el reporte.</h3><p>${error.message}</p></div>`;
+        }
+    });
+    </script>
+</body>
+</html>

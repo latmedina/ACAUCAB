@@ -5,6 +5,10 @@ import math
 from django.utils import timezone
 from django.contrib.auth.models import User, Group
 from django.contrib import messages
+from django.db import connection, transaction
+from django.http import JsonResponse, HttpResponseNotFound
+from django.http import JsonResponse, HttpResponse, HttpResponseNotFound
+from django.core.serializers.json import DjangoJSONEncoder
 from .models import (
     presentacion, venta_online, detalle_venta_online, pre_alm, 
     metodo_pago, pago, moneda, historico_moneda, historico_precio_punto, tienda, 
@@ -17,7 +21,7 @@ from django.views.decorators.csrf import csrf_exempt
 from decimal import Decimal
 from datetime import datetime, date
 from .forms import ClienteForm, EmpleadoForm, ProveedorForm
-from .utils import crear_usuario_sql
+from .utils import crear_usuario_sql, modificar_usuario_sql
 
 def validate_expiration_date(exp_date_str):
     """Valida que la fecha de vencimiento no sea anterior a la actual"""
@@ -1490,6 +1494,24 @@ def registrar_proveedor_view(request):
         form = ProveedorForm()
     return render(request, 'registro_proveedor.html', {'form': form})
 
+def modificar_usuario_view(request, id_usuario):
+    user_obj = usuario.objects.get(pk=id_usuario)
+
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')  # puede estar vacío si no se desea cambiar
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+
+        modificar_usuario_sql(id_usuario, username, email, password, first_name, last_name)
+        return redirect('/')
+
+    return render(request, 'modificar_usuario.html', {
+        'usuario': user_obj
+    })
+
+
 # HOME
 @login_required(login_url='login')
 def home_view(request):
@@ -1534,3 +1556,104 @@ def load_parroquias(request):
     ]
     
     return JsonResponse({'parroquias': parroquias_data})
+
+def vista_factura(request):
+    # Asegúrate de que tu archivo 'factura_reporte.html' esté en tu carpeta de templates
+        return render(request, 'factura_reporte.html')
+
+def generar_reporte_venta_api(request, venta_id):
+    """
+    API endpoint que obtiene los datos para un reporte de venta específico.
+    """
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+    try:
+        with connection.cursor() as cursor:
+            print(f"Ejecutando consulta para venta_id: {venta_id}")
+            cursor.execute("SELECT obtener_datos_reporte_venta(%s);", [venta_id])
+            result = cursor.fetchone()
+            
+            if result is None or result[0] is None:
+                print(f"No se encontró resultado en la BD para venta_id: {venta_id}")
+                return HttpResponseNotFound(f'No se encontraron datos para la venta con ID {venta_id}')
+
+            # El resultado es un diccionario de Python
+            report_data = result[0]
+            print("Datos obtenidos de la BD correctamente. Procediendo a serializar.")
+            # print(f"Datos: {report_data}") # Descomenta esta línea si necesitas ver el diccionario completo
+
+            # LA CORRECCIÓN: Convertimos manualmente a JSON
+            # Esto nos da más control y nos ayuda a aislar el error.
+            json_output = json.dumps(report_data, cls=DjangoJSONEncoder)
+            
+            print("Serialización a JSON exitosa. Enviando respuesta.")
+            
+            # Devolvemos una HttpResponse con el tipo de contenido correcto.
+            return HttpResponse(json_output, content_type='application/json')
+
+    except Exception as e:
+        # Este bloque capturará cualquier error durante el proceso
+        print(f"¡ERROR! Ocurrió una excepción en la vista: {e}")
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    
+def vista_orden_compra(request):
+    # Asegúrate de que tu archivo 'factura_reporte.html' esté en tu carpeta de templates
+        return render(request, 'Orden_compra_reporte.html')
+
+def generar_orden_compra_api(request, orden_id):
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT obtener_datos_orden_compra(%s);", [orden_id])
+            result = cursor.fetchone()
+            
+            if result is None or result[0] is None:
+                return HttpResponseNotFound(f'No se encontraron datos para la orden de compra con ID {orden_id}')
+
+            report_data = result[0]
+            return JsonResponse(report_data, encoder=DjangoJSONEncoder, safe=False)
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    
+
+def reporte_productores_eventos_api(request):
+    """
+    API endpoint que devuelve los datos para el reporte de productores en eventos.
+    """
+    print("Iniciando llamada al API de reporte de productores...")
+    try:
+        with connection.cursor() as cursor:
+            # Se llama a la función de la base de datos
+            cursor.execute("SELECT public.obtener_datos_productores_eventos();")
+            result = cursor.fetchone()
+            
+            if result is None or result[0] is None:
+                print("La consulta a la BD no devolvió resultados.")
+                return JsonResponse([], safe=False)
+
+            report_data = result[0]
+            print("Datos obtenidos de la BD correctamente. Se procederá a enviar.")
+
+            # Se utiliza HttpResponse para un control manual y evitar errores de serialización
+            json_output = json.dumps(report_data, cls=DjangoJSONEncoder, indent=4)
+            return HttpResponse(json_output, content_type='application/json')
+
+    except Exception as e:
+        # ¡ESTA PARTE ES LA MÁS IMPORTANTE!
+        # Imprimirá el error exacto de la base de datos en tu consola de Django.
+        print("\n¡Ocurrió un error grave en la vista del API!")
+        print("------------------------------------------")
+        print(f"Tipo de Excepción: {type(e).__name__}")
+        print(f"Error: {e}")
+        print("------------------------------------------\n")
+        return JsonResponse({'error': f'Ocurrió un error en el servidor: {e}'}, status=500)
+
+def vista_reporte_productores(request):
+    """
+    Esta vista simplemente renderiza la página HTML que mostrará el reporte.
+    """
+    return render(request, 'productores_eventos.html')
