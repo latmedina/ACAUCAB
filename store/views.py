@@ -1405,3 +1405,42 @@ def generar_orden_compra_api(request, orden_id):
 
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    
+
+def reporte_productores_eventos_api(request):
+    """
+    API endpoint que devuelve los datos para el reporte de productores en eventos.
+    """
+    print("Iniciando llamada al API de reporte de productores...")
+    try:
+        with connection.cursor() as cursor:
+            # Se llama a la función de la base de datos
+            cursor.execute("SELECT public.obtener_datos_productores_eventos();")
+            result = cursor.fetchone()
+            
+            if result is None or result[0] is None:
+                print("La consulta a la BD no devolvió resultados.")
+                return JsonResponse([], safe=False)
+
+            report_data = result[0]
+            print("Datos obtenidos de la BD correctamente. Se procederá a enviar.")
+
+            # Se utiliza HttpResponse para un control manual y evitar errores de serialización
+            json_output = json.dumps(report_data, cls=DjangoJSONEncoder, indent=4)
+            return HttpResponse(json_output, content_type='application/json')
+
+    except Exception as e:
+        # ¡ESTA PARTE ES LA MÁS IMPORTANTE!
+        # Imprimirá el error exacto de la base de datos en tu consola de Django.
+        print("\n¡Ocurrió un error grave en la vista del API!")
+        print("------------------------------------------")
+        print(f"Tipo de Excepción: {type(e).__name__}")
+        print(f"Error: {e}")
+        print("------------------------------------------\n")
+        return JsonResponse({'error': f'Ocurrió un error en el servidor: {e}'}, status=500)
+
+def vista_reporte_productores(request):
+    """
+    Esta vista simplemente renderiza la página HTML que mostrará el reporte.
+    """
+    return render(request, 'productores_eventos.html')

@@ -45,6 +45,8 @@ urlpatterns = [
     path('api/reporte/venta/<int:venta_id>/', views.generar_reporte_venta_api, name='api_reporte_venta'),
     path('orden/', views.vista_orden_compra, name='vista_orden_compra'),
     path('api/reporte/orden/<int:orden_id>/', views.generar_orden_compra_api, name='api_orden_compra'),
+    path('reporte1/', views.vista_reporte_productores, name='vista_reporte_productores'),
+    path('api/reportes/productores-en-eventos/', views.reporte_productores_eventos_api, name='api_reporte_productores'),
 
     path('modificar_usuario/<int:id_usuario>/', views.modificar_usuario_view, name='modificar_usuario'),
 

@@ -67,6 +67,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- factura de venta física
 CREATE OR REPLACE FUNCTION public.obtener_datos_reporte_venta(p_venta_id INT)
 RETURNS JSON AS $$
 DECLARE
@@ -123,6 +124,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- orden de compra
 CREATE OR REPLACE FUNCTION public.obtener_datos_orden_compra(p_solicitud_id INT)
 RETURNS JSON AS $$
 DECLARE
@@ -176,6 +178,53 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- reporte 1
+CREATE OR REPLACE FUNCTION public.obtener_datos_productores_eventos()
+RETURNS JSON AS $$
+DECLARE
+    v_reporte_data JSON;
+BEGIN
+    SELECT
+        -- json_agg agrupa todas las filas de eventos en un solo array JSON
+        COALESCE(json_agg(
+            json_build_object(
+                'evento_nombre', e.eve_nombre,
+                'evento_fecha', TO_CHAR(e.eve_fecha_hora, 'DD/MM/YYYY'),
+                'evento_lugar', l.lug_nombre,
+                -- Subconsulta para obtener los proveedores de cada evento
+                'proveedores', (
+                    SELECT COALESCE(json_agg(
+                        json_build_object(
+                            'proveedor_nombre', p.pro_razon_social,
+                            -- Subconsulta para obtener las cervezas de cada proveedor en este evento
+                            'cervezas_presentadas', (
+                                SELECT COALESCE(json_agg(
+                                    json_build_object(
+                                        'cerveza_nombre', pr.prese_nombre,
+                                        'cantidad', ee.exi_eve_cantidad
+                                    )
+                                ), '[]'::json)
+                                FROM public.existencia_evento ee
+                                JOIN public.presentacion pr ON ee.fk_presentacion = pr.prese_id
+                                -- CORRECCIÓN FINAL: Se une la existencia directamente con la tabla
+                                -- de relación evento-proveedor usando la clave foránea correcta.
+                                WHERE ee.fk_evento_proveedor = ep.eve_pro_id
+                            )
+                        )
+                    ), '[]'::json)
+                    FROM public.eve_pro ep
+                    JOIN public.proveedor p ON ep.fk_proveedor = p.pro_id
+                    WHERE ep.fk_evento = e.eve_id
+                )
+            )
+        ), '[]'::json)
+    INTO v_reporte_data
+    FROM public.evento e
+    LEFT JOIN public.lugar l ON e.fk_lugar = l.lug_id;
+
+    RETURN v_reporte_data;
+END;
+$$ LANGUAGE plpgsql;
 
 -- ===========================================
 -- FUNCION: modificar_usuario
