@@ -1494,8 +1494,8 @@ def registrar_proveedor_view(request):
         form = ProveedorForm()
     return render(request, 'registro_proveedor.html', {'form': form})
 
-def modificar_usuario_view(request, id_usuario):
-    user_obj = usuario.objects.get(pk=id_usuario)
+def modificar_usuario_view(request, usuario_id):
+    user_obj = usuario.objects.get(pk=usuario_id)
 
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -1504,8 +1504,14 @@ def modificar_usuario_view(request, id_usuario):
         first_name = request.POST.get('first_name')
         last_name = request.POST.get('last_name')
 
-        modificar_usuario_sql(id_usuario, username, email, password, first_name, last_name)
-        return redirect('/')
+        modificar_usuario_sql(usuario_id, username, email, password, first_name, last_name)
+        messages.success(request, 'Los datos del usuario han sido actualizados correctamente.')
+        return redirect('modificar_usuario', usuario_id=usuario_id)
+    
+    # Limpiar mensajes persistentes de login u otras vistas
+    storage = messages.get_messages(request)
+    for _ in storage:
+        pass  # Esto limpia todos los mensajes pendientes
 
     return render(request, 'modificar_usuario.html', {
         'usuario': user_obj
