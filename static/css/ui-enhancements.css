@@ -6,7 +6,7 @@
    1. VARIABLES PARA COHERENCIA VISUAL
    ========================================== */
 :root {
-    --ui-primary: #007bff;
+    --ui-primary: #2b92ff;
     --ui-success: #28a745;
     --ui-warning: #ffc107;
     --ui-danger: #dc3545;
@@ -188,7 +188,7 @@
 }
 
 .checkout-total {
-    background: linear-gradient(135deg, var(--ui-primary) 0%, #0056b3 100%);
+    background: linear-gradient(135deg, var(--ui-primary) 0%, #007bff 100%);
     color: white;
     border-radius: var(--ui-border-radius);
     padding: 1.5rem;
