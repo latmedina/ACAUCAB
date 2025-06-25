@@ -700,22 +700,25 @@ def processOrder(request):
     if not detalles:
         return JsonResponse({'status': 'error', 'message': 'No hay productos válidos en el carrito'}, status=400)
 
-    # Calcular total
-    total_venta = sum(d['precio_unitario'] * d['cantidad'] for d in detalles)
+    # Calcular total en USD
+    total_venta_usd = sum(d['precio_unitario'] * d['cantidad'] for d in detalles)
+    
+    # Convertir total a bolívares
+    total_venta_bolivares = convert_price_to_bolivars(Decimal(str(total_venta_usd)))
     
     tienda_obj = tienda.objects.first()
-    if total_venta <= 0:
+    if total_venta_usd <= 0:
         return JsonResponse({'status': 'error', 'message': 'Total de la venta inválido'}, status=400)
         
     # Verificar si el usuario tiene un cliente asociado
     if not request.user.fk_cliente:
         return JsonResponse({'status': 'error', 'message': 'Usuario debe tener un cliente asociado para ventas físicas'}, status=400)
 
-    # Crear venta física (no online)
+    # Crear venta física (no online) con total en bolívares
     venta_id = ejecutar_registro_venta_fisica(
         cliente_id=request.user.fk_cliente.cli_id,
         tienda_id=tienda_obj.tie_id,
-        total=total_venta
+        total_bolivares=float(total_venta_bolivares)
     )
 
     venta = venta_fisica.objects.get(ven_fis_id=venta_id)
@@ -731,7 +734,7 @@ def processOrder(request):
 
     # Guardar el ID de venta en la sesión para usar en el método de pago
     request.session['pending_venta_id'] = venta.ven_fis_id
-    request.session['pending_total'] = float(total_venta)
+    request.session['pending_total'] = float(total_venta_usd)  # Mantener en USD para compatibilidad con métodos de pago
     request.session['pending_tipo'] = 'fisica'
     # NO limpiar el carrito aquí - se limpiará después del pago exitoso
 
@@ -742,9 +745,9 @@ def processOrder(request):
         'redirect_to_payment': True
     })
 
-def ejecutar_registro_venta_fisica(cliente_id, tienda_id, total):
+def ejecutar_registro_venta_fisica(cliente_id, tienda_id, total_bolivares):
             with connection.cursor() as cursor:
-                cursor.execute("SELECT registrar_venta_fisica(%s, %s, %s);", [cliente_id, tienda_id, total])
+                cursor.execute("SELECT registrar_venta_fisica(%s, %s, %s);", [cliente_id, tienda_id, total_bolivares])
                 nueva_venta_id = cursor.fetchone()[0]
             return nueva_venta_id
 
@@ -1753,7 +1756,10 @@ def create_sale_from_order_data(order_data, user):
     """Crear venta y detalles basándose en los datos validados de la orden"""
     tipo = order_data['tipo']
     detalles = order_data['detalles']
-    total = order_data['total']
+    total_usd = order_data['total']
+    
+    # Convertir total de USD a bolívares
+    total_bolivares = convert_price_to_bolivars(Decimal(str(total_usd)))
     
     tienda_obj = tienda.objects.first()
     venta_fisica_obj = None
@@ -1761,11 +1767,11 @@ def create_sale_from_order_data(order_data, user):
     
     try:
         if tipo == 'fisica':
-            # Crear venta física
+            # Crear venta física con total en bolívares
             venta_id = ejecutar_registro_venta_fisica(
                 cliente_id=user.fk_cliente.cli_id,
                 tienda_id=tienda_obj.tie_id,
-                total=total
+                total_bolivares=float(total_bolivares)
             )
             venta_fisica_obj = venta_fisica.objects.get(ven_fis_id=venta_id)
             
@@ -1779,10 +1785,10 @@ def create_sale_from_order_data(order_data, user):
                     det_ven_fis_precio_unitario=detalle['precio_unitario']
                 )
         else:
-            # Crear venta online
+            # Crear venta online con total en bolívares
             venta_online_obj = venta_online.objects.create(
                 ven_onl_fecha=timezone.now(),
-                ven_onl_total=total,
+                ven_onl_total=float(total_bolivares),
                 fk_usuario=user,
                 fk_tienda=tienda_obj
             )
