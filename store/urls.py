@@ -49,6 +49,12 @@ urlpatterns = [
     path('modificar_usuario/<int:usuario_id>/', views.modificar_usuario_view, name='modificar_usuario'),
     path('eliminar_usuario/<int:id_usuario>/', views.eliminar_usuario_view, name='eliminar_usuario'),
 
+    #Historial de compras 
+    path('historial-compras/<int:id_usuario>/', views.vista_historial_compras, name='historial-compras'),
+    path('api/historial/usuario/<int:id_usuario>/', views.historial_compras_api, name='api_historial_compras'),
+    path('factura/<int:venta_id>/', views.vista_factura_directa, name='vista_factura_directa'),
+
+
     # NOTA: Los reportes se han movido al módulo de empleados (/empleados/reportes/)
 
 
