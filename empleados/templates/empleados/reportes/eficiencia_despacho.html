@@ -1,0 +1,113 @@
+{% extends 'empleados/base_empleados.html' %}
+
+{% block title %}Eficiencia de Despacho - Empleados{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'empleados:reportes' %}">Reportes</a></li>
+<li class="breadcrumb-item active">Eficiencia de Despacho</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="mb-0"><i class="fas fa-truck me-2"></i>Reporte de Eficiencia de Despacho</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Análisis del tiempo promedio de despacho de pedidos.</p>
+                <button id="loadReportBtn" class="btn btn-primary">
+                    <i class="fas fa-chart-line me-2"></i>Generar Reporte
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div id="report-container">
+            <!-- El reporte se cargará aquí -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const reportContainer = document.getElementById('report-container');
+    const loadBtn = document.getElementById('loadReportBtn');
+
+    async function loadReport() {
+        loadBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin me-2"></i>Generando...';
+        loadBtn.disabled = true;
+
+        reportContainer.innerHTML = `
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="mt-2">Calculando eficiencia de despacho...</p>
+            </div>
+        `;
+
+        try {
+            const response = await fetch('/empleados/api/reportes/eficiencia-despacho/');
+            if (!response.ok) {
+                throw new Error(`Error ${response.status}: No se pudieron obtener los datos.`);
+            }
+            const data = await response.json();
+
+            reportContainer.innerHTML = `
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Resultados de Eficiencia</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-6">
+                                <div class="border rounded p-4">
+                                    <h2 class="text-primary">${data.tiempo_promedio || 'N/A'}</h2>
+                                    <p class="text-muted mb-0">Tiempo Promedio de Despacho</p>
+                                    <small class="text-muted">(en horas)</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="border rounded p-4">
+                                    <h2 class="text-success">${data.total_despachos || 'N/A'}</h2>
+                                    <p class="text-muted mb-0">Total de Despachos Analizados</p>
+                                    <small class="text-muted">Registro histórico</small>
+                                </div>
+                            </div>
+                        </div>
+                        ${data.observaciones ? `
+                            <div class="mt-4">
+                                <h6>Observaciones:</h6>
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>${data.observaciones}
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+
+        } catch (error) {
+            console.error('Error:', error);
+            reportContainer.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <strong>Error:</strong> ${error.message}
+                </div>
+            `;
+        } finally {
+            loadBtn.innerHTML = '<i class="fas fa-chart-line me-2"></i>Generar Reporte';
+            loadBtn.disabled = false;
+        }
+    }
+
+    loadBtn.addEventListener('click', loadReport);
+});
+</script>
+{% endblock %} 

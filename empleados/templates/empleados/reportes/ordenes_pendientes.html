@@ -1,0 +1,248 @@
+{% extends 'empleados/base_empleados.html' %}
+
+{% block title %}Órdenes Pendientes - Empleados{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'empleados:reportes' %}">Reportes</a></li>
+<li class="breadcrumb-item active">Órdenes Pendientes</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="mb-0"><i class="fas fa-hourglass-half me-2"></i>Órdenes de Compra Pendientes</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Consulta todas las órdenes de compra que están pendientes de procesamiento o entrega.</p>
+                <button id="loadReportBtn" class="btn btn-primary">
+                    <i class="fas fa-list me-2"></i>Cargar Órdenes Pendientes
+                </button>
+                <button id="refreshBtn" class="btn btn-outline-primary ms-2">
+                    <i class="fas fa-sync-alt me-2"></i>Actualizar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div id="report-container">
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle fa-2x mb-3"></i>
+                <h5>Órdenes de Compra Pendientes</h5>
+                <p class="mb-0">Haz clic en "Cargar Órdenes Pendientes" para ver el estado actual de las órdenes.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const reportContainer = document.getElementById('report-container');
+    const loadBtn = document.getElementById('loadReportBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
+
+    async function loadReport() {
+        const activeBtn = event.target;
+        const originalText = activeBtn.innerHTML;
+        
+        activeBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin me-2"></i>Cargando...';
+        activeBtn.disabled = true;
+
+        reportContainer.innerHTML = `
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="mt-2">Consultando órdenes pendientes...</p>
+            </div>
+        `;
+
+        try {
+            const response = await fetch('/empleados/api/reportes/ordenes-pendientes/');
+            if (!response.ok) {
+                throw new Error(`Error ${response.status}: No se pudieron obtener los datos.`);
+            }
+            const data = await response.json();
+
+            if (!data || data.length === 0) {
+                reportContainer.innerHTML = `
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                            <h5 class="text-success">¡Todas las órdenes están al día!</h5>
+                            <p class="text-muted">No hay órdenes de compra pendientes en este momento.</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            // Agrupar órdenes por estado
+            const ordenesPorEstado = {};
+            data.forEach(orden => {
+                const estado = orden.estado || 'Sin estado';
+                if (!ordenesPorEstado[estado]) {
+                    ordenesPorEstado[estado] = [];
+                }
+                ordenesPorEstado[estado].push(orden);
+            });
+
+            let html = `
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card text-center bg-primary text-white">
+                            <div class="card-body">
+                                <h3>${data.length}</h3>
+                                <p class="mb-0">Total Pendientes</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center bg-warning text-dark">
+                            <div class="card-body">
+                                <h3>${(ordenesPorEstado['En proceso'] || []).length}</h3>
+                                <p class="mb-0">En Proceso</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center bg-info text-white">
+                            <div class="card-body">
+                                <h3>${(ordenesPorEstado['Esperando'] || []).length}</h3>
+                                <p class="mb-0">En Espera</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center bg-danger text-white">
+                            <div class="card-body">
+                                <h3>${(ordenesPorEstado['Atrasada'] || []).length}</h3>
+                                <p class="mb-0">Atrasadas</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">
+                            <i class="fas fa-hourglass-half me-2"></i>
+                            Órdenes Pendientes (${data.length})
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>ID Orden</th>
+                                        <th>Proveedor</th>
+                                        <th>Fecha Orden</th>
+                                        <th>Fecha Esperada</th>
+                                        <th>Total</th>
+                                        <th>Estado</th>
+                                        <th>Días Pendiente</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+            `;
+
+            data.forEach(orden => {
+                const estado = orden.estado || 'Sin estado';
+                const fechaOrden = orden.fecha_orden || 'N/A';
+                const fechaEsperada = orden.fecha_esperada || 'N/A';
+                const diasPendiente = orden.dias_pendiente || 0;
+                
+                // Determinar el color del badge según el estado
+                let badgeClass = 'bg-secondary';
+                if (estado === 'En proceso') badgeClass = 'bg-warning text-dark';
+                else if (estado === 'Esperando') badgeClass = 'bg-info';
+                else if (estado === 'Atrasada') badgeClass = 'bg-danger';
+                
+                // Determinar color de alerta para días pendientes
+                let diasClass = '';
+                if (diasPendiente > 30) diasClass = 'text-danger fw-bold';
+                else if (diasPendiente > 15) diasClass = 'text-warning fw-bold';
+
+                html += `
+                    <tr>
+                        <td>
+                            <strong>#${orden.id || 'N/A'}</strong>
+                        </td>
+                        <td>
+                            <strong>${orden.proveedor_nombre || 'N/A'}</strong>
+                            ${orden.proveedor_contacto ? `<br><small class="text-muted">${orden.proveedor_contacto}</small>` : ''}
+                        </td>
+                        <td>${fechaOrden}</td>
+                        <td>
+                            <span class="${fechaEsperada === 'N/A' ? 'text-muted' : ''}">
+                                ${fechaEsperada}
+                            </span>
+                        </td>
+                        <td>
+                            <strong>$${orden.total ? parseFloat(orden.total).toFixed(2) : '0.00'}</strong>
+                        </td>
+                        <td>
+                            <span class="badge ${badgeClass}">
+                                ${estado}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="${diasClass}">
+                                ${diasPendiente} días
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>Leyenda:</strong>
+                                        <span class="badge bg-warning text-dark ms-2">En Proceso</span>
+                                        <span class="badge bg-info ms-1">En Espera</span>
+                                        <span class="badge bg-danger ms-1">Atrasada</span>
+                                        <br><small class="mt-2 d-block">Las órdenes con más de 15 días aparecen resaltadas.</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            reportContainer.innerHTML = html;
+
+        } catch (error) {
+            console.error('Error:', error);
+            reportContainer.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <strong>Error:</strong> ${error.message}
+                </div>
+            `;
+        } finally {
+            activeBtn.innerHTML = originalText;
+            activeBtn.disabled = false;
+        }
+    }
+
+    loadBtn.addEventListener('click', loadReport);
+    refreshBtn.addEventListener('click', loadReport);
+});
+</script>
+{% endblock %} 
