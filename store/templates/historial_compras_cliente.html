@@ -1,0 +1,185 @@
+{% extends "main.html" %}
+{% load static %}
+
+{% block content %}
+<div class="report-container">
+    <!-- BOTÓN PARA REGRESAR -->
+    <div class="header-controls">
+        <a href="{% url 'home' %}" class="btn-back">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+            Regresar
+        </a>
+    </div>
+
+    <header class="report-header">
+        <!-- El nombre del cliente se sigue mostrando correctamente -->
+        <h1>Historial de Compras</h1>
+        <p>Aquí puedes ver un resumen de todas tus compras y generar las facturas correspondientes.</p>
+    </header>
+
+    <!-- Contenedor para la tabla de resultados -->
+    <div id="historial-content">
+        <p class="no-data">Cargando historial de compras...</p>
+    </div>
+    
+    <!-- Contenedor para los controles de paginación -->
+    <div id="pagination-container" class="pagination-container"></div>
+</div>
+
+<!-- 
+    PLANTILLA HANDLEBARS PARA LA TABLA DE COMPRAS
+    Envuelta en {% verbatim %} para Django.
+-->
+{% verbatim %}
+<script id="plantilla-historial" type="text/x-handlebars-template">
+    {{#if this.length}}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID Compra</th>
+                    <th>Fecha</th>
+                    <th>Tipo de Compra</th>
+                    <th>Monto Total</th>
+                    <th>Factura</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each this}}
+                <tr>
+                    <td>{{id_venta}}</td>
+                    <td>{{fecha_compra}}</td>
+                    <td>{{tipo_compra}}</td>
+                    <td>{{formatCurrency monto_total}}</td>
+                    <td>
+                        <!-- El botón ahora tiene data-id y data-tipo para la URL -->
+                        <button class="btn-factura" data-id="{{id_venta}}" data-tipo="{{tipo_factura}}">
+                            Ver Factura
+                        </button>
+                    </td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    {{else}}
+        <p class="no-data">No se encontraron compras en tu historial.</p>
+    {{/if}}
+</script>
+{% endverbatim %}
+
+<!-- Estilos CSS para la página -->
+<style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; color: #343a40; }
+    .report-container { max-width: 1000px; margin: 20px auto; background-color: #fff; padding: 30px; box-shadow: 0 2px 15px rgba(0,0,0,0.1); border-radius: 8px; }
+    
+    /* Estilos para el nuevo botón de regresar */
+    .header-controls {
+        display: flex;
+        justify-content: flex-start;
+        margin-bottom: 20px;
+    }
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background-color: #6c757d;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-weight: bold;
+        transition: background-color 0.2s;
+    }
+    .btn-back:hover {
+        background-color: #5a6268;
+    }
+    .btn-back svg {
+        margin-top: -2px;
+    }
+
+    .report-header { text-align: center; border-bottom: 2px solid #dee2e6; padding-bottom: 20px; margin-bottom: 30px; }
+    .report-header h1 { color: #0d6efd; margin: 0; }
+    .report-header p { margin: 5px 0 0; font-size: 1rem; color: #6c757d; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #dee2e6; padding: 12px; text-align: left; }
+    th { background-color: #343a40; color: white; }
+    tr:nth-child(even) { background-color: #f8f9fa; }
+    td:last-child { text-align: center; }
+    .btn-factura { background-color: #0d6efd; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .btn-factura:hover { background-color: #0b5ed7; }
+    .no-data { text-align: center; padding: 40px; background-color: #f8f9fa; border-radius: 8px; }
+    .pagination-container { display: flex; justify-content: center; margin-top: 30px; }
+    .simple-pagination ul { margin: 0; padding: 0; }
+    .simple-pagination li { display: inline-block; margin: 0 2px; }
+    .simple-pagination li a, .simple-pagination li span { border: 1px solid #0d6efd; color: #0d6efd; padding: 8px 12px; border-radius: 4px; text-decoration: none; }
+    .simple-pagination li.active span { background-color: #0d6efd; color: white; }
+</style>
+
+<!-- Librerías de JavaScript -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/simplePagination.js/1.6/jquery.simplePagination.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/handlebars@4.7.8/dist/handlebars.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const contentContainer = document.getElementById('historial-content');
+    const paginationContainer = document.getElementById('pagination-container');
+    const userId = "{{ usuario.id|default:'0' }}";
+
+    // Helper de Handlebars para formatear moneda
+    Handlebars.registerHelper('formatCurrency', function(value) {
+        if (typeof value !== 'number') value = parseFloat(value);
+        return value ? '$' + value.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,') : '$0.00';
+    });
+
+    const templateHtml = document.getElementById('plantilla-historial').innerHTML;
+    const template = Handlebars.compile(templateHtml);
+
+    async function cargarHistorial() {
+        try {
+            const apiUrl = `/api/historial/usuario/${userId}/`;
+            const response = await fetch(apiUrl);
+            if (!response.ok) {
+                throw new Error(`Error ${response.status}: No se pudo obtener el historial.`);
+            }
+            const allData = await response.json();
+
+            if (!allData || allData.length === 0) {
+                contentContainer.innerHTML = template([]);
+                return;
+            }
+
+            // Configuración de la paginación (10 compras por página)
+            $('#pagination-container').pagination({
+                items: allData.length,
+                itemsOnPage: 10,
+                cssStyle: 'light-theme',
+                onPageClick: function(pageNumber) {
+                    const start = (pageNumber - 1) * 10;
+                    const end = start + 10;
+                    contentContainer.innerHTML = template(allData.slice(start, end));
+                }
+            });
+
+            // Renderiza la primera página al cargar
+            contentContainer.innerHTML = template(allData.slice(0, 10));
+
+        } catch (error) {
+            console.error('Error al cargar el historial:', error);
+            contentContainer.innerHTML = `<p class="no-data" style="color: red;"><strong>Error:</strong> ${error.message}</p>`;
+        }
+    }
+
+    // Delegación de eventos para los botones de factura
+    contentContainer.addEventListener('click', function(event) {
+        if (event.target && event.target.matches('button.btn-factura')) {
+            const ventaId = event.target.dataset.id;
+            window.open(`/factura/${ventaId}`, '_blank');
+        }
+    });
+
+    // Carga el historial al iniciar la página
+    cargarHistorial();
+});
+</script>
+
+{% endblock %}
