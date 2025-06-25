@@ -1907,10 +1907,29 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user:
             login(request, user)
+            
+            # DETECTAR TIPO DE USUARIO Y REDIRIGIR APROPIADAMENTE
+            # Verificar si el usuario es un empleado (tiene emp_car)
+            if hasattr(user, 'fk_emp_car') and user.fk_emp_car:
+                messages.success(request, f'¡Bienvenido al módulo de empleados, {user.get_full_name() or user.username}!')
+                return redirect('empleados:dashboard')
+            
+            # Verificar si el usuario es un cliente
+            elif hasattr(user, 'fk_cliente') and user.fk_cliente:
+                messages.success(request, f'¡Bienvenido a la tienda, {user.get_full_name() or user.username}!')
+                return redirect('store_view', tipo='fisica')
+            
+            # Verificar si el usuario es un proveedor  
+            elif hasattr(user, 'fk_proveedor') and user.fk_proveedor:
+                messages.success(request, f'¡Bienvenido, {user.get_full_name() or user.username}!')
+                return redirect('home')
+            
             # Redirigir al checkout si viene desde el carrito
             next_url = request.GET.get('next')
             if next_url:
                 return redirect(next_url)
+                
+            # Por defecto ir a home
             return redirect('home')
         else:
             return render(request, 'login.html', {'error': 'Credenciales inválidas'})
@@ -2143,283 +2162,5 @@ def load_parroquias(request):
     return JsonResponse({'parroquias': parroquias_data})
 
 
-# Facturas
-def vista_factura(request):
-    # Asegúrate de que tu archivo 'factura_reporte.html' esté en tu carpeta de templates
-        return render(request, 'reportes/factura_reporte.html')
-
-def generar_reporte_venta_api(request, venta_id):
-    """
-    API endpoint que obtiene los datos para un reporte de venta específico.
-    """
-    if request.method != 'GET':
-        return JsonResponse({'error': 'Método no permitido'}, status=405)
-
-    try:
-        with connection.cursor() as cursor:
-            print(f"Ejecutando consulta para venta_id: {venta_id}")
-            cursor.execute("SELECT obtener_datos_reporte_venta(%s);", [venta_id])
-            result = cursor.fetchone()
-            
-            if result is None or result[0] is None:
-                print(f"No se encontró resultado en la BD para venta_id: {venta_id}")
-                return HttpResponseNotFound(f'No se encontraron datos para la venta con ID {venta_id}')
-
-            # El resultado es un diccionario de Python
-            report_data = result[0]
-            print("Datos obtenidos de la BD correctamente. Procediendo a serializar.")
-            # print(f"Datos: {report_data}") # Descomenta esta línea si necesitas ver el diccionario completo
-
-            # LA CORRECCIÓN: Convertimos manualmente a JSON
-            # Esto nos da más control y nos ayuda a aislar el error.
-            json_output = json.dumps(report_data, cls=DjangoJSONEncoder)
-            
-            print("Serialización a JSON exitosa. Enviando respuesta.")
-            
-            # Devolvemos una HttpResponse con el tipo de contenido correcto.
-            return HttpResponse(json_output, content_type='application/json')
-
-    except Exception as e:
-        # Este bloque capturará cualquier error durante el proceso
-        print(f"¡ERROR! Ocurrió una excepción en la vista: {e}")
-        return JsonResponse({'success': False, 'error': str(e)}, status=500)
-    
-
-# Orden de Compra
-def vista_orden_compra(request):
-    # Asegúrate de que tu archivo 'factura_reporte.html' esté en tu carpeta de templates
-        return render(request, 'reportes/Orden_compra_reporte.html')
-
-def generar_orden_compra_api(request, orden_id):
-    if request.method != 'GET':
-        return JsonResponse({'error': 'Método no permitido'}, status=405)
-
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT obtener_datos_orden_compra(%s);", [orden_id])
-            result = cursor.fetchone()
-            
-            if result is None or result[0] is None:
-                return HttpResponseNotFound(f'No se encontraron datos para la orden de compra con ID {orden_id}')
-
-            report_data = result[0]
-            return JsonResponse(report_data, encoder=DjangoJSONEncoder, safe=False)
-
-    except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=500)
-    
-
-# Reportes de Productores en Eventos
-def reporte_productores_eventos_api(request):
-    """
-    API endpoint que devuelve los datos para el reporte de productores en eventos.
-    """
-    print("Iniciando llamada al API de reporte de productores...")
-    try:
-        with connection.cursor() as cursor:
-            # Se llama a la función de la base de datos
-            cursor.execute("SELECT public.obtener_datos_productores_eventos();")
-            result = cursor.fetchone()
-            
-            if result is None or result[0] is None:
-                print("La consulta a la BD no devolvió resultados.")
-                return JsonResponse([], safe=False)
-
-            report_data = result[0]
-            print("Datos obtenidos de la BD correctamente. Se procederá a enviar.")
-
-            # Se utiliza HttpResponse para un control manual y evitar errores de serialización
-            json_output = json.dumps(report_data, cls=DjangoJSONEncoder, indent=4)
-            return HttpResponse(json_output, content_type='application/json')
-
-    except Exception as e:
-        # ¡ESTA PARTE ES LA MÁS IMPORTANTE!
-        # Imprimirá el error exacto de la base de datos en tu consola de Django.
-        print("\n¡Ocurrió un error grave en la vista del API!")
-        print("------------------------------------------")
-        print(f"Tipo de Excepción: {type(e).__name__}")
-        print(f"Error: {e}")
-        print("------------------------------------------\n")
-        return JsonResponse({'error': f'Ocurrió un error en el servidor: {e}'}, status=500)
-
-def vista_reporte_productores(request):
-    """
-    Esta vista simplemente renderiza la página HTML que mostrará el reporte.
-    """
-    return render(request, 'reportes/productores_eventos.html')
-
-
-# Reporte de Eficiencia de Despacho
-def reporte_eficiencia_despacho_api(request):
-    """
-    API endpoint que devuelve el tiempo promedio de despacho.
-    """
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT public.calcular_eficiencia_despacho();")
-            result = cursor.fetchone()
-            print("Ejecutando consulta para calcular eficiencia de despacho...")
-            print(f"Resultado de la consulta: {result}")
-            if result is None or result[0] is None:
-                return JsonResponse({'error': 'No se pudo calcular la eficiencia.'}, status=404)
-
-            report_data = result[0]
-            return JsonResponse(report_data, encoder=DjangoJSONEncoder, safe=False)
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
-
-def vista_reporte_eficiencia(request):
-    """
-    Esta vista simplemente renderiza la página HTML que mostrará el reporte.
-    """
-    # Asegúrate de crear la carpeta 'reportes' dentro de 'templates'
-    return render(request, 'reportes/eficiencia_despacho.html')
-
-# Reporte Histórico de Ofertas
-def reporte_historico_ofertas_api(request):
-    """
-    API endpoint que devuelve las ofertas activas en un rango de fechas.
-    """
-    print("Iniciando llamada al API de histórico de ofertas...")
-    try:
-        # Obtener fechas desde los parámetros de la URL, con valores por defecto
-        fecha_inicio_str = request.GET.get('inicio', '1900-01-01')
-        fecha_fin_str = request.GET.get('fin', datetime.now().strftime('%Y-%m-%d'))
-        
-        print(f"Buscando ofertas entre {fecha_inicio_str} y {fecha_fin_str}")
-
-        with connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT public.obtener_historico_ofertas(%s::DATE, %s::DATE);",
-                [fecha_inicio_str, fecha_fin_str]
-            )
-            result = cursor.fetchone()
-            
-            if result is None or result[0] is None:
-                print("La consulta a la BD no devolvió resultados.")
-                return JsonResponse([], safe=False)
-
-            report_data = result[0]
-            print("Datos obtenidos de la BD correctamente. Enviando respuesta.")
-            return JsonResponse(report_data, encoder=DjangoJSONEncoder, safe=False)
-
-    except Exception as e:
-        # ¡ESTA PARTE ES LA MÁS IMPORTANTE!
-        # Imprimirá el error exacto en tu consola de Django.
-        print("\n¡Ocurrió un error grave en la vista del API de Ofertas!")
-        print("-----------------------------------------------------")
-        print(f"Tipo de Excepción: {type(e).__name__}")
-        print(f"Error: {e}")
-        print("-----------------------------------------------------\n")
-        return JsonResponse({'error': f'Ocurrió un error en el servidor: {e}'}, status=500)
-
-def vista_reporte_ofertas(request):
-    """
-    Renderiza la página HTML para el reporte de histórico de ofertas.
-    """
-    return render(request, 'reportes/historico_ofertas.html')
-
-# Reporte de Incumplimiento de Horario
-def reporte_incumplimiento_horario_api(request):
-    """
-    API endpoint que devuelve los incumplimientos de horario en un rango de fechas.
-    """
-    try:
-        # Obtener fechas desde los parámetros de la URL
-        fecha_inicio_str = request.GET.get('inicio')
-        fecha_fin_str = request.GET.get('fin')
-        
-        if not fecha_inicio_str or not fecha_fin_str:
-            return JsonResponse({'error': 'Fechas de inicio y fin son requeridas'}, status=400)
-        
-        with connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT public.obtener_reporte_incumplimiento_horario(%s::DATE, %s::DATE);",
-                [fecha_inicio_str, fecha_fin_str]
-            )
-            result = cursor.fetchone()
-            
-            if result is None or result[0] is None:
-                return JsonResponse([], safe=False)
-
-            report_data = result[0]
-            return JsonResponse(report_data, encoder=DjangoJSONEncoder, safe=False)
-
-    except Exception as e:
-        # Manejo de errores para depuración
-        print(f"Error en API de incumplimiento: {e}")
-        return JsonResponse({'error': str(e)}, status=500)
-    
-def reporte_incumplimiento_horario_api(request):
-    """
-    API endpoint que devuelve los incumplimientos de horario en un rango de fechas.
-    """
-    try:
-        # Obtener fechas desde los parámetros de la URL
-        fecha_inicio_str = request.GET.get('inicio')
-        fecha_fin_str = request.GET.get('fin')
-        
-        if not fecha_inicio_str or not fecha_fin_str:
-            return JsonResponse({'error': 'Fechas de inicio y fin son requeridas'}, status=400)
-        
-        with connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT public.obtener_reporte_incumplimiento_horario(%s::DATE, %s::DATE);",
-                [fecha_inicio_str, fecha_fin_str]
-            )
-            result = cursor.fetchone()
-            
-            if result is None or result[0] is None:
-                return JsonResponse([], safe=False)
-
-            report_data = result[0]
-            return JsonResponse(report_data, encoder=DjangoJSONEncoder, safe=False)
-     
-
-    except Exception as e:
-        # Manejo de errores para depuración
-        print(f"Error en API de incumplimiento: {e}")
-        return JsonResponse({'error': str(e)}, status=500)
-
-def vista_reporte_incumplimiento(request):
-    """
-    Renderiza la página HTML para el reporte de incumplimiento de horario.
-    """
-    return render(request, 'reportes/incumplimiento_horario.html')
-
-# Reporte de Órdenes de Compra Pendientes
-def reporte_ordenes_pendientes_api(request):
-    """
-    API endpoint que devuelve las órdenes de compra pendientes.
-    """
-    print("Iniciando llamada al API de órdenes pendientes...")
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT public.obtener_ordenes_compra_pendientes();")
-            result = cursor.fetchone()
-            
-            if result is None or result[0] is None:
-                print("La consulta a la BD no devolvió resultados.")
-                return JsonResponse([], safe=False)
-
-            report_data = result[0]
-            print("Datos obtenidos de la BD correctamente. Enviando respuesta.")
-            return JsonResponse(report_data, encoder=DjangoJSONEncoder, safe=False)
-
-    except Exception as e:
-        # ¡ESTA PARTE ES LA MÁS IMPORTANTE!
-        # Imprimirá el error exacto en tu consola de Django.
-        print("\n¡Ocurrió un error grave en la vista del API de Órdenes Pendientes!")
-        print("-----------------------------------------------------------")
-        print(f"Tipo de Excepción: {type(e).__name__}")
-        print(f"Error: {e}")
-        # Imprime el traceback completo para un diagnóstico detallado
-        traceback.print_exc()
-        print("-----------------------------------------------------------\n")
-        return JsonResponse({'error': f'Ocurrió un error en el servidor: {e}'}, status=500)
-
-def vista_reporte_ordenes_pendientes(request):
-    """
-    Renderiza la página HTML para el reporte de órdenes pendientes.
-    """
-    return render(request, 'reportes/ordenes_pendientes.html')
+# NOTA: Las vistas de reportes se han movido al módulo de empleados
+# para una mejor organización y control de acceso.

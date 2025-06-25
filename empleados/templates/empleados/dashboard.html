@@ -1,0 +1,163 @@
+{% extends 'empleados/base_empleados.html' %}
+
+{% block title %}Dashboard - Empleados{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="mb-0"><i class="fas fa-tachometer-alt me-2"></i>Dashboard de Empleados</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h4>¡Bienvenido, {{ user.get_full_name|default:user.username }}!</h4>
+                        <p class="text-muted mb-0">Accede a todas las herramientas y reportes disponibles para empleados.</p>
+                        {% if empleado %}
+                            <p class="text-muted">
+                                <strong>Empleado:</strong> {{ empleado.emp_pnombre }} {{ empleado.emp_papellido }}<br>
+                                <strong>Cédula:</strong> {{ empleado.emp_ci }}
+                            </p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="text-muted">
+                            <i class="fas fa-clock me-2"></i>
+                            <span id="current-time"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Access Cards -->
+<div class="row">
+    <!-- Reportes Card -->
+    <div class="col-lg-6 col-md-12 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Reportes</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">Accede a todos los reportes disponibles del sistema.</p>
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-file-invoice text-primary me-2"></i>Facturas de Venta</li>
+                    <li><i class="fas fa-shopping-cart text-success me-2"></i>Órdenes de Compra</li>
+                    <li><i class="fas fa-users text-info me-2"></i>Productores en Eventos</li>
+                    <li><i class="fas fa-truck text-warning me-2"></i>Eficiencia de Despacho</li>
+                    <li><i class="fas fa-tags text-danger me-2"></i>Histórico de Ofertas</li>
+                    <li><i class="fas fa-clock text-secondary me-2"></i>Incumplimiento de Horario</li>
+                    <li><i class="fas fa-hourglass-half text-dark me-2"></i>Órdenes Pendientes</li>
+                </ul>
+                <a href="{% url 'empleados:reportes' %}" class="btn btn-primary">
+                    <i class="fas fa-chart-bar me-2"></i>Ver Reportes
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Info Card -->
+    <div class="col-lg-6 col-md-12 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Información del Sistema</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">Información relevante del sistema ACAUCAB.</p>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="border rounded p-3 text-center mb-3">
+                            <h4 class="text-primary mb-1"><i class="fas fa-beer"></i></h4>
+                            <small class="text-muted">Sistema ACAUCAB</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="border rounded p-3 text-center mb-3">
+                            <h4 class="text-success mb-1"><i class="fas fa-user-tie"></i></h4>
+                            <small class="text-muted">Módulo Empleados</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="alert alert-info">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    <strong>Tip:</strong> Utiliza el menú lateral para navegar entre las diferentes secciones.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity/Stats Cards -->
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="display-4 text-primary mb-3">
+                    <i class="fas fa-file-invoice"></i>
+                </div>
+                <h5 class="card-title">Facturas</h5>
+                <p class="card-text">Generar reportes de facturas por ID de venta</p>
+                <a href="{% url 'empleados:vista_factura' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-right me-2"></i>Acceder
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="display-4 text-success mb-3">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <h5 class="card-title">Órdenes de Compra</h5>
+                <p class="card-text">Consultar y generar reportes de órdenes</p>
+                <a href="{% url 'empleados:vista_orden_compra' %}" class="btn btn-outline-success">
+                    <i class="fas fa-arrow-right me-2"></i>Acceder
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="display-4 text-info mb-3">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h5 class="card-title">Productores</h5>
+                <p class="card-text">Reporte de productores en eventos</p>
+                <a href="{% url 'empleados:vista_reporte_productores' %}" class="btn btn-outline-info">
+                    <i class="fas fa-arrow-right me-2"></i>Acceder
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Actualizar hora actual
+    function updateTime() {
+        const now = new Date();
+        const timeString = now.toLocaleString('es-ES', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+        document.getElementById('current-time').textContent = timeString;
+    }
+
+    // Actualizar cada segundo
+    updateTime();
+    setInterval(updateTime, 1000);
+</script>
+{% endblock %} 

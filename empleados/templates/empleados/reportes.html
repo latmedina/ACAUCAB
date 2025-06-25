@@ -1,0 +1,115 @@
+{% extends 'empleados/base_empleados.html' %}
+
+{% block title %}Reportes - Empleados{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Reportes</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Reportes Disponibles</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Selecciona el tipo de reporte que deseas generar.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reportes Grid -->
+<div class="row">
+    {% for reporte in reportes %}
+    <div class="col-lg-4 col-md-6 mb-4">
+        <div class="card h-100 reporte-card" style="transition: all 0.3s ease;">
+            <div class="card-body text-center">
+                <div class="display-4 mb-3" style="color: 
+                    {% if forloop.counter0|divisibleby:7 == 0 %}#3498db
+                    {% elif forloop.counter0|divisibleby:7 == 1 %}#27ae60
+                    {% elif forloop.counter0|divisibleby:7 == 2 %}#e74c3c
+                    {% elif forloop.counter0|divisibleby:7 == 3 %}#f39c12
+                    {% elif forloop.counter0|divisibleby:7 == 4 %}#9b59b6
+                    {% elif forloop.counter0|divisibleby:7 == 5 %}#34495e
+                    {% else %}#e67e22{% endif %};">
+                    <i class="fas {{ reporte.icono }}"></i>
+                </div>
+                <h5 class="card-title">{{ reporte.nombre }}</h5>
+                <p class="card-text text-muted">{{ reporte.descripcion }}</p>
+                <a href="{% url reporte.url %}" class="btn btn-primary">
+                    <i class="fas fa-arrow-right me-2"></i>Generar Reporte
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Info Card -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Información sobre Reportes</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-file-invoice text-primary me-2"></i>Reportes de Ventas</h6>
+                        <ul class="list-unstyled ps-3">
+                            <li>• Facturas de venta por ID específico</li>
+                            <li>• Información detallada del cliente y productos</li>
+                            <li>• Datos de métodos de pago utilizados</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-shopping-cart text-success me-2"></i>Reportes de Compras</h6>
+                        <ul class="list-unstyled ps-3">
+                            <li>• Órdenes de compra detalladas</li>
+                            <li>• Estado de órdenes pendientes</li>
+                            <li>• Información de proveedores</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-users text-info me-2"></i>Reportes de Personal</h6>
+                        <ul class="list-unstyled ps-3">
+                            <li>• Productores participando en eventos</li>
+                            <li>• Incumplimientos de horario</li>
+                            <li>• Eficiencia en despachos</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-chart-line text-warning me-2"></i>Reportes Comerciales</h6>
+                        <ul class="list-unstyled ps-3">
+                            <li>• Histórico de ofertas activas</li>
+                            <li>• Análisis de ventas por período</li>
+                            <li>• Estadísticas de productos</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.reporte-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+.reporte-card .btn {
+    transition: all 0.3s ease;
+}
+
+.reporte-card:hover .btn {
+    transform: scale(1.05);
+}
+</style>
+{% endblock %} 
