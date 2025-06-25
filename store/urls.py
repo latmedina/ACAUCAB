@@ -49,6 +49,9 @@ urlpatterns = [
     path('api/reportes/productores-en-eventos/', views.reporte_productores_eventos_api, name='api_reporte_productores'),
     path('reporte2', views.vista_reporte_eficiencia, name='vista_reporte_eficiencia'),
     path('api/reportes/eficiencia-despacho/', views.reporte_eficiencia_despacho_api, name='api_reporte_eficiencia'),
+    path('reporte3/', views.vista_reporte_ofertas, name='vista_reporte_ofertas'),
+    path('api/reportes/historico-ofertas/', views.reporte_historico_ofertas_api, name='api_reporte_ofertas'),
+
 
     path('modificar_usuario/<int:id_usuario>/', views.modificar_usuario_view, name='modificar_usuario'),
 
