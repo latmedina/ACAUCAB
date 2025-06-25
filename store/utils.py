@@ -100,3 +100,8 @@ def modificar_usuario_sql(id_usuario, username, email, password, first_name, las
             first_name,
             last_name
         ])
+
+def eliminar_usuario_sql(id_usuario):
+    print(f"Llamando procedimiento eliminar_usuario con ID: {id_usuario}")
+    with connection.cursor() as cursor:
+        cursor.callproc('eliminar_usuario', [id_usuario])

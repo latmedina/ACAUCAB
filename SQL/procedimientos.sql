@@ -253,3 +253,19 @@ BEGIN
     WHERE id = p_id_usuario;
 END;
 $$ LANGUAGE plpgsql;
+
+-- ===========================================
+-- FUNCION: eliminar_usuario
+-- ===========================================
+
+CREATE OR REPLACE FUNCTION eliminar_usuario(p_id_usuario INTEGER)
+RETURNS VOID AS $$
+BEGIN
+    UPDATE usuario
+    SET is_active = FALSE
+    WHERE id = p_id_usuario;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Asegúrate de que el dueño sea postgres
+ALTER FUNCTION eliminar_usuario(INTEGER) OWNER TO postgres;
