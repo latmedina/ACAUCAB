@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Eficiencia de Despacho</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            color: #343a40;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .report-container {
+            max-width: 800px;
+            width: 100%;
+            margin: auto;
+            background-color: #fff;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            text-align: center;
+        }
+        .report-header h1 {
+            color: #1a237e;
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+        .report-header p {
+            margin: 0 0 30px;
+            font-size: 1.1rem;
+            color: #6c757d;
+        }
+        .kpi-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .kpi-card {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            min-width: 120px;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        .kpi-value {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #0d6efd;
+            margin: 0;
+        }
+        .kpi-label {
+            font-size: 1rem;
+            color: #495057;
+            margin: 5px 0 0;
+            text-transform: uppercase;
+        }
+        .loading-message, .error-message {
+            padding: 40px;
+            font-size: 1.2rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Contenedor principal donde se renderizará el reporte -->
+    <div id="reporte-container" class="report-container">
+        <header class="report-header">
+            <h1>Eficiencia del Despacho</h1>
+            <p>Tiempo promedio desde "Listo para la entrega" hasta "Entregado"</p>
+        </header>
+        <div id="kpi-content">
+            <p class="loading-message">Calculando eficiencia...</p>
+        </div>
+    </div>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+        const kpiContainer = document.getElementById('kpi-content');
+
+        try {
+            // Asegúrate que la URL coincida con la definida en urls.py
+            const response = await fetch('/api/reportes/eficiencia-despacho/');
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || `Error ${response.status}`);
+            }
+            const data = await response.json();
+
+            // Si no hay datos, muestra un mensaje amigable
+            if (!data || data.dias === null) {
+                 kpiContainer.innerHTML = '<p class="loading-message">No hay suficientes datos para calcular el tiempo promedio.</p>';
+                 return;
+            }
+
+            // Construye las tarjetas de KPI
+            const kpiHtml = `
+                <div class="kpi-container">
+                    <div class="kpi-card">
+                        <h2 class="kpi-value">${data.dias || 0}</h2>
+                        <p class="kpi-label">Día(s)</p>
+                    </div>
+            `;
+            
+            kpiContainer.innerHTML = kpiHtml;
+
+        } catch (error) {
+            console.error('Error al generar el reporte de eficiencia:', error);
+            kpiContainer.innerHTML = `<p class="error-message"><strong>Error:</strong> ${error.message}</p>`;
+        }
+    });
+    </script>
+</body>
+</html>

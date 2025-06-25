@@ -226,6 +226,254 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- reporte 2
+CREATE OR REPLACE FUNCTION public.calcular_eficiencia_despacho()
+RETURNS JSON AS $$
+DECLARE
+    v_reporte_data JSON;
+    v_avg_days NUMERIC;
+BEGIN
+    -- 1. Calcular el promedio de días que toma el despacho
+    WITH
+    -- Subconsulta para encontrar la fecha de inicio del estatus 6 para cada venta
+    listo_para_entrega AS (
+        SELECT
+            fk_venta_online,
+            MIN(ven_onl_est_fecha_inicio) as fecha_listo
+        FROM public.ven_onl_est
+        WHERE fk_estatus = 6
+        GROUP BY fk_venta_online
+    ),
+    -- Subconsulta para encontrar la fecha de inicio del estatus 7 para cada venta
+    entregado AS (
+        SELECT
+            fk_venta_online,
+            MIN(ven_onl_est_fecha_inicio) as fecha_entregado
+        FROM public.ven_onl_est
+        WHERE fk_estatus = 7
+        GROUP BY fk_venta_online
+    )
+    -- Se calcula el promedio de la diferencia de días para todas las órdenes que tienen ambos estatus
+    SELECT
+        -- Se usa COALESCE para devolver 0 si no se encuentra ninguna orden que complete el ciclo
+        COALESCE(AVG(e.fecha_entregado - l.fecha_listo), 0)
+    INTO v_avg_days
+    FROM listo_para_entrega l
+    JOIN entregado e ON l.fk_venta_online = e.fk_venta_online
+    WHERE e.fecha_entregado >= l.fecha_listo; -- Condición de seguridad
+
+    -- 2. Construir el objeto JSON con el resultado desglosado
+    SELECT
+        json_build_object(
+            'dias', floor(v_avg_days),
+            'horas', floor((v_avg_days - floor(v_avg_days)) * 24),
+            'minutos', floor(((v_avg_days - floor(v_avg_days)) * 24 - floor((v_avg_days - floor(v_avg_days)) * 24)) * 60)
+        )
+    INTO v_reporte_data;
+
+    RETURN v_reporte_data;
+END;
+$$ LANGUAGE plpgsql;
+
+-- reporte 3
+CREATE OR REPLACE FUNCTION public.obtener_historico_ofertas(
+    p_fecha_inicio DATE,
+    p_fecha_fin DATE
+)
+RETURNS JSON AS $$
+DECLARE
+    v_reporte_data JSON;
+BEGIN
+    SELECT
+        COALESCE(json_agg(
+            json_build_object(
+                'oferta_nombre', o.ofe_nombre,
+                'oferta_descripcion', o.ofe_descripcion,
+                'descuento_porcentaje', o.of_procentaje,
+                'fecha_inicio', TO_CHAR(o.ofe_fecha_inicio, 'DD/MM/YYYY'),
+                'fecha_fin', TO_CHAR(o.ofe_fecha_fin, 'DD/MM/YYYY'),
+                -- Subconsulta para obtener los productos asociados a esta oferta
+                'productos_afectados', (
+                    -- Se combinan productos de inventario físico y de almacén online
+                    SELECT COALESCE(json_agg(DISTINCT prod.producto_nombre), '[]'::json)
+                    FROM (
+                        -- Productos del inventario físico
+                        SELECT pr.prese_nombre AS producto_nombre
+                        FROM public.inventario i
+                        JOIN public.presentacion pr ON i.fk_presentacion = pr.prese_id
+                        WHERE i.fk_oferta = o.ofe_id
+                        UNION
+                        -- Productos del almacén online
+                        SELECT pr.prese_nombre AS producto_nombre
+                        FROM public.pre_alm pa
+                        JOIN public.presentacion pr ON pa.fk_presentacion = pr.prese_id
+                        WHERE pa.fk_oferta = o.ofe_id
+                    ) AS prod
+                )
+            )
+        ), '[]'::json)
+    INTO v_reporte_data
+    FROM public.oferta o
+    -- La condición del WHERE filtra las ofertas que estuvieron activas en el rango
+    WHERE o.ofe_fecha_inicio <= p_fecha_fin AND o.ofe_fecha_fin >= p_fecha_inicio;
+
+    RETURN v_reporte_data;
+END;
+$$ LANGUAGE plpgsql;
+
+-- reporte 4
+CREATE OR REPLACE FUNCTION public.obtener_reporte_incumplimiento_horario(
+    p_fecha_inicio DATE,
+    p_fecha_fin DATE
+)
+RETURNS JSON AS $$
+DECLARE
+    v_reporte_data JSON;
+BEGIN
+    WITH
+    -- 1. Se obtienen todas las incidencias, convirtiendo las horas a la zona horaria local
+    incidencias AS (
+        SELECT
+            a.fk_empleado,
+            e.emp_pnombre || ' ' || e.emp_papellido AS empleado_nombre,
+            h.hor_dia AS dia_semana,
+            (a.asi_fecha_hora_inico AT TIME ZONE 'America/Caracas')::DATE AS fecha,
+            h.hor_hora_inicio AS hora_entrada_pautada,
+            (a.asi_fecha_hora_inico AT TIME ZONE 'America/Caracas')::TIME AS hora_entrada_real,
+            h.hor_hora_fin AS hora_salida_pautada,
+            (a.asi_fecha_hora_fin AT TIME ZONE 'America/Caracas')::TIME AS hora_salida_real,
+            -- Se verifica si la entrada fue tarde usando la hora local
+            CASE
+                WHEN (a.asi_fecha_hora_inico AT TIME ZONE 'America/Caracas')::TIME > h.hor_hora_inicio
+                THEN 'Llegada Tarde'
+                ELSE NULL
+            END AS tipo_incidencia_entrada,
+            -- Se verifica si la salida fue temprano usando la hora local
+            CASE
+                WHEN a.asi_fecha_hora_fin IS NOT NULL AND (a.asi_fecha_hora_fin AT TIME ZONE 'America/Caracas')::TIME < h.hor_hora_fin
+                THEN 'Salida Temprano'
+                ELSE NULL
+            END AS tipo_incidencia_salida,
+            -- Se calcula la diferencia de tiempo para llegadas tardes
+            CASE
+                WHEN (a.asi_fecha_hora_inico AT TIME ZONE 'America/Caracas')::TIME > h.hor_hora_inicio
+                THEN (a.asi_fecha_hora_inico AT TIME ZONE 'America/Caracas')::TIME - h.hor_hora_inicio
+                ELSE '00:00:00'::INTERVAL
+            END AS diferencia_entrada,
+            -- Se calcula la diferencia de tiempo para salidas tempranas
+            CASE
+                WHEN a.asi_fecha_hora_fin IS NOT NULL AND (a.asi_fecha_hora_fin AT TIME ZONE 'America/Caracas')::TIME < h.hor_hora_fin
+                THEN h.hor_hora_fin - (a.asi_fecha_hora_fin AT TIME ZONE 'America/Caracas')::TIME
+                ELSE '00:00:00'::INTERVAL
+            END AS diferencia_salida
+        FROM public.asistencia a
+        JOIN public.empleado e ON a.fk_empleado = e.emp_id
+        JOIN public.emp_car_hor ech ON e.emp_id = ech.fk_empleado
+        JOIN public.horario h ON ech.fk_horario = h.hor_id
+        WHERE (a.asi_fecha_hora_inico AT TIME ZONE 'America/Caracas')::DATE BETWEEN p_fecha_inicio AND p_fecha_fin
+          AND h.hor_dia = CASE EXTRACT(ISODOW FROM (a.asi_fecha_hora_inico AT TIME ZONE 'America/Caracas'))
+                              WHEN 1 THEN 'Lunes' WHEN 2 THEN 'Martes' WHEN 3 THEN 'Miércoles'
+                              WHEN 4 THEN 'Jueves' WHEN 5 THEN 'Viernes' WHEN 6 THEN 'Sábado'
+                              WHEN 7 THEN 'Domingo'
+                          END
+    ),
+    -- 2. Se procesan las incidencias para listarlas
+    incumplimientos_procesados AS (
+        SELECT fk_empleado, empleado_nombre, fecha, 'Llegada Tarde' AS tipo,
+               'Entrada pautada: ' || hora_entrada_pautada || ', Entrada real: ' || hora_entrada_real AS detalle,
+               diferencia_entrada AS duracion
+        FROM incidencias WHERE tipo_incidencia_entrada IS NOT NULL
+        UNION ALL
+        SELECT fk_empleado, empleado_nombre, fecha, 'Salida Temprano' AS tipo,
+               'Salida pautada: ' || hora_salida_pautada || ', Salida real: ' || hora_salida_real AS detalle,
+               diferencia_salida AS duracion
+        FROM incidencias WHERE tipo_incidencia_salida IS NOT NULL
+    )
+    -- 3. Se agrupan todos los incumplimientos por empleado en un JSON
+    SELECT COALESCE(json_agg(
+        json_build_object(
+            'empleado_id', t.fk_empleado,
+            'empleado_nombre', t.empleado_nombre,
+            'incumplimientos', t.incidencias_agrupadas
+        )
+    ), '[]'::json)
+    INTO v_reporte_data
+    FROM (
+        SELECT
+            fk_empleado,
+            empleado_nombre,
+            json_agg(
+                json_build_object(
+                    'fecha', TO_CHAR(fecha, 'DD/MM/YYYY'),
+                    'tipo', tipo,
+                    'detalle', detalle,
+                    'duracion', TO_CHAR(duracion, 'HH24:MI:SS')
+                ) ORDER BY fecha
+            ) AS incidencias_agrupadas
+        FROM incumplimientos_procesados
+        GROUP BY fk_empleado, empleado_nombre
+    ) AS t;
+
+    RETURN v_reporte_data;
+END;
+$$ LANGUAGE plpgsql;
+
+-- reporte 5
+-- =================================================================================
+-- FUNCIÓN PARA OBTENER ÓRDENES DE COMPRA ESTRICTAMENTE PENDIENTES
+-- Descripción: Devuelve una lista de solicitudes de compra cuyo único estado
+--              registrado en el historial es 'PENDIENTE'.
+-- Retorna:
+--   JSON: Un array de objetos, donde cada objeto es una orden de compra pendiente.
+-- =================================================================================
+CREATE OR REPLACE FUNCTION public.obtener_ordenes_compra_pendientes()
+RETURNS JSON AS $$
+DECLARE
+    v_reporte_data JSON;
+BEGIN
+    -- Se utiliza una Expresión de Tabla Común (CTE) para analizar los estados de cada solicitud.
+    WITH
+    -- 1. Se agrupan los estados por solicitud para verificar las condiciones.
+    estados_por_solicitud AS (
+        SELECT
+            sce.fk_sol_com,
+            -- Se cuenta el número total de registros de estado para cada solicitud.
+            COUNT(*) AS total_estados,
+            -- Se comprueba si el estado 'PENDIENTE' existe para esa solicitud.
+            -- Usamos COUNT con FILTER para contar solo las apariciones de 'PENDIENTE'.
+            COUNT(*) FILTER (WHERE UPPER(e.est_tipo_estatus) = 'PENDIENTE') AS conteo_pendiente
+        FROM public.sol_com_est sce
+        JOIN public.estatus e ON sce.fk_estatus = e.est_id
+        GROUP BY sce.fk_sol_com
+    )
+    -- 2. Se construye el JSON final uniendo los resultados con la tabla principal.
+    SELECT
+        COALESCE(json_agg(
+            json_build_object(
+                'orden_id', sc.sol_com_id,
+                'fecha_solicitud', TO_CHAR(sc.sol_com_fecha, 'DD/MM/YYYY'),
+                'proveedor_nombre', p.pro_razon_social,
+                'solicitado_por', u.username,
+                'total_orden', sc.sol_com_total
+            )
+        ), '[]'::json)
+    INTO v_reporte_data
+    FROM public.solicitud_compra sc
+    -- Se une con la CTE que contiene el análisis de los estados.
+    JOIN estados_por_solicitud eps ON sc.sol_com_id = eps.fk_sol_com
+    -- Se unen las tablas de proveedor y usuario para obtener sus nombres.
+    LEFT JOIN public.proveedor p ON sc.fk_proveedor = p.pro_id
+    LEFT JOIN public.usuario u ON sc.fk_usuario = u.id
+    -- 3. CONDICIÓN FINAL: Se filtra para incluir solo solicitudes que:
+    --    a) Tienen exactamente un (1) registro de estado en total.
+    --    b) Y ese único estado es 'PENDIENTE' (conteo_pendiente = 1).
+    WHERE eps.total_estados = 1 AND eps.conteo_pendiente = 1;
+
+    RETURN v_reporte_data;
+END;
+$$ LANGUAGE plpgsql;
+
+
 -- ===========================================
 -- FUNCION: modificar_usuario
 -- ===========================================

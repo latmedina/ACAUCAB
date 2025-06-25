@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Órdenes de Compra Pendientes</title>
+    <!-- Incluir la librería de Handlebars -->
+    <script src="https://cdn.jsdelivr.net/npm/handlebars@4.7.8/dist/handlebars.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #f8f9fa; color: #343a40; }
+        .report-container { max-width: 1000px; margin: auto; background-color: #fff; padding: 30px; box-shadow: 0 2px 15px rgba(0,0,0,0.1); border-radius: 8px; }
+        .report-header { text-align: center; border-bottom: 2px solid #dee2e6; padding-bottom: 20px; margin-bottom: 30px; }
+        .report-header h1 { color: #0d6efd; margin: 0; }
+        .report-header p { margin: 5px 0 0; font-size: 1rem; color: #6c757d; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #dee2e6; padding: 12px; text-align: left; }
+        th { background-color: #343a40; color: white; }
+        tr:nth-child(even) { background-color: #f8f9fa; }
+        td:last-child { text-align: right; font-weight: bold; }
+        .no-data { text-align: center; padding: 40px; background-color: #f8f9fa; border-radius: 8px; }
+    </style>
+</head>
+<body>
+
+    <div class="report-container">
+        <header class="report-header">
+            <h1>Órdenes de Compra por Aprobación</h1>
+            <p>Listado de todas las órdenes de compra que están pendientes de aprobación</p>
+        </header>
+
+        <!-- Contenedor para la tabla de resultados -->
+        <div id="reporte-content">
+            <p class="no-data">Cargando datos...</p>
+        </div>
+    </div>
+
+    <!-- 
+        PLANTILLA HANDLEBARS PARA LA TABLA DE ÓRDENES PENDIENTES
+        Envuelta en {% verbatim %} para Django.
+    -->
+    {% verbatim %}
+    <script id="plantilla-reporte" type="text/x-handlebars-template">
+        {{#if this.length}}
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID Orden</th>
+                        <th>Fecha de Solicitud</th>
+                        <th>Proveedor</th>
+                        <th>Monto Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each this}}
+                    <tr>
+                        <td>{{orden_id}}</td>
+                        <td>{{fecha_solicitud}}</td>
+                        <td>{{proveedor_nombre}}</td>
+                        <td>{{formatCurrency total_orden}}</td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        {{else}}
+            <p class="no-data">¡Excelente! No hay órdenes de compra pendientes de aprobación.</p>
+        {{/if}}
+    </script>
+    {% endverbatim %}
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const contentContainer = document.getElementById('reporte-content');
+        
+        // Helper de Handlebars para formatear el monto como moneda
+        Handlebars.registerHelper('formatCurrency', function(value) {
+            if (typeof value !== 'number') value = parseFloat(value);
+            return value ? '$' + value.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,') : '$0.00';
+        });
+
+        const templateHtml = document.getElementById('plantilla-reporte').innerHTML;
+        const template = Handlebars.compile(templateHtml);
+
+        async function generarReporte() {
+            try {
+                // URL del API que creamos en Django
+                const apiUrl = '/api/reportes/ordenes-pendientes/';
+                const response = await fetch(apiUrl);
+
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: No se pudieron obtener los datos.`);
+                }
+                const data = await response.json();
+                
+                // Renderiza la plantilla con los datos y la muestra
+                contentContainer.innerHTML = template(data);
+
+            } catch (error) {
+                console.error('Error al generar el reporte:', error);
+                contentContainer.innerHTML = `<p class="no-data" style="color: red;"><strong>Error:</strong> ${error.message}</p>`;
+            }
+        }
+        
+        // Genera el reporte automáticamente al cargar la página
+        generarReporte();
+    });
+    </script>
+</body>
+</html>
