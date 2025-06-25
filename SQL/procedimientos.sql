@@ -418,6 +418,62 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- reporte 5
+-- =================================================================================
+-- FUNCIÓN PARA OBTENER ÓRDENES DE COMPRA ESTRICTAMENTE PENDIENTES
+-- Descripción: Devuelve una lista de solicitudes de compra cuyo único estado
+--              registrado en el historial es 'PENDIENTE'.
+-- Retorna:
+--   JSON: Un array de objetos, donde cada objeto es una orden de compra pendiente.
+-- =================================================================================
+CREATE OR REPLACE FUNCTION public.obtener_ordenes_compra_pendientes()
+RETURNS JSON AS $$
+DECLARE
+    v_reporte_data JSON;
+BEGIN
+    -- Se utiliza una Expresión de Tabla Común (CTE) para analizar los estados de cada solicitud.
+    WITH
+    -- 1. Se agrupan los estados por solicitud para verificar las condiciones.
+    estados_por_solicitud AS (
+        SELECT
+            sce.fk_sol_com,
+            -- Se cuenta el número total de registros de estado para cada solicitud.
+            COUNT(*) AS total_estados,
+            -- Se comprueba si el estado 'PENDIENTE' existe para esa solicitud.
+            -- Usamos COUNT con FILTER para contar solo las apariciones de 'PENDIENTE'.
+            COUNT(*) FILTER (WHERE UPPER(e.est_tipo_estatus) = 'PENDIENTE') AS conteo_pendiente
+        FROM public.sol_com_est sce
+        JOIN public.estatus e ON sce.fk_estatus = e.est_id
+        GROUP BY sce.fk_sol_com
+    )
+    -- 2. Se construye el JSON final uniendo los resultados con la tabla principal.
+    SELECT
+        COALESCE(json_agg(
+            json_build_object(
+                'orden_id', sc.sol_com_id,
+                'fecha_solicitud', TO_CHAR(sc.sol_com_fecha, 'DD/MM/YYYY'),
+                'proveedor_nombre', p.pro_razon_social,
+                'solicitado_por', u.username,
+                'total_orden', sc.sol_com_total
+            )
+        ), '[]'::json)
+    INTO v_reporte_data
+    FROM public.solicitud_compra sc
+    -- Se une con la CTE que contiene el análisis de los estados.
+    JOIN estados_por_solicitud eps ON sc.sol_com_id = eps.fk_sol_com
+    -- Se unen las tablas de proveedor y usuario para obtener sus nombres.
+    LEFT JOIN public.proveedor p ON sc.fk_proveedor = p.pro_id
+    LEFT JOIN public.usuario u ON sc.fk_usuario = u.id
+    -- 3. CONDICIÓN FINAL: Se filtra para incluir solo solicitudes que:
+    --    a) Tienen exactamente un (1) registro de estado en total.
+    --    b) Y ese único estado es 'PENDIENTE' (conteo_pendiente = 1).
+    WHERE eps.total_estados = 1 AND eps.conteo_pendiente = 1;
+
+    RETURN v_reporte_data;
+END;
+$$ LANGUAGE plpgsql;
+
+
 -- ===========================================
 -- FUNCION: modificar_usuario
 -- ===========================================

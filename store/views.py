@@ -1589,3 +1589,40 @@ def vista_reporte_incumplimiento(request):
     Renderiza la página HTML para el reporte de incumplimiento de horario.
     """
     return render(request, 'reportes/incumplimiento_horario.html')
+
+# Reporte de Órdenes de Compra Pendientes
+def reporte_ordenes_pendientes_api(request):
+    """
+    API endpoint que devuelve las órdenes de compra pendientes.
+    """
+    print("Iniciando llamada al API de órdenes pendientes...")
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT public.obtener_ordenes_compra_pendientes();")
+            result = cursor.fetchone()
+            
+            if result is None or result[0] is None:
+                print("La consulta a la BD no devolvió resultados.")
+                return JsonResponse([], safe=False)
+
+            report_data = result[0]
+            print("Datos obtenidos de la BD correctamente. Enviando respuesta.")
+            return JsonResponse(report_data, encoder=DjangoJSONEncoder, safe=False)
+
+    except Exception as e:
+        # ¡ESTA PARTE ES LA MÁS IMPORTANTE!
+        # Imprimirá el error exacto en tu consola de Django.
+        print("\n¡Ocurrió un error grave en la vista del API de Órdenes Pendientes!")
+        print("-----------------------------------------------------------")
+        print(f"Tipo de Excepción: {type(e).__name__}")
+        print(f"Error: {e}")
+        # Imprime el traceback completo para un diagnóstico detallado
+        traceback.print_exc()
+        print("-----------------------------------------------------------\n")
+        return JsonResponse({'error': f'Ocurrió un error en el servidor: {e}'}, status=500)
+
+def vista_reporte_ordenes_pendientes(request):
+    """
+    Renderiza la página HTML para el reporte de órdenes pendientes.
+    """
+    return render(request, 'reportes/ordenes_pendientes.html')
