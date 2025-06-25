@@ -26,7 +26,8 @@ SECRET_KEY = 'django-insecure-cambia-esta-clave'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '05ea-38-114-120-210.ngrok-free.app']
+CSRF_TRUSTED_ORIGINS = ['https://05ea-38-114-120-210.ngrok-free.app']
 
 
 # Application definition

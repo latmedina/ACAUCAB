@@ -43,14 +43,14 @@
     {% if messages %}
     <div class="alert-container">
         {% for message in messages %}
-            <div class="alert-{{ message.tags }}">
-                {% if message.tags == 'success' %}
-                    <i class="fas fa-check-circle"></i>
-                {% else %}
-                    <i class="fas fa-exclamation-circle"></i>
-                {% endif %}
-                {{ message }}
-            </div>
+        <div class="alert-{{ message.tags }}">
+            {% if message.tags == 'success' %}
+            <i class="fas fa-check-circle"></i>
+            {% else %}
+            <i class="fas fa-exclamation-circle"></i>
+            {% endif %}
+            {{ message }}
+        </div>
         {% endfor %}
     </div>
     {% endif %}
@@ -58,61 +58,38 @@
     <!-- Formulario de modificación -->
     <div class="modificar-form-section">
         <h3><i class="fas fa-edit"></i> Datos de Usuario</h3>
-        
+
         <form method="POST">
             {% csrf_token %}
-            
+
             <div class="form-group">
                 <label for="username" class="required">Nombre de usuario:</label>
-                <input type="text" 
-                       class="form-control" 
-                       name="username" 
-                       id="username" 
-                       value="{{ usuario.username }}" 
-                       required
-                       placeholder="Ingrese su nombre de usuario">
+                <input type="text" class="form-control" name="username" id="username" value="{{ usuario.username }}"
+                    required placeholder="Ingrese su nombre de usuario">
             </div>
 
             <div class="form-group">
                 <label for="email" class="required">Correo electrónico:</label>
-                <input type="email" 
-                       class="form-control" 
-                       name="email" 
-                       id="email" 
-                       value="{{ usuario.email }}" 
-                       required
-                       placeholder="Ingrese su correo electrónico">
+                <input type="email" class="form-control" name="email" id="email" value="{{ usuario.email }}" required
+                    placeholder="Ingrese su correo electrónico">
             </div>
 
             <div class="form-group">
                 <label for="first_name" class="required">Nombre:</label>
-                <input type="text" 
-                       class="form-control" 
-                       name="first_name" 
-                       id="first_name" 
-                       value="{{ usuario.first_name }}" 
-                       required
-                       placeholder="Ingrese su nombre">
+                <input type="text" class="form-control" name="first_name" id="first_name"
+                    value="{{ usuario.first_name }}" required placeholder="Ingrese su nombre">
             </div>
 
             <div class="form-group">
                 <label for="last_name" class="required">Apellido:</label>
-                <input type="text" 
-                       class="form-control" 
-                       name="last_name" 
-                       id="last_name" 
-                       value="{{ usuario.last_name }}" 
-                       required
-                       placeholder="Ingrese su apellido">
+                <input type="text" class="form-control" name="last_name" id="last_name" value="{{ usuario.last_name }}"
+                    required placeholder="Ingrese su apellido">
             </div>
 
             <div class="form-group password-field">
                 <label for="password">Nueva contraseña:</label>
-                <input type="password" 
-                       class="form-control" 
-                       name="password" 
-                       id="password"
-                       placeholder="Dejar en blanco para mantener la actual">
+                <input type="password" class="form-control" name="password" id="password"
+                    placeholder="Dejar en blanco para mantener la actual">
                 <div class="password-help">
                     <i class="fas fa-info-circle"></i>
                     Deje este campo en blanco si no desea cambiar su contraseña actual
@@ -125,12 +102,15 @@
                     <i class="fas fa-times"></i>
                     Cancelar
                 </a>
-                <button type="submit" class="btn-primary">
-                    <i class="fas fa-save"></i>
-                    Guardar Cambios
-                </button>
             </div>
+        </form>
+        <form method="POST" action="{% url 'eliminar_usuario' usuario.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
         </form>
     </div>
 </div>
+
+
+
 {% endblock %}

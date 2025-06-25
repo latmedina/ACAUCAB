@@ -784,6 +784,7 @@ class usuario(AbstractUser):
     fk_cliente = models.ForeignKey(cliente, on_delete=models.DO_NOTHING, db_column='fk_cliente', null=True, blank=True)
     fk_proveedor = models.ForeignKey('proveedor', on_delete=models.DO_NOTHING, db_column='fk_proveedor', null=True, blank=True)
     fk_emp_car = models.ForeignKey('emp_car', on_delete=models.DO_NOTHING, db_column='fk_emp_car', null=True, blank=True)
+    fk_rol = models.ForeignKey('rol', models.DO_NOTHING, db_column='fk_rol', null=True, blank=True)
 
     class Meta:
         db_table = 'usuario'  # Esto cambia el nombre de la tabla a 'usuario'
@@ -863,3 +864,35 @@ class venta_online(models.Model):
 
     def __str__(self):
         return f"Venta #{self.ven_onl_id} por {self.fk_usuario.username}"
+    
+class rol(models.Model):
+    rol_id = models.AutoField(primary_key=True)
+    rol_nombre = models.CharField(max_length=50, unique=True)
+
+    class Meta:
+        db_table = 'rol'
+        managed = True
+
+    def __str__(self):
+        return self.rol_nombre
+    
+class privilegio(models.Model):
+    privilegio_id = models.AutoField(primary_key=True)
+    privilegio_nombre = models.CharField(max_length=50, unique=True)
+
+    class Meta:
+        db_table = 'privilegio'
+        managed = True
+
+    def __str__(self):
+        return self.privilegio_nombre
+    
+class rol_privilegio(models.Model):
+    id = models.AutoField(primary_key=True)
+    fk_rol = models.ForeignKey(rol, models.DO_NOTHING, db_column='fk_rol')
+    fk_privilegio = models.ForeignKey(privilegio, models.DO_NOTHING, db_column='fk_privilegio')
+
+    class Meta:
+        db_table = 'rol_privilegio'
+        managed = True
+        unique_together = (('fk_rol', 'fk_privilegio'),)
