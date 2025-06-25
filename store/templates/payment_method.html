@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container" style="min-height: 100vh;">
     <div class="row justify-content-center align-items-center h-100">
-        <div class="col-lg-8">
+        <div class="col-lg-10">
             <div class="box-element">
                 <h3 class="text-center mb-4">Seleccionar Método de Pago</h3>
                 <hr>
@@ -12,7 +12,7 @@
                     <div class="col-md-6">
                         <div class="purchase-summary">
                             <h5>Resumen de la Compra</h5>
-                            <p><strong>Venta ID:</strong> #{{ venta_id }}</p>
+                            <p><strong>Tipo de Venta:</strong> {{ tipo|title }}</p>
                             <p><strong>Total Original:</strong> ${{ total|floatformat:2 }} USD</p>
                         </div>
                     </div>
@@ -48,17 +48,63 @@
                             </option>
                             {% endfor %}
                         </select>
+                        <div id="currency-lock-message" class="alert alert-info mt-2" style="display: none;">
+                            <i class="fas fa-lock"></i> Los pagos con puntos solo se pueden realizar en Bolívares.
+                        </div>
                     </div>
                     
+                    <!-- Métodos de Pago con Botones Estilizados -->
                     <div class="form-group mb-4">
-                        <label for="tipo_pago" class="form-label"><strong>Tipo de Método de Pago:</strong></label>
-                        <select class="form-control" id="tipo_pago" name="tipo_pago" required>
-                            <option value="">-- Seleccione un método --</option>
-                            <option value="efectivo">Efectivo</option>
-                            <option value="cheque">Cheque</option>
-                            <option value="tarjeta_debito">Tarjeta de Débito</option>
-                            <option value="tarjeta_credito">Tarjeta de Crédito</option>
-                        </select>
+                        <label class="form-label"><strong>Tipo de Método de Pago:</strong></label>
+                        <div class="payment-method-buttons">
+                            <div class="payment-method-btn" data-method="efectivo">
+                                <i class="fas fa-money-bill-wave"></i>
+                                <span>Efectivo</span>
+                            </div>
+                            <div class="payment-method-btn" data-method="cheque">
+                                <i class="fas fa-money-check"></i>
+                                <span>Cheque</span>
+                            </div>
+                            <div class="payment-method-btn" data-method="tarjeta_debito">
+                                <i class="fas fa-credit-card"></i>
+                                <span>Tarjeta Débito</span>
+                            </div>
+                            <div class="payment-method-btn" data-method="tarjeta_credito">
+                                <i class="fab fa-cc-visa"></i>
+                                <span>Tarjeta Crédito</span>
+                            </div>
+                            <div class="payment-method-btn" data-method="puntos">
+                                <i class="fas fa-star"></i>
+                                <span>Puntos</span>
+                                <small class="points-available">{{ puntos_disponibles|default:0 }} pts disponibles</small>
+                            </div>
+                        </div>
+                        <input type="hidden" id="tipo_pago" name="tipo_pago" required>
+                    </div>
+                    
+                    <!-- Opción de método guardado o nuevo (excepto efectivo y puntos) -->
+                    <div id="saved-methods-section" class="form-group mb-4" style="display: none;">
+                        <label class="form-label"><strong>¿Usar método guardado o agregar nuevo?</strong></label>
+                        <div class="method-choice-buttons">
+                            <div class="method-choice-btn active" data-choice="saved">
+                                <i class="fas fa-bookmark"></i>
+                                <span>Usar Guardado</span>
+                            </div>
+                            <div class="method-choice-btn" data-choice="new">
+                                <i class="fas fa-plus"></i>
+                                <span>Agregar Nuevo</span>
+                            </div>
+                        </div>
+                        <input type="hidden" id="method_choice" name="method_choice" value="saved">
+                    </div>
+                    
+                    <!-- Lista de métodos guardados -->
+                    <div id="saved-methods-list" class="form-group mb-4" style="display: none;">
+                        <label class="form-label"><strong>Seleccione un método guardado:</strong></label>
+                        <div id="saved-methods-container">
+                            <!-- Los métodos guardados se cargarán dinámicamente aquí -->
+                        </div>
+                        <input type="hidden" id="selected_saved_method" name="selected_saved_method">
                     </div>
                     
                     <!-- Campos para Efectivo -->
@@ -86,17 +132,20 @@
                         <h5>Información del Cheque</h5>
                         <div class="form-group">
                             <label for="num_cheque">Número de Cheque:</label>
-                            <input type="number" class="form-control" id="num_cheque" name="num_cheque" placeholder="Ingrese el número del cheque">
+                            <input type="text" class="form-control" id="num_cheque" name="num_cheque" placeholder="Ingrese el número del cheque" maxlength="50">
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> Los métodos de cheque no se guardan para uso futuro.
                         </div>
                     </div>
                     
                     <!-- Campos para Tarjeta de Débito -->
                     <div id="tarjeta_debito-fields" class="payment-fields" style="display: none;">
                         <h5>Información de Tarjeta de Débito</h5>
-                                                 <div class="form-group">
-                             <label for="numero_debito">Número de Tarjeta:</label>
-                             <input type="text" class="form-control card-input" id="numero_debito" name="numero_debito" placeholder="1234 5678 9012 3456" maxlength="19">
-                         </div>
+                        <div class="form-group">
+                            <label for="numero_debito">Número de Tarjeta:</label>
+                            <input type="text" class="form-control card-input" id="numero_debito" name="numero_debito" placeholder="1234 5678 9012 3456" maxlength="19">
+                        </div>
                         <div class="form-group">
                             <label for="vencimiento_debito">Fecha de Vencimiento:</label>
                             <input type="date" class="form-control" id="vencimiento_debito" name="vencimiento_debito">
@@ -105,40 +154,460 @@
                             <label for="banco">Banco:</label>
                             <input type="text" class="form-control" id="banco" name="banco" placeholder="Nombre del banco">
                         </div>
+                        <div class="alert alert-success">
+                            <i class="fas fa-shield-alt"></i> Este método se guardará automáticamente para futuros pagos.
+                        </div>
                     </div>
                     
                     <!-- Campos para Tarjeta de Crédito -->
                     <div id="tarjeta_credito-fields" class="payment-fields" style="display: none;">
                         <h5>Información de Tarjeta de Crédito</h5>
-                                                 <div class="form-group">
-                             <label for="numero_credito">Número de Tarjeta:</label>
-                             <input type="text" class="form-control card-input" id="numero_credito" name="numero_credito" placeholder="1234 5678 9012 3456" maxlength="19">
-                         </div>
+                        <div class="form-group">
+                            <label for="numero_credito">Número de Tarjeta:</label>
+                            <input type="text" class="form-control card-input" id="numero_credito" name="numero_credito" placeholder="1234 5678 9012 3456" maxlength="19">
+                        </div>
                         <div class="form-group">
                             <label for="vencimiento_credito">Fecha de Vencimiento:</label>
                             <input type="date" class="form-control" id="vencimiento_credito" name="vencimiento_credito">
                         </div>
+                        <div class="alert alert-success">
+                            <i class="fas fa-shield-alt"></i> Este método se guardará automáticamente para futuros pagos.
+                        </div>
+                    </div>
+                    
+                    <!-- Campos para Puntos -->
+                    <div id="puntos-fields" class="payment-fields" style="display: none;">
+                        <h5>Pago con Puntos</h5>
+                        <div class="points-info">
+                            <p><strong>Puntos Disponibles:</strong> <span id="available-points">{{ puntos_disponibles|default:0 }}</span></p>
+                            <p><strong>Valor del Punto:</strong> <span id="point-value">{{ valor_punto|floatformat:2 }}</span> Bs</p>
+                            <p><strong>Puntos Necesarios:</strong> <span id="required-points">0</span></p>
+                        </div>
+                        <div class="alert alert-info" id="points-message" style="display: none;"></div>
                     </div>
                     
                     <hr>
                     
-                                         <div class="payment-buttons">
-                         <button type="button" class="btn btn-secondary" onclick="window.history.back()">Cancelar</button>
-                         <button type="submit" class="btn btn-success" id="process-payment-btn">Procesar Pago</button>
-                     </div>
+                    <div class="payment-buttons">
+                        <button type="button" class="btn btn-secondary" onclick="window.history.back()">Cancelar</button>
+                        <button type="submit" class="btn btn-success" id="process-payment-btn">Procesar Pago</button>
+                    </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
 
+<style>
+/* Botones de métodos de pago estilizados */
+.payment-method-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.payment-method-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.payment-method-btn:hover {
+    border-color: #007bff;
+    background: #f8f9fa;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,123,255,0.15);
+}
+
+.payment-method-btn.active {
+    border-color: #007bff;
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.payment-method-btn i {
+    font-size: 2rem;
+    margin-bottom: 8px;
+    color: #6c757d;
+}
+
+.payment-method-btn.active i {
+    color: #1976d2;
+}
+
+.payment-method-btn span {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.payment-method-btn small {
+    font-size: 11px;
+    color: #28a745;
+    margin-top: 4px;
+    display: block;
+}
+
+/* Botones de elección de método */
+.method-choice-buttons {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.method-choice-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.method-choice-btn:hover {
+    border-color: #28a745;
+    background: #f8fff8;
+}
+
+.method-choice-btn.active {
+    border-color: #28a745;
+    background: #e8f5e8;
+    color: #1b5e20;
+}
+
+.method-choice-btn i {
+    margin-right: 8px;
+    font-size: 1.2rem;
+}
+
+/* Lista de métodos guardados */
+.saved-method-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.saved-method-item:hover {
+    border-color: #17a2b8;
+    background: #f1f9fa;
+}
+
+.saved-method-item.selected {
+    border-color: #17a2b8;
+    background: #e3f7f9;
+}
+
+.saved-method-info {
+    display: flex;
+    align-items: center;
+}
+
+.saved-method-info i {
+    font-size: 1.5rem;
+    margin-right: 12px;
+    color: #17a2b8;
+}
+
+.saved-method-details h6 {
+    margin: 0;
+    font-weight: 600;
+    color: #495057;
+}
+
+.saved-method-details p {
+    margin: 0;
+    font-size: 13px;
+    color: #6c757d;
+}
+
+/* Información de puntos */
+.points-info {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.points-info p {
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.points-info strong {
+    color: #495057;
+}
+
+#available-points {
+    color: #28a745;
+    font-weight: 600;
+}
+
+#point-value {
+    color: #17a2b8;
+    font-weight: 600;
+}
+
+#required-points {
+    color: #fd7e14;
+    font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .payment-method-buttons {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .method-choice-buttons {
+        flex-direction: column;
+    }
+    
+    .saved-method-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .saved-method-info {
+        margin-bottom: 10px;
+    }
+}
+</style>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const monedaSelect = document.getElementById('moneda_select');
-    const tipoSelect = document.getElementById('tipo_pago');
+    const tipoPagoInput = document.getElementById('tipo_pago');
+    const paymentMethodBtns = document.querySelectorAll('.payment-method-btn');
+    const methodChoiceBtns = document.querySelectorAll('.method-choice-btn');
+    const methodChoiceInput = document.getElementById('method_choice');
     const paymentFields = document.querySelectorAll('.payment-fields');
     const form = document.getElementById('payment-form');
     const convertedAmountDiv = document.getElementById('converted-amount');
+    const savedMethodsSection = document.getElementById('saved-methods-section');
+    const savedMethodsList = document.getElementById('saved-methods-list');
+    const savedMethodsContainer = document.getElementById('saved-methods-container');
+    const selectedSavedMethodInput = document.getElementById('selected_saved_method');
+    
+    let selectedPaymentMethod = null;
+    let savedMethods = {};
+    
+    // Cargar métodos guardados al inicializar
+    loadSavedMethods();
+    
+    // Manejar selección de métodos de pago
+    paymentMethodBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Remover clase active de todos los botones
+            paymentMethodBtns.forEach(b => b.classList.remove('active'));
+            // Agregar clase active al botón seleccionado
+            this.classList.add('active');
+            
+            selectedPaymentMethod = this.dataset.method;
+            tipoPagoInput.value = selectedPaymentMethod;
+            
+            // Si es puntos, seleccionar automáticamente moneda Bolívares (ID 1) y deshabilitar selector
+            if (selectedPaymentMethod === 'puntos') {
+                // Buscar la opción de Bolívares (ID 1) y seleccionarla
+                const bolivarOption = monedaSelect.querySelector('option[value="1"]');
+                if (bolivarOption) {
+                    monedaSelect.value = "1";
+                    // Disparar el evento change para actualizar la visualización
+                    monedaSelect.dispatchEvent(new Event('change'));
+                }
+                // Deshabilitar el selector de moneda
+                monedaSelect.disabled = true;
+                monedaSelect.style.opacity = '0.6';
+                // Mostrar mensaje de bloqueo
+                document.getElementById('currency-lock-message').style.display = 'block';
+            } else {
+                // Habilitar el selector de moneda para otros métodos
+                monedaSelect.disabled = false;
+                monedaSelect.style.opacity = '1';
+                // Ocultar mensaje de bloqueo
+                document.getElementById('currency-lock-message').style.display = 'none';
+            }
+            
+            // Mostrar/ocultar sección de métodos guardados
+            if (selectedPaymentMethod === 'efectivo' || selectedPaymentMethod === 'puntos' || selectedPaymentMethod === 'cheque') {
+                savedMethodsSection.style.display = 'none';
+                savedMethodsList.style.display = 'none';
+                showPaymentFields(selectedPaymentMethod);
+            } else {
+                savedMethodsSection.style.display = 'block';
+                // Verificar si hay métodos guardados para este tipo
+                if (savedMethods[selectedPaymentMethod] && savedMethods[selectedPaymentMethod].length > 0) {
+                    // Hay métodos guardados, mostrar la opción de elegir
+                    methodChoiceInput.value = 'saved';
+                    updateMethodChoiceDisplay();
+                } else {
+                    // No hay métodos guardados, ir directamente a nuevo y actualizar botones
+                    methodChoiceInput.value = 'new';
+                    methodChoiceBtns.forEach(b => b.classList.remove('active'));
+                    document.querySelector('[data-choice="new"]').classList.add('active');
+                    updateMethodChoiceDisplay();
+                }
+            }
+        });
+    });
+    
+    // Manejar selección de método guardado vs nuevo
+    methodChoiceBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            methodChoiceBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            methodChoiceInput.value = this.dataset.choice;
+            updateMethodChoiceDisplay();
+        });
+    });
+    
+    // Función para actualizar la visualización según la elección
+    function updateMethodChoiceDisplay() {
+        const choice = methodChoiceInput.value;
+        
+        if (choice === 'saved' && savedMethods[selectedPaymentMethod] && savedMethods[selectedPaymentMethod].length > 0) {
+            savedMethodsList.style.display = 'block';
+            showSavedMethods(selectedPaymentMethod);
+            hideAllPaymentFields();
+        } else {
+            savedMethodsList.style.display = 'none';
+            showPaymentFields(selectedPaymentMethod);
+        }
+    }
+    
+    // Función para mostrar métodos guardados
+    function showSavedMethods(methodType) {
+        const methods = savedMethods[methodType] || [];
+        let html = '';
+        
+        methods.forEach(method => {
+            html += `
+                <div class="saved-method-item" data-method-id="${method.id}">
+                    <div class="saved-method-info">
+                        <i class="${getMethodIcon(methodType)}"></i>
+                        <div class="saved-method-details">
+                            <h6>${getMethodTitle(method)}</h6>
+                            <p>${getMethodDescription(method)}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        if (html === '') {
+            html = `
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i> 
+                    <strong>No tienes métodos guardados de este tipo.</strong><br>
+                    Por favor, selecciona "Agregar Nuevo" para crear y guardar un método de pago.
+                </div>
+            `;
+        }
+        
+        savedMethodsContainer.innerHTML = html;
+        
+        // Agregar eventos a los métodos guardados
+        document.querySelectorAll('.saved-method-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.saved-method-item').forEach(i => i.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedSavedMethodInput.value = this.dataset.methodId;
+            });
+        });
+    }
+    
+    // Funciones auxiliares para métodos guardados
+    function getMethodIcon(methodType) {
+        const icons = {
+            'cheque': 'fas fa-money-check',
+            'tarjeta_debito': 'fas fa-credit-card',
+            'tarjeta_credito': 'fab fa-cc-visa'
+        };
+        return icons[methodType] || 'fas fa-credit-card';
+    }
+    
+    function getMethodTitle(method) {
+        if (method.che_num_cheque) {
+            return `Cheque #${method.che_num_cheque}`;
+        } else if (method.tar_deb_numero) {
+            return `${method.tar_deb_banco} - Débito`;
+        } else if (method.tar_cre_numero) {
+            return `Tarjeta de Crédito`;
+        }
+        return 'Método de Pago';
+    }
+    
+    function getMethodDescription(method) {
+        if (method.che_num_cheque) {
+            return `Cheque número ${method.che_num_cheque}`;
+        } else if (method.tar_deb_numero) {
+            const lastFour = method.tar_deb_numero.toString().slice(-4);
+            return `**** **** **** ${lastFour} - Vence: ${method.tar_deb_vencimiento}`;
+        } else if (method.tar_cre_numero) {
+            const lastFour = method.tar_cre_numero.toString().slice(-4);
+            return `**** **** **** ${lastFour} - Vence: ${method.tar_cre_vencimiento}`;
+        }
+        return '';
+    }
+    
+    // Función para cargar métodos guardados
+    function loadSavedMethods() {
+        fetch('/get-saved-payment-methods/', {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                savedMethods = data.methods;
+            }
+        })
+        .catch(error => {
+            console.error('Error cargando métodos guardados:', error);
+        });
+    }
+    
+    // Función para mostrar campos de pago
+    function showPaymentFields(methodType) {
+        hideAllPaymentFields();
+        const fieldsToShow = document.getElementById(methodType + '-fields');
+        if (fieldsToShow) {
+            fieldsToShow.style.display = 'block';
+        }
+        
+        // Configurar puntos si es necesario
+        if (methodType === 'puntos') {
+            updatePointsCalculation();
+        }
+    }
+    
+    // Función para ocultar todos los campos de pago
+    function hideAllPaymentFields() {
+        paymentFields.forEach(field => {
+            field.style.display = 'none';
+        });
+    }
     
     // Mostrar conversión cuando se selecciona una moneda
     monedaSelect.addEventListener('change', function() {
@@ -157,6 +626,11 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Actualizar las denominaciones de efectivo
             updateCashDenominations(tipo);
+            
+            // Actualizar cálculo de puntos si está seleccionado
+            if (selectedPaymentMethod === 'puntos') {
+                updatePointsCalculation();
+            }
         } else {
             convertedAmountDiv.innerHTML = '<p><em>Seleccione una moneda para ver la conversión</em></p>';
             updateCashDenominations('seleccione moneda');
@@ -168,35 +642,51 @@ document.addEventListener('DOMContentLoaded', function() {
         const currencySymbol = document.getElementById('currency-symbol');
         const denominationOptions = document.querySelectorAll('#denominacion option');
         
-        currencySymbol.textContent = currencyType;
+        if (currencySymbol) {
+            currencySymbol.textContent = currencyType;
+        }
         
         denominationOptions.forEach((option, index) => {
-            if (index > 0) { // Skip the first option (placeholder)
+            if (index > 0) {
                 const value = option.value;
                 option.textContent = `${value} ${currencyType}`;
             }
         });
     }
     
-    // Mostrar campos según el tipo de pago seleccionado
-    tipoSelect.addEventListener('change', function() {
-        // Ocultar todos los campos
-        paymentFields.forEach(field => {
-            field.style.display = 'none';
-        });
+    // Función para actualizar cálculo de puntos
+    function updatePointsCalculation() {
+        const monedaSelected = monedaSelect.value;
+        if (!monedaSelected) return;
         
-        // Mostrar campos del tipo seleccionado
-        const selectedType = this.value;
-        if (selectedType) {
-            const fieldsToShow = document.getElementById(selectedType + '-fields');
-            if (fieldsToShow) {
-                fieldsToShow.style.display = 'block';
+        const selectedOption = monedaSelect.options[monedaSelect.selectedIndex];
+        const convertido = parseFloat(selectedOption.getAttribute('data-convertido'));
+        
+        // Obtener valor del punto desde el contexto
+        const valorPunto = {{ valor_punto|default:0 }};
+        const puntosDisponibles = {{ puntos_disponibles|default:0 }};
+        
+        if (valorPunto > 0) {
+            const puntosNecesarios = Math.ceil(convertido / valorPunto);
+            
+            document.getElementById('required-points').textContent = puntosNecesarios;
+            
+            const pointsMessage = document.getElementById('points-message');
+            if (puntosNecesarios <= puntosDisponibles) {
+                pointsMessage.className = 'alert alert-success';
+                pointsMessage.textContent = '¡Tienes suficientes puntos para realizar esta compra!';
+                pointsMessage.style.display = 'block';
+            } else {
+                pointsMessage.className = 'alert alert-warning';
+                pointsMessage.textContent = `Te faltan ${puntosNecesarios - puntosDisponibles} puntos para realizar esta compra.`;
+                pointsMessage.style.display = 'block';
             }
         }
-    });
+    }
     
     // Formatear número de tarjeta
     function formatCardNumber(input) {
+        if (!input) return;
         input.addEventListener('input', function(e) {
             let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
             let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
@@ -216,7 +706,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const expirationDate = new Date(dateString);
         const today = new Date();
         
-        // Comparar solo año y mes (ignorar día)
         const expYear = expirationDate.getFullYear();
         const expMonth = expirationDate.getMonth();
         const currentYear = today.getFullYear();
@@ -235,21 +724,16 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Función para mostrar errores
     function showError(message) {
-        // Remover error anterior si existe
         const existingError = document.querySelector('.payment-error');
         if (existingError) {
             existingError.remove();
         }
         
-        // Crear nuevo mensaje de error
         const errorDiv = document.createElement('div');
         errorDiv.className = 'alert alert-danger payment-error';
         errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
         
-        // Insertar antes del formulario
         form.parentNode.insertBefore(errorDiv, form);
-        
-        // Scroll hacia el error
         errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
     
@@ -257,14 +741,13 @@ document.addEventListener('DOMContentLoaded', function() {
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         
-        // Remover errores anteriores
         const existingError = document.querySelector('.payment-error');
         if (existingError) {
             existingError.remove();
         }
         
         const monedaId = monedaSelect.value;
-        const tipoPago = tipoSelect.value;
+        const tipoPago = tipoPagoInput.value;
         
         if (!monedaId) {
             showError('Por favor seleccione una moneda');
@@ -281,67 +764,95 @@ document.addEventListener('DOMContentLoaded', function() {
             tipo_pago: tipoPago
         };
         
-        // Recopilar y validar datos según el tipo de pago
-        if (tipoPago === 'efectivo') {
-            const denominacion = document.getElementById('denominacion').value;
-            if (!denominacion) {
-                showError('Por favor seleccione una denominación para el pago en efectivo');
-                return;
-            }
-            paymentData.denominacion = denominacion;
+        // Validar y recopilar datos según el tipo y método
+        if (tipoPago === 'puntos') {
+            // Validar puntos suficientes
+            const valorPunto = {{ valor_punto|default:0 }};
+            const puntosDisponibles = {{ puntos_disponibles|default:0 }};
+            const selectedOption = monedaSelect.options[monedaSelect.selectedIndex];
+            const convertido = parseFloat(selectedOption.getAttribute('data-convertido'));
+            const puntosNecesarios = Math.ceil(convertido / valorPunto);
             
-        } else if (tipoPago === 'cheque') {
-            const numCheque = document.getElementById('num_cheque').value;
-            if (!numCheque) {
-                showError('Por favor ingrese el número de cheque');
-                return;
-            }
-            if (numCheque <= 0) {
-                showError('El número de cheque debe ser mayor a 0');
-                return;
-            }
-            paymentData.num_cheque = numCheque;
-            
-        } else if (tipoPago === 'tarjeta_debito') {
-            const numero = document.getElementById('numero_debito').value.replace(/\s/g, '');
-            const vencimiento = document.getElementById('vencimiento_debito').value;
-            const banco = document.getElementById('banco').value.trim();
-            
-            if (!numero || !vencimiento || !banco) {
-                showError('Por favor complete todos los campos de la tarjeta de débito');
+            if (puntosNecesarios > puntosDisponibles) {
+                showError('No tienes suficientes puntos para realizar esta compra');
                 return;
             }
             
-            if (!validateExpirationDate(vencimiento)) {
-                showError('La fecha de vencimiento de la tarjeta de débito no puede ser anterior a la fecha actual');
-                return;
+            paymentData.puntos_necesarios = puntosNecesarios;
+            
+        } else if (methodChoiceInput.value === 'saved' && selectedSavedMethodInput.value) {
+            // Usar método guardado
+            paymentData.saved_method_id = selectedSavedMethodInput.value;
+            paymentData.use_saved_method = true;
+            
+        } else {
+            // Usar método nuevo
+            if (tipoPago === 'efectivo') {
+                const denominacion = document.getElementById('denominacion').value;
+                if (!denominacion) {
+                    showError('Por favor seleccione una denominación para el pago en efectivo');
+                    return;
+                }
+                paymentData.denominacion = denominacion;
+                
+            } else if (tipoPago === 'cheque') {
+                const numCheque = document.getElementById('num_cheque').value.trim();
+                
+                if (!numCheque) {
+                    showError('Por favor ingrese el número de cheque');
+                    return;
+                }
+                if (numCheque.length > 50) {
+                    showError('El número de cheque no puede exceder 50 caracteres');
+                    return;
+                }
+                if (!/^\d+$/.test(numCheque)) {
+                    showError('El número de cheque solo puede contener números');
+                    return;
+                }
+                paymentData.num_cheque = numCheque;
+                
+            } else if (tipoPago === 'tarjeta_debito') {
+                const numero = document.getElementById('numero_debito').value.replace(/\s/g, '');
+                const vencimiento = document.getElementById('vencimiento_debito').value;
+                const banco = document.getElementById('banco').value.trim();
+                
+                if (!numero || !vencimiento || !banco) {
+                    showError('Por favor complete todos los campos de la tarjeta de débito');
+                    return;
+                }
+                
+                if (!validateExpirationDate(vencimiento)) {
+                    showError('La fecha de vencimiento de la tarjeta de débito no puede ser anterior a la fecha actual');
+                    return;
+                }
+                
+                if (banco.length < 2) {
+                    showError('Por favor ingrese un nombre de banco válido');
+                    return;
+                }
+                
+                paymentData.numero = numero;
+                paymentData.vencimiento = vencimiento;
+                paymentData.banco = banco;
+                
+            } else if (tipoPago === 'tarjeta_credito') {
+                const numero = document.getElementById('numero_credito').value.replace(/\s/g, '');
+                const vencimiento = document.getElementById('vencimiento_credito').value;
+                
+                if (!numero || !vencimiento) {
+                    showError('Por favor complete todos los campos de la tarjeta de crédito');
+                    return;
+                }
+                
+                if (!validateExpirationDate(vencimiento)) {
+                    showError('La fecha de vencimiento de la tarjeta de crédito no puede ser anterior a la fecha actual');
+                    return;
+                }
+                
+                paymentData.numero = numero;
+                paymentData.vencimiento = vencimiento;
             }
-            
-            if (banco.length < 2) {
-                showError('Por favor ingrese un nombre de banco válido');
-                return;
-            }
-            
-            paymentData.numero = numero;
-            paymentData.vencimiento = vencimiento;
-            paymentData.banco = banco;
-            
-        } else if (tipoPago === 'tarjeta_credito') {
-            const numero = document.getElementById('numero_credito').value.replace(/\s/g, '');
-            const vencimiento = document.getElementById('vencimiento_credito').value;
-            
-            if (!numero || !vencimiento) {
-                showError('Por favor complete todos los campos de la tarjeta de crédito');
-                return;
-            }
-            
-            if (!validateExpirationDate(vencimiento)) {
-                showError('La fecha de vencimiento de la tarjeta de crédito no puede ser anterior a la fecha actual');
-                return;
-            }
-            
-            paymentData.numero = numero;
-            paymentData.vencimiento = vencimiento;
         }
         
         // Enviar datos
@@ -360,12 +871,18 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
-                const mensaje = `¡Pago procesado exitosamente!\n\n` +
-                    `Monto original: ${data.monto_original.toFixed(2)} Bs\n` +
-                    `Monto pagado: ${data.monto_convertido.toFixed(4)} ${data.moneda}\n` +
-                    `Tasa de cambio: ${data.tasa_cambio.toFixed(4)}`;
+                let mensaje = `¡Pago procesado exitosamente!\n\n`;
+                
+                if (tipoPago === 'puntos') {
+                    mensaje += `Puntos utilizados: ${data.puntos_utilizados}\n` +
+                              `Puntos restantes: ${data.puntos_restantes}`;
+                } else {
+                    mensaje += `Monto original: ${data.monto_original.toFixed(2)} Bs\n` +
+                              `Monto pagado: ${data.monto_convertido.toFixed(4)} ${data.moneda}\n` +
+                              `Tasa de cambio: ${data.tasa_cambio.toFixed(4)}`;
+                }
+                
                 alert(mensaje);
-                // Usar la URL de redirección proporcionada por el backend
                 window.location.href = data.redirect_url || '{% url "store_view" "online" %}';
             } else {
                 alert('Error: ' + data.message);
