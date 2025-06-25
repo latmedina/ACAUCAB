@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 import json
 import math
@@ -2164,3 +2164,67 @@ def load_parroquias(request):
 
 # NOTA: Las vistas de reportes se han movido al módulo de empleados
 # para una mejor organización y control de acceso.
+
+# Historial de Compras de Clientes
+def historial_compras_api(request, id_usuario):
+    """
+    API endpoint que devuelve el historial de compras para un cliente,
+    buscado a través de su ID de usuario.
+    """
+    try:
+        user= get_object_or_404(usuario, pk=id_usuario)
+        cliente_id = user.fk_cliente_id 
+        
+        if not cliente_id:
+            return JsonResponse([], safe=False)
+
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT public.obtener_historial_compras_cliente(%s);", [cliente_id])
+            result = cursor.fetchone()
+            
+            if result is None or result[0] is None:
+                return JsonResponse([], safe=False)
+
+            report_data = result[0]
+            return JsonResponse(report_data, encoder=DjangoJSONEncoder, safe=False)
+
+    except usuario.DoesNotExist:
+        return HttpResponseNotFound("El usuario no existe.")
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+def vista_historial_compras(request, id_usuario):
+    usuario_obj = get_object_or_404(usuario, pk=id_usuario)
+    cliente_obj = usuario_obj.fk_cliente 
+    
+    if not cliente_obj:
+        return HttpResponse("Este usuario no tiene un perfil de cliente asociado.", status=404)
+    
+    context = {'cliente': cliente_obj, 'usuario': usuario_obj}
+    return render(request, 'historial_compras_cliente.html', context)
+
+def vista_factura_directa(request, venta_id):
+    """
+    Renderiza la factura para una venta específica.
+    """
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT public.obtener_datos_reporte_venta(%s);", [venta_id])
+            result = cursor.fetchone()
+
+            if result is None or result[0] is None:
+                return HttpResponseNotFound("<h1>Factura no encontrada</h1><p>No se encontraron datos para la venta especificada.</p>")
+
+            # Se obtienen los datos como un diccionario de Python
+            report_data = result[0]
+            
+            # CORRECCIÓN: Pasamos el diccionario directamente en el contexto
+            context = {
+                'report_data': report_data
+            }
+            
+            return render(request, 'factura_template.html', context)
+
+    except Exception as e:
+        print(f"Error al generar factura directa: {e}")
+        return HttpResponse(f"<h1>Error al generar la factura</h1><p>{e}</p>", status=500)
