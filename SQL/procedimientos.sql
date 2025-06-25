@@ -419,13 +419,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- reporte 5
--- =================================================================================
--- FUNCIÓN PARA OBTENER ÓRDENES DE COMPRA ESTRICTAMENTE PENDIENTES
--- Descripción: Devuelve una lista de solicitudes de compra cuyo único estado
---              registrado en el historial es 'PENDIENTE'.
--- Retorna:
---   JSON: Un array de objetos, donde cada objeto es una orden de compra pendiente.
--- =================================================================================
 CREATE OR REPLACE FUNCTION public.obtener_ordenes_compra_pendientes()
 RETURNS JSON AS $$
 DECLARE
@@ -468,6 +461,70 @@ BEGIN
     --    a) Tienen exactamente un (1) registro de estado en total.
     --    b) Y ese único estado es 'PENDIENTE' (conteo_pendiente = 1).
     WHERE eps.total_estados = 1 AND eps.conteo_pendiente = 1;
+
+    RETURN v_reporte_data;
+END;
+$$ LANGUAGE plpgsql;
+
+-- histrorial de compras de un cliente
+CREATE OR REPLACE FUNCTION public.obtener_historial_compras_cliente(p_cliente_id INT)
+RETURNS JSON AS $$
+DECLARE
+    v_reporte_data JSON;
+BEGIN
+    WITH
+    -- Se unifican todas las ventas en una sola tabla temporal
+    todas_las_ventas AS (
+        -- Ventas Físicas
+        SELECT
+            vf.ven_fis_id AS id_venta,
+            vf.ven_fis_fecha::DATE AS fecha,
+            vf.ven_fis_total AS total,
+            'Venta en Tienda' AS tipo_compra
+        FROM public.venta_fisica vf
+        WHERE vf.fk_cliente = p_cliente_id
+
+        UNION ALL
+
+        -- Ventas Online
+        SELECT
+            vo.ven_onl_id AS id_venta,
+            vo.ven_onl_fecha::DATE AS fecha,
+            vo.ven_onl_total AS total,
+            'Pedido Online' AS tipo_compra
+        FROM public.venta_online vo
+        JOIN public.usuario u ON vo.fk_usuario = u.id
+        WHERE u.fk_cliente = p_cliente_id
+
+        UNION ALL
+
+        -- Ventas en Eventos
+        SELECT
+            ve.ven_eve_id AS id_venta,
+            ve.ven_eve_fecha_hora::DATE AS fecha,
+            ve.ven_eve_monto_total AS total,
+            'Compra en Evento' AS tipo_compra
+        FROM public.venta_evento ve
+        WHERE ve.fk_cliente = p_cliente_id
+    )
+    -- Se construye el JSON final a partir de la tabla unificada
+    SELECT
+        COALESCE(json_agg(
+            json_build_object(
+                'id_venta', tv.id_venta,
+                'fecha_compra', TO_CHAR(tv.fecha, 'DD/MM/YYYY'),
+                'monto_total', tv.total,
+                'tipo_compra', tv.tipo_compra,
+                -- Se añade un campo para saber a qué URL apuntar para la factura
+                'tipo_factura', CASE 
+                                    WHEN tv.tipo_compra = 'Venta en Tienda' THEN 'fisica'
+                                    WHEN tv.tipo_compra = 'Pedido Online' THEN 'online'
+                                    ELSE 'evento'
+                                END
+            ) ORDER BY tv.fecha DESC
+        ), '[]'::json)
+    INTO v_reporte_data
+    FROM todas_las_ventas tv;
 
     RETURN v_reporte_data;
 END;

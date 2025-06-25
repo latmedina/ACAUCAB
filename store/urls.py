@@ -46,11 +46,12 @@ urlpatterns = [
     path('registrar/empleado/', views.registrar_empleado_view, name='registrar_empleado'),
     path('registrar/proveedor/', views.registrar_proveedor_view, name='registrar_proveedor'),
     path('registrar/usuario/<str:tipo>/<int:id_entidad>/', views.crear_usuario_view, name='crear_usuario'),
-    path('modificar_usuario/<int:usuario_id>/', views.modificar_usuario_view, name='modificar_usuario'),
+    path('modificar_usuario/<int:id_usuario>/', views.modificar_usuario_view, name='modificar_usuario'),
     path('eliminar_usuario/<int:id_usuario>/', views.eliminar_usuario_view, name='eliminar_usuario'),
 
     # Reportes
-    path('factura/', views.vista_factura, name='vista_factura'),
+    #path('factura/', views.vista_factura, name='vista_factura'),
+    path('factura/<int:venta_id>/', views.vista_factura_directa, name='vista_factura_directa'),
     path('api/reporte/venta/<int:venta_id>/', views.generar_reporte_venta_api, name='api_reporte_venta'),
     path('orden/', views.vista_orden_compra, name='vista_orden_compra'),
     path('api/reporte/orden/<int:orden_id>/', views.generar_orden_compra_api, name='api_orden_compra'),
@@ -65,9 +66,9 @@ urlpatterns = [
     path('reporte5', views.vista_reporte_ordenes_pendientes, name='vista_reporte_ordenes_pendientes'),
     path('api/reportes/ordenes-pendientes/', views.reporte_ordenes_pendientes_api, name='api_reporte_ordenes_pendientes'),
 
-
-
-    path('modificar_usuario/<int:id_usuario>/', views.modificar_usuario_view, name='modificar_usuario'),
+    #Interfaz de historial de compras de un cliente
+    path('historial-compras/<int:id_usuario>/', views.vista_historial_compras, name='historial-compras'),
+    path('api/historial/usuario/<int:id_usuario>/', views.historial_compras_api, name='api_historial_compras'),
 
     # AJAX para selector jerárquico de lugar
     path('ajax/load-municipios/', views.load_municipios, name='ajax_load_municipios'),

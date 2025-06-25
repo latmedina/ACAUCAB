@@ -65,8 +65,11 @@
                             <span class="text-white me-3">
                                 <i class="fas fa-user me-1"></i>{{ request.user.username }}
                             </span>
-
-                        <a href="{% url 'modificar_usuario' request.user.id %}" class="btn btn-secondary me-2">
+                        
+                        <a href="{% url 'historial-compras' id_usuario=request.user.id %}" class="btn btn-secondary me-2">
+                            <i class="fas fa-user-edit me-1"></i>Historial de Compras
+                        </a>
+                        <a href="{% url 'modificar_usuario' id_usuario=request.user.id %}" class="btn btn-secondary me-2">
                             <i class="fas fa-user-edit me-1"></i>Modificar Perfil
                         </a>
 
