@@ -1344,9 +1344,11 @@ def load_parroquias(request):
     
     return JsonResponse({'parroquias': parroquias_data})
 
+
+# Facturas
 def vista_factura(request):
     # Asegúrate de que tu archivo 'factura_reporte.html' esté en tu carpeta de templates
-        return render(request, 'factura_reporte.html')
+        return render(request, 'reportes/factura_reporte.html')
 
 def generar_reporte_venta_api(request, venta_id):
     """
@@ -1384,9 +1386,11 @@ def generar_reporte_venta_api(request, venta_id):
         print(f"¡ERROR! Ocurrió una excepción en la vista: {e}")
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
     
+
+# Orden de Compra
 def vista_orden_compra(request):
     # Asegúrate de que tu archivo 'factura_reporte.html' esté en tu carpeta de templates
-        return render(request, 'Orden_compra_reporte.html')
+        return render(request, 'reportes/Orden_compra_reporte.html')
 
 def generar_orden_compra_api(request, orden_id):
     if request.method != 'GET':
@@ -1407,6 +1411,7 @@ def generar_orden_compra_api(request, orden_id):
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
     
 
+# Reportes de Productores en Eventos
 def reporte_productores_eventos_api(request):
     """
     API endpoint que devuelve los datos para el reporte de productores en eventos.
@@ -1443,4 +1448,31 @@ def vista_reporte_productores(request):
     """
     Esta vista simplemente renderiza la página HTML que mostrará el reporte.
     """
-    return render(request, 'productores_eventos.html')
+    return render(request, 'reportes/productores_eventos.html')
+
+
+# Reporte de Eficiencia de Despacho
+def reporte_eficiencia_despacho_api(request):
+    """
+    API endpoint que devuelve el tiempo promedio de despacho.
+    """
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT public.calcular_eficiencia_despacho();")
+            result = cursor.fetchone()
+            print("Ejecutando consulta para calcular eficiencia de despacho...")
+            print(f"Resultado de la consulta: {result}")
+            if result is None or result[0] is None:
+                return JsonResponse({'error': 'No se pudo calcular la eficiencia.'}, status=404)
+
+            report_data = result[0]
+            return JsonResponse(report_data, encoder=DjangoJSONEncoder, safe=False)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+def vista_reporte_eficiencia(request):
+    """
+    Esta vista simplemente renderiza la página HTML que mostrará el reporte.
+    """
+    # Asegúrate de crear la carpeta 'reportes' dentro de 'templates'
+    return render(request, 'reportes/eficiencia_despacho.html')

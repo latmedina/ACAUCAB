@@ -226,6 +226,56 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- reporte 2
+CREATE OR REPLACE FUNCTION public.calcular_eficiencia_despacho()
+RETURNS JSON AS $$
+DECLARE
+    v_reporte_data JSON;
+    v_avg_days NUMERIC;
+BEGIN
+    -- 1. Calcular el promedio de días que toma el despacho
+    WITH
+    -- Subconsulta para encontrar la fecha de inicio del estatus 6 para cada venta
+    listo_para_entrega AS (
+        SELECT
+            fk_venta_online,
+            MIN(ven_onl_est_fecha_inicio) as fecha_listo
+        FROM public.ven_onl_est
+        WHERE fk_estatus = 6
+        GROUP BY fk_venta_online
+    ),
+    -- Subconsulta para encontrar la fecha de inicio del estatus 7 para cada venta
+    entregado AS (
+        SELECT
+            fk_venta_online,
+            MIN(ven_onl_est_fecha_inicio) as fecha_entregado
+        FROM public.ven_onl_est
+        WHERE fk_estatus = 7
+        GROUP BY fk_venta_online
+    )
+    -- Se calcula el promedio de la diferencia de días para todas las órdenes que tienen ambos estatus
+    SELECT
+        -- Se usa COALESCE para devolver 0 si no se encuentra ninguna orden que complete el ciclo
+        COALESCE(AVG(e.fecha_entregado - l.fecha_listo), 0)
+    INTO v_avg_days
+    FROM listo_para_entrega l
+    JOIN entregado e ON l.fk_venta_online = e.fk_venta_online
+    WHERE e.fecha_entregado >= l.fecha_listo; -- Condición de seguridad
+
+    -- 2. Construir el objeto JSON con el resultado desglosado
+    SELECT
+        json_build_object(
+            'dias', floor(v_avg_days),
+            'horas', floor((v_avg_days - floor(v_avg_days)) * 24),
+            'minutos', floor(((v_avg_days - floor(v_avg_days)) * 24 - floor((v_avg_days - floor(v_avg_days)) * 24)) * 60)
+        )
+    INTO v_reporte_data;
+
+    RETURN v_reporte_data;
+END;
+$$ LANGUAGE plpgsql;
+
+
 -- ===========================================
 -- FUNCION: modificar_usuario
 -- ===========================================
