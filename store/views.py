@@ -1513,8 +1513,6 @@ def reporte_historico_ofertas_api(request):
         print("-----------------------------------------------------")
         print(f"Tipo de Excepción: {type(e).__name__}")
         print(f"Error: {e}")
-        # Imprime el traceback completo para un diagnóstico detallado
-        traceback.print_exc()
         print("-----------------------------------------------------\n")
         return JsonResponse({'error': f'Ocurrió un error en el servidor: {e}'}, status=500)
 
@@ -1523,3 +1521,71 @@ def vista_reporte_ofertas(request):
     Renderiza la página HTML para el reporte de histórico de ofertas.
     """
     return render(request, 'reportes/historico_ofertas.html')
+
+# Reporte de Incumplimiento de Horario
+def reporte_incumplimiento_horario_api(request):
+    """
+    API endpoint que devuelve los incumplimientos de horario en un rango de fechas.
+    """
+    try:
+        # Obtener fechas desde los parámetros de la URL
+        fecha_inicio_str = request.GET.get('inicio')
+        fecha_fin_str = request.GET.get('fin')
+        
+        if not fecha_inicio_str or not fecha_fin_str:
+            return JsonResponse({'error': 'Fechas de inicio y fin son requeridas'}, status=400)
+        
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT public.obtener_reporte_incumplimiento_horario(%s::DATE, %s::DATE);",
+                [fecha_inicio_str, fecha_fin_str]
+            )
+            result = cursor.fetchone()
+            
+            if result is None or result[0] is None:
+                return JsonResponse([], safe=False)
+
+            report_data = result[0]
+            return JsonResponse(report_data, encoder=DjangoJSONEncoder, safe=False)
+
+    except Exception as e:
+        # Manejo de errores para depuración
+        print(f"Error en API de incumplimiento: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+    
+def reporte_incumplimiento_horario_api(request):
+    """
+    API endpoint que devuelve los incumplimientos de horario en un rango de fechas.
+    """
+    try:
+        # Obtener fechas desde los parámetros de la URL
+        fecha_inicio_str = request.GET.get('inicio')
+        fecha_fin_str = request.GET.get('fin')
+        
+        if not fecha_inicio_str or not fecha_fin_str:
+            return JsonResponse({'error': 'Fechas de inicio y fin son requeridas'}, status=400)
+        
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT public.obtener_reporte_incumplimiento_horario(%s::DATE, %s::DATE);",
+                [fecha_inicio_str, fecha_fin_str]
+            )
+            result = cursor.fetchone()
+            
+            if result is None or result[0] is None:
+                return JsonResponse([], safe=False)
+
+            report_data = result[0]
+            return JsonResponse(report_data, encoder=DjangoJSONEncoder, safe=False)
+     
+
+    except Exception as e:
+        # Manejo de errores para depuración
+        print(f"Error en API de incumplimiento: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+def vista_reporte_incumplimiento(request):
+    """
+    Renderiza la página HTML para el reporte de incumplimiento de horario.
+    """
+    return render(request, 'reportes/incumplimiento_horario.html')
