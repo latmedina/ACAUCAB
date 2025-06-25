@@ -83,47 +83,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            // Agrupar órdenes por estado
-            const ordenesPorEstado = {};
-            data.forEach(orden => {
-                const estado = orden.estado || 'Sin estado';
-                if (!ordenesPorEstado[estado]) {
-                    ordenesPorEstado[estado] = [];
-                }
-                ordenesPorEstado[estado].push(orden);
-            });
-
             let html = `
                 <div class="row mb-4">
-                    <div class="col-md-3">
+                    <div class="col-md-12">
                         <div class="card text-center bg-primary text-white">
                             <div class="card-body">
                                 <h3>${data.length}</h3>
-                                <p class="mb-0">Total Pendientes</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card text-center bg-warning text-dark">
-                            <div class="card-body">
-                                <h3>${(ordenesPorEstado['En proceso'] || []).length}</h3>
-                                <p class="mb-0">En Proceso</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card text-center bg-info text-white">
-                            <div class="card-body">
-                                <h3>${(ordenesPorEstado['Esperando'] || []).length}</h3>
-                                <p class="mb-0">En Espera</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card text-center bg-danger text-white">
-                            <div class="card-body">
-                                <h3>${(ordenesPorEstado['Atrasada'] || []).length}</h3>
-                                <p class="mb-0">Atrasadas</p>
+                                <p class="mb-0">Órdenes de Compra Pendientes</p>
                             </div>
                         </div>
                     </div>
@@ -142,61 +108,32 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <thead class="table-dark">
                                     <tr>
                                         <th>ID Orden</th>
+                                        <th>Fecha Solicitud</th>
                                         <th>Proveedor</th>
-                                        <th>Fecha Orden</th>
-                                        <th>Fecha Esperada</th>
+                                        <th>Solicitado Por</th>
                                         <th>Total</th>
-                                        <th>Estado</th>
-                                        <th>Días Pendiente</th>
                                     </tr>
                                 </thead>
                                 <tbody>
             `;
 
             data.forEach(orden => {
-                const estado = orden.estado || 'Sin estado';
-                const fechaOrden = orden.fecha_orden || 'N/A';
-                const fechaEsperada = orden.fecha_esperada || 'N/A';
-                const diasPendiente = orden.dias_pendiente || 0;
-                
-                // Determinar el color del badge según el estado
-                let badgeClass = 'bg-secondary';
-                if (estado === 'En proceso') badgeClass = 'bg-warning text-dark';
-                else if (estado === 'Esperando') badgeClass = 'bg-info';
-                else if (estado === 'Atrasada') badgeClass = 'bg-danger';
-                
-                // Determinar color de alerta para días pendientes
-                let diasClass = '';
-                if (diasPendiente > 30) diasClass = 'text-danger fw-bold';
-                else if (diasPendiente > 15) diasClass = 'text-warning fw-bold';
-
                 html += `
                     <tr>
                         <td>
-                            <strong>#${orden.id || 'N/A'}</strong>
+                            <strong>#${orden.orden_id || 'N/A'}</strong>
+                        </td>
+                        <td>
+                            ${orden.fecha_solicitud || 'N/A'}
                         </td>
                         <td>
                             <strong>${orden.proveedor_nombre || 'N/A'}</strong>
-                            ${orden.proveedor_contacto ? `<br><small class="text-muted">${orden.proveedor_contacto}</small>` : ''}
-                        </td>
-                        <td>${fechaOrden}</td>
-                        <td>
-                            <span class="${fechaEsperada === 'N/A' ? 'text-muted' : ''}">
-                                ${fechaEsperada}
-                            </span>
                         </td>
                         <td>
-                            <strong>$${orden.total ? parseFloat(orden.total).toFixed(2) : '0.00'}</strong>
+                            ${orden.solicitado_por || 'N/A'}
                         </td>
                         <td>
-                            <span class="badge ${badgeClass}">
-                                ${estado}
-                            </span>
-                        </td>
-                        <td>
-                            <span class="${diasClass}">
-                                ${diasPendiente} días
-                            </span>
+                            <strong>$${orden.total_orden ? parseFloat(orden.total_orden).toFixed(2) : '0.00'}</strong>
                         </td>
                     </tr>
                 `;
@@ -212,11 +149,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <div class="col-md-12">
                                     <div class="alert alert-info">
                                         <i class="fas fa-info-circle me-2"></i>
-                                        <strong>Leyenda:</strong>
-                                        <span class="badge bg-warning text-dark ms-2">En Proceso</span>
-                                        <span class="badge bg-info ms-1">En Espera</span>
-                                        <span class="badge bg-danger ms-1">Atrasada</span>
-                                        <br><small class="mt-2 d-block">Las órdenes con más de 15 días aparecen resaltadas.</small>
+                                        <strong>Información:</strong> Estas son todas las órdenes de compra que están pendientes de aprobación en el sistema.
                                     </div>
                                 </div>
                             </div>

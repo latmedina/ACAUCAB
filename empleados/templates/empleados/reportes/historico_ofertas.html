@@ -135,32 +135,40 @@ document.addEventListener('DOMContentLoaded', function() {
                             <table class="table table-striped">
                                 <thead>
                                     <tr>
-                                        <th>Producto</th>
+                                        <th>Nombre de Oferta</th>
+                                        <th>Descripción</th>
                                         <th>Descuento</th>
                                         <th>Fecha Inicio</th>
                                         <th>Fecha Fin</th>
-                                        <th>Estado</th>
+                                        <th>Productos Afectados</th>
                                     </tr>
                                 </thead>
                                 <tbody>
             `;
 
             data.forEach(oferta => {
+                const productos = oferta.productos_afectados || [];
+                const productosHtml = productos.length > 0 
+                    ? productos.map(producto => `<li>${producto}</li>`).join('') 
+                    : '<li>N/A</li>';
+
                 html += `
                     <tr>
                         <td>
-                            <strong>${oferta.producto_nombre || 'N/A'}</strong>
-                            <br><small class="text-muted">${oferta.producto_descripcion || ''}</small>
+                            <strong>${oferta.oferta_nombre || 'N/A'}</strong>
                         </td>
                         <td>
-                            <span class="badge bg-warning text-dark">${oferta.descuento || 0}%</span>
+                            ${oferta.oferta_descripcion || 'N/A'}
+                        </td>
+                        <td>
+                            <span class="badge bg-warning text-dark">${oferta.descuento_porcentaje || 0}%</span>
                         </td>
                         <td>${oferta.fecha_inicio || 'N/A'}</td>
                         <td>${oferta.fecha_fin || 'N/A'}</td>
                         <td>
-                            <span class="badge ${oferta.activa ? 'bg-success' : 'bg-secondary'}">
-                                ${oferta.activa ? 'Activa' : 'Inactiva'}
-                            </span>
+                            <ul class="list-unstyled mb-0">
+                                ${productosHtml}
+                            </ul>
                         </td>
                     </tr>
                 `;

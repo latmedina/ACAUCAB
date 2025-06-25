@@ -35,55 +35,114 @@
 
 <!-- Quick Access Cards -->
 <div class="row">
-    <!-- Reportes Card -->
-    <div class="col-lg-6 col-md-12 mb-4">
-        <div class="card h-100">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Reportes</h5>
+    <!-- Reportes Card Mejorada -->
+    <div class="col-lg-4 col-md-6 mb-4">
+        <div class="card h-100 border-primary">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Reportes del Sistema</h5>
             </div>
             <div class="card-body">
-                <p class="card-text">Accede a todos los reportes disponibles del sistema.</p>
-                <ul class="list-unstyled">
-                    <li><i class="fas fa-file-invoice text-primary me-2"></i>Facturas de Venta</li>
-                    <li><i class="fas fa-shopping-cart text-success me-2"></i>Órdenes de Compra</li>
-                    <li><i class="fas fa-users text-info me-2"></i>Productores en Eventos</li>
-                    <li><i class="fas fa-truck text-warning me-2"></i>Eficiencia de Despacho</li>
-                    <li><i class="fas fa-tags text-danger me-2"></i>Histórico de Ofertas</li>
-                    <li><i class="fas fa-clock text-secondary me-2"></i>Incumplimiento de Horario</li>
-                    <li><i class="fas fa-hourglass-half text-dark me-2"></i>Órdenes Pendientes</li>
-                </ul>
-                <a href="{% url 'empleados:reportes' %}" class="btn btn-primary">
-                    <i class="fas fa-chart-bar me-2"></i>Ver Reportes
+                <p class="card-text text-muted mb-3">Accede a todos los reportes disponibles del sistema.</p>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <div class="d-flex align-items-center p-2 bg-light rounded">
+                            <i class="fas fa-file-invoice text-primary me-2"></i>
+                            <small>Facturas</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="d-flex align-items-center p-2 bg-light rounded">
+                            <i class="fas fa-shopping-cart text-success me-2"></i>
+                            <small>Órdenes</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="d-flex align-items-center p-2 bg-light rounded">
+                            <i class="fas fa-users text-info me-2"></i>
+                            <small>Eventos</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="d-flex align-items-center p-2 bg-light rounded">
+                            <i class="fas fa-truck text-warning me-2"></i>
+                            <small>Despacho</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="d-flex align-items-center p-2 bg-light rounded">
+                            <i class="fas fa-tags text-danger me-2"></i>
+                            <small>Ofertas</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="d-flex align-items-center p-2 bg-light rounded">
+                            <i class="fas fa-clock text-secondary me-2"></i>
+                            <small>Horarios</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mt-3">
+                    <span class="badge bg-primary">7 Reportes Disponibles</span>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent">
+                <a href="{% url 'empleados:reportes' %}" class="btn btn-primary w-100">
+                    <i class="fas fa-chart-bar me-2"></i>Ver Todos los Reportes
                 </a>
             </div>
         </div>
     </div>
 
-    <!-- System Info Card -->
-    <div class="col-lg-6 col-md-12 mb-4">
-        <div class="card h-100">
-            <div class="card-header">
+    <!-- Nueva Tarjeta: Aprobar Solicitudes -->
+    <div class="col-lg-4 col-md-6 mb-4">
+        <div class="card h-100 border-success">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i>Gestión de Solicitudes</h5>
+            </div>
+            <div class="card-body text-center">
+                <div class="display-4 text-success mb-3">
+                    <i class="fas fa-clipboard-check"></i>
+                </div>
+                <h6 class="card-title">Aprobar Solicitudes de Compra</h6>
+                <p class="card-text text-muted">Revisa y aprueba las solicitudes de compra pendientes en el sistema.</p>
+                <div class="alert alert-light border-success">
+                    <i class="fas fa-info-circle text-success me-2"></i>
+                    <small>Gestiona el flujo de aprobaciones</small>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent">
+                <button type="button" class="btn btn-success w-100" onclick="alert('Funcionalidad en desarrollo')">
+                    <i class="fas fa-thumbs-up me-2"></i>Aprobar Solicitudes de Compra
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Info Card Mejorada -->
+    <div class="col-lg-4 col-md-6 mb-4">
+        <div class="card h-100 border-info">
+            <div class="card-header bg-info text-white">
                 <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Información del Sistema</h5>
             </div>
             <div class="card-body">
-                <p class="card-text">Información relevante del sistema ACAUCAB.</p>
-                <div class="row">
+                <p class="card-text text-muted mb-3">Estado y configuración del sistema ACAUCAB.</p>
+                <div class="row g-2 mb-3">
                     <div class="col-6">
-                        <div class="border rounded p-3 text-center mb-3">
-                            <h4 class="text-primary mb-1"><i class="fas fa-beer"></i></h4>
-                            <small class="text-muted">Sistema ACAUCAB</small>
+                        <div class="border rounded p-3 text-center bg-light">
+                            <h5 class="text-primary mb-1"><i class="fas fa-beer"></i></h5>
+                            <small class="text-muted">ACAUCAB</small>
                         </div>
                     </div>
                     <div class="col-6">
-                        <div class="border rounded p-3 text-center mb-3">
-                            <h4 class="text-success mb-1"><i class="fas fa-user-tie"></i></h4>
-                            <small class="text-muted">Módulo Empleados</small>
+                        <div class="border rounded p-3 text-center bg-light">
+                            <h5 class="text-success mb-1"><i class="fas fa-user-tie"></i></h5>
+                            <small class="text-muted">Empleados</small>
                         </div>
                     </div>
                 </div>
-                <div class="alert alert-info">
+                <div class="alert alert-info border-info">
                     <i class="fas fa-lightbulb me-2"></i>
-                    <strong>Tip:</strong> Utiliza el menú lateral para navegar entre las diferentes secciones.
+                    <small><strong>Tip:</strong> Utiliza el menú lateral para navegar entre secciones.</small>
                 </div>
             </div>
         </div>

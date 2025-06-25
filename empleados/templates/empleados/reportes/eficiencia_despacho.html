@@ -59,6 +59,18 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             const data = await response.json();
 
+            // Construir el tiempo legible
+            const dias = data.dias || 0;
+            const horas = data.horas || 0;
+            const minutos = data.minutos || 0;
+            
+            let tiempoTexto = '';
+            if (dias > 0) tiempoTexto += `${dias} días `;
+            if (horas > 0) tiempoTexto += `${horas} horas `;
+            if (minutos > 0) tiempoTexto += `${minutos} minutos`;
+            
+            if (tiempoTexto === '') tiempoTexto = 'Sin datos suficientes';
+
             reportContainer.innerHTML = `
                 <div class="card">
                     <div class="card-header bg-primary text-white">
@@ -66,26 +78,41 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     <div class="card-body">
                         <div class="row text-center">
-                            <div class="col-md-6">
-                                <div class="border rounded p-4">
-                                    <h2 class="text-primary">${data.tiempo_promedio || 'N/A'}</h2>
-                                    <p class="text-muted mb-0">Tiempo Promedio de Despacho</p>
-                                    <small class="text-muted">(en horas)</small>
+                            <div class="col-md-4">
+                                <div class="border rounded p-4 mb-3">
+                                    <h2 class="text-primary">${dias}</h2>
+                                    <p class="text-muted mb-0">Días</p>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="border rounded p-4">
-                                    <h2 class="text-success">${data.total_despachos || 'N/A'}</h2>
-                                    <p class="text-muted mb-0">Total de Despachos Analizados</p>
-                                    <small class="text-muted">Registro histórico</small>
+                            <div class="col-md-4">
+                                <div class="border rounded p-4 mb-3">
+                                    <h2 class="text-info">${horas}</h2>
+                                    <p class="text-muted mb-0">Horas</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="border rounded p-4 mb-3">
+                                    <h2 class="text-success">${minutos}</h2>
+                                    <p class="text-muted mb-0">Minutos</p>
                                 </div>
                             </div>
                         </div>
-                        ${data.observaciones ? `
-                            <div class="mt-4">
-                                <h6>Observaciones:</h6>
-                                <div class="alert alert-info">
-                                    <i class="fas fa-info-circle me-2"></i>${data.observaciones}
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="alert alert-info text-center">
+                                    <h5><i class="fas fa-stopwatch me-2"></i>Tiempo Promedio de Despacho</h5>
+                                    <h3 class="text-primary">${tiempoTexto}</h3>
+                                    <p class="mb-0">Tiempo promedio desde que una orden está "Lista para Entrega" hasta que se marca como "Entregada"</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        ${(dias === 0 && horas === 0 && minutos === 0) ? `
+                            <div class="mt-3">
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <strong>Sin datos:</strong> No hay suficientes órdenes completadas para calcular el tiempo promedio de despacho.
                                 </div>
                             </div>
                         ` : ''}
