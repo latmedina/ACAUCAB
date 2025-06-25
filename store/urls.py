@@ -72,6 +72,12 @@ urlpatterns = [
 
     # Interfaz de empleado
     path('empleado/home/', views.empleado_home, name='empleado_home'),
+    path('empleado/consulta_reportes/', views.vista_consulta_reportes, name='vista_consulta_reportes'),
+    path('empleado/gestion_ordenes/', views.vista_gestion_ordenes, name='vista_gestion_ordenes'),
+    path('api/gestion/ordenes/', views.gestion_ordenes_api, name='api_gestion_ordenes'),
+    path('api/gestion/ordenes/actualizar/<int:orden_id>/', views.actualizar_orden_api, name='api_actualizar_orden'),
+    path('orden/<int:orden_id>/', views.vista_orden_compra_directa, name='vista_orden_compra_directa'),
+
 
     # AJAX para selector jerárquico de lugar
     path('ajax/load-municipios/', views.load_municipios, name='ajax_load_municipios'),

@@ -1,0 +1,200 @@
+{% extends "main.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    .gestion-container { max-width: 1200px; margin: 20px auto; background-color: #fff; padding: 30px; box-shadow: 0 2px 15px rgba(0,0,0,0.1); border-radius: 8px; }
+    .header-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .btn-back { display: inline-flex; align-items: center; gap: 8px; background-color: #6c757d; color: white; padding: 10px 15px; border-radius: 4px; text-decoration: none; font-weight: bold; }
+    .btn-back:hover { background-color: #5a6268; }
+    .report-header h1 { color: #1a237e; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #dee2e6; padding: 12px; text-align: left; vertical-align: middle;}
+    th { background-color: #343a40; color: white; }
+    tr:nth-child(even) { background-color: #f8f9fa; }
+    .status-select { padding: 6px; border-radius: 4px; border: 1px solid #ccc; width: 100%; }
+    .btn-generar { background-color: #0d6efd; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .no-data { text-align: center; padding: 40px; }
+    /* Estilos para la paginación */
+    .pagination-container { display: flex; justify-content: center; margin-top: 30px; }
+    .simple-pagination ul { margin: 0; padding: 0; }
+    .simple-pagination li { display: inline-block; margin: 0 2px; }
+    .simple-pagination li a, .simple-pagination li span { border: 1px solid #0d6efd; color: #0d6efd; padding: 8px 12px; border-radius: 4px; text-decoration: none; }
+    .simple-pagination li.active span { background-color: #0d6efd; color: white; }
+</style>
+
+<div class="gestion-container">
+    <div class="header-controls">
+        <a href="{% url 'empleado_home' %}" class="btn-back"><i class="fas fa-arrow-left"></i> Regresar</a>
+        <div class="report-header">
+            <h1>Gestión de Órdenes de Compra</h1>
+        </div>
+        <div></div> <!-- Espaciador -->
+    </div>
+
+    <div id="table-container">
+        <p class="no-data">Cargando órdenes de compra...</p>
+    </div>
+
+    <!-- Contenedor para los controles de paginación -->
+    <div id="pagination-container" class="pagination-container"></div>
+</div>
+
+{% verbatim %}
+<script id="ordenes-template" type="text/x-handlebars-template">
+    {{#if this.length}}
+    <table>
+        <thead>
+            <tr>
+                <th>ID Orden</th>
+                <th>Fecha Solicitud</th>
+                <th>Proveedor</th>
+                <th>Solicitante</th>
+                <th>Total</th>
+                <th>Fecha Aprobación</th>
+                <th>Estatus Actual</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each this}}
+            <tr>
+                <td>{{orden_id}}</td>
+                <td>{{fecha_solicitud}}</td>
+                <td>{{proveedor_nombre}}</td>
+                <td>{{solicitado_por}}</td>
+                <td>${{total_orden}}</td>
+                <td>{{fecha_aprobacion}}</td>
+                <td>
+                    <select class="status-select" data-orden-id="{{orden_id}}">
+                        {{{optionsForStatus estatus_actual_id}}}
+                    </select>
+                </td>
+                <td>
+                    <button class="btn-generar" data-orden-id="{{orden_id}}">Generar Orden</button>
+                </td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+    {{else}}
+    <p class="no-data">No se encontraron órdenes de compra.</p>
+    {{/if}}
+</script>
+{% endverbatim %}
+
+{{ estatus_posibles|json_script:"estatus-data" }}
+
+<!-- Se incluyen las librerías necesarias -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/simplePagination.js/1.6/jquery.simplePagination.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/handlebars@4.7.8/dist/handlebars.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tableContainer = document.getElementById('table-container');
+    const paginationContainer = document.getElementById('pagination-container');
+    const estatusPosibles = JSON.parse(document.getElementById('estatus-data').textContent);
+
+    Handlebars.registerHelper('optionsForStatus', function(currentStatusId) {
+        let options = '';
+        estatusPosibles.forEach(estatus => {
+            const selected = (estatus.est_id == currentStatusId) ? 'selected' : '';
+            options += `<option value="${estatus.est_id}" ${selected}>${estatus.est_tipo_estatus}</option>`;
+        });
+        return new Handlebars.SafeString(options);
+    });
+
+    const templateHtml = document.getElementById('ordenes-template').innerHTML;
+    const template = Handlebars.compile(templateHtml);
+
+    async function cargarOrdenes() {
+        try {
+            const response = await fetch('/api/gestion/ordenes/');
+            if (!response.ok) throw new Error('Error al cargar los datos.');
+            const allData = await response.json();
+
+            if (!allData || allData.length === 0) {
+                tableContainer.innerHTML = template([]);
+                return;
+            }
+
+            // Configuración de la paginación
+            $(paginationContainer).pagination({
+                items: allData.length,
+                itemsOnPage: 2,
+                cssStyle: 'light-theme',
+                prevText: 'Anterior',
+                nextText: 'Siguiente',
+                onPageClick: function(pageNumber) {
+                    const start = (pageNumber - 1) * 10;
+                    const end = start + 10;
+                    const pageData = allData.slice(start, end);
+                    tableContainer.innerHTML = template(pageData);
+                }
+            });
+
+        } catch (error) {
+            tableContainer.innerHTML = `<p class="no-data" style="color:red;">${error.message}</p>`;
+        }
+    }
+    
+    // --- NUEVA LÓGICA CON CONFIRMACIÓN ---
+
+    // 1. Guardar el valor original del select cuando se le hace foco
+    tableContainer.addEventListener('focusin', function(event) {
+        if (event.target.matches('.status-select')) {
+            event.target.dataset.previousValue = event.target.value;
+        }
+    });
+
+    // 2. Manejar el cambio con un diálogo de confirmación
+    tableContainer.addEventListener('change', async function(event) {
+        if (event.target.matches('.status-select')) {
+            const selectElement = event.target;
+            const ordenId = selectElement.dataset.ordenId;
+            const nuevoEstatusId = selectElement.value;
+            const nuevoEstatusTexto = selectElement.options[selectElement.selectedIndex].text;
+            const valorAnterior = selectElement.dataset.previousValue;
+
+            // Se muestra una ventana de confirmación
+            const confirmado = confirm(`¿Estás seguro de que deseas cambiar el estatus de la orden #${ordenId} a "${nuevoEstatusTexto}"?`);
+
+            if (confirmado) {
+                // Si el usuario acepta, se envía la actualización al servidor
+                try {
+                    const response = await fetch(`/api/gestion/ordenes/actualizar/${ordenId}/`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: `nuevo_estatus_id=${nuevoEstatusId}`
+                    });
+                    const result = await response.json();
+                    if (!result.success) throw new Error(result.error);
+                    
+                    alert('Estatus actualizado con éxito.');
+                    cargarOrdenes(); // Se recarga la tabla para reflejar el cambio.
+                } catch (error) {
+                    alert(`Error al actualizar el estatus: ${error.message}`);
+                    selectElement.value = valorAnterior; // Si hay un error, se revierte el cambio visual.
+                }
+            } else {
+                // Si el usuario cancela, se revierte el cambio en el select
+                alert('Cambio de estatus cancelado.');
+                selectElement.value = valorAnterior;
+            }
+        }
+    });
+
+    // Event listener para generar la orden
+    tableContainer.addEventListener('click', function(event) {
+        if (event.target.matches('.btn-generar')) {
+            const ordenId = event.target.dataset.ordenId;
+            window.open(`/orden/${ordenId}`, '_blank');
+        }
+    });
+
+    cargarOrdenes();
+});
+</script>
+
+{% endblock %}

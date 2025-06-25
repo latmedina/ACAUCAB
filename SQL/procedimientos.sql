@@ -552,6 +552,69 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- obtener todas las ordenes de compra
+CREATE OR REPLACE FUNCTION public.obtener_todas_ordenes_compra()
+RETURNS JSON AS $$
+DECLARE
+    v_reporte_data JSON;
+BEGIN
+    WITH
+    -- Subconsulta para encontrar el estatus más reciente de cada solicitud
+    ultimo_estatus AS (
+        SELECT
+            fk_sol_com,
+            ROW_NUMBER() OVER(PARTITION BY fk_sol_com ORDER BY sol_com_est_fecha_inicio DESC, sol_com_est_id DESC) as rn,
+            fk_estatus
+        FROM public.sol_com_est
+    ),
+    -- Subconsulta para encontrar la fecha de aprobación de cada solicitud
+    fecha_aprobacion AS (
+        SELECT
+            fk_sol_com,
+            MIN(sol_com_est_fecha_inicio) as fecha_aprob
+        FROM public.sol_com_est
+        JOIN public.estatus ON fk_estatus = est_id
+        WHERE UPPER(est_tipo_estatus) = 'APROBADO'
+        GROUP BY fk_sol_com
+    )
+    SELECT
+        COALESCE(json_agg(
+            json_build_object(
+                'orden_id', sc.sol_com_id,
+                'fecha_solicitud', TO_CHAR(sc.sol_com_fecha, 'DD/MM/YYYY'),
+                'proveedor_nombre', p.pro_razon_social,
+                'solicitado_por', u.username,
+                'total_orden', sc.sol_com_total,
+                'estatus_actual_id', e.est_id,
+                'estatus_actual_nombre', e.est_tipo_estatus,
+                'fecha_aprobacion', TO_CHAR(fa.fecha_aprob, 'DD/MM/YYYY')
+            ) ORDER BY sc.sol_com_id DESC
+        ), '[]'::json)
+    INTO v_reporte_data
+    FROM public.solicitud_compra sc
+    JOIN ultimo_estatus ue ON sc.sol_com_id = ue.fk_sol_com AND ue.rn = 1
+    JOIN public.estatus e ON ue.fk_estatus = e.est_id
+    LEFT JOIN fecha_aprobacion fa ON sc.sol_com_id = fa.fk_sol_com
+    LEFT JOIN public.proveedor p ON sc.fk_proveedor = p.pro_id
+    LEFT JOIN public.usuario u ON sc.fk_usuario = u.id;
+
+    RETURN v_reporte_data;
+END;
+$$ LANGUAGE plpgsql;
+
+-- actualizar estatus de orden de compra
+CREATE OR REPLACE FUNCTION public.actualizar_estatus_orden_compra(
+    p_solicitud_id INT,
+    p_nuevo_estatus_id INT
+)
+RETURNS VOID AS $$
+BEGIN
+    -- Se inserta el nuevo estado en el historial, asociándolo a la solicitud de compra.
+    -- La fecha de inicio se establece como la fecha actual.
+    INSERT INTO public.sol_com_est (fk_sol_com, fk_estatus, sol_com_est_fecha_inicio)
+    VALUES (p_solicitud_id, p_nuevo_estatus_id, CURRENT_DATE);
+END;
+$$ LANGUAGE plpgsql;
 
 -- ===========================================
 -- FUNCION: modificar_usuario

@@ -1,0 +1,123 @@
+{% extends "main.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    .report-selection-container {
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 40px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    .report-selection-header {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #1a237e;
+    }
+    .report-selection-header h1 {
+        font-weight: 700;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-group label {
+        font-weight: 600;
+        margin-bottom: 10px;
+        display: block;
+        font-size: 1.1rem;
+    }
+    .form-control-lg {
+        padding: 12px 15px;
+        font-size: 1.1rem;
+        border-radius: 6px;
+    }
+    .btn-primary {
+        background-color: #1a237e;
+        border-color: #1a237e;
+        padding: 12px 20px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        width: 100%;
+    }
+    .btn-primary:hover {
+        background-color: #10175c;
+        border-color: #10175c;
+    }
+    .header-controls {
+        display: flex;
+        justify-content: flex-start;
+        margin-bottom: 30px;
+    }
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background-color: #6c757d;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-weight: bold;
+        transition: background-color 0.2s;
+    }
+    .btn-back:hover {
+        background-color: #5a6268;
+    }
+</style>
+
+<div class="container">
+    <div class="report-selection-container">
+        
+        <!-- Botón para regresar a la pantalla principal del empleado -->
+        <div class="header-controls">
+            <a href="{% url 'empleado_home' %}" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Regresar
+            </a>
+        </div>
+
+        <div class="report-selection-header">
+            <h1>Consulta de Reportes</h1>
+            <p class="lead">Selecciona el reporte que deseas generar.</p>
+        </div>
+
+        <div class="form-group">
+            <label for="reporteSelect">Tipo de Reporte</label>
+            <select class="form-select form-control-lg" id="reporteSelect">
+                <option value="" selected disabled>-- Elige un reporte --</option>
+                <!-- Las URLs de cada reporte se generan aquí con Django -->
+                <option value="{% url 'vista_reporte_productores' %}">1. Productores Participantes en Eventos</option>
+                <option value="{% url 'vista_reporte_eficiencia' %}">2. Eficiencia del Despacho de Pedidos Online</option>
+                <option value="{% url 'vista_reporte_ofertas' %}">3. Histórico de Ofertas Publicadas</option>
+                <option value="{% url 'vista_reporte_incumplimiento' %}">4. Reporte de Incumplimiento Horario</option>
+                <option value="{% url 'vista_reporte_ordenes_pendientes' %}">5. Órdenes de Compra por Aprobación</option>
+            </select>
+        </div>
+
+        <button id="generarReporteBtn" class="btn btn-primary mt-3">Generar Reporte</button>
+
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const generarBtn = document.getElementById('generarReporteBtn');
+    const reporteSelect = document.getElementById('reporteSelect');
+
+    generarBtn.addEventListener('click', function() {
+        const selectedUrl = reporteSelect.value;
+
+        // Verifica si el usuario ha seleccionado una opción válida
+        if (selectedUrl) {
+            // Abre la URL del reporte seleccionado en una nueva pestaña
+            window.open(selectedUrl, '_blank');
+        } else {
+            // Alerta al usuario si no ha seleccionado ningún reporte
+            alert('Por favor, selecciona un reporte para generar.');
+        }
+    });
+});
+</script>
+
+{% endblock %}
