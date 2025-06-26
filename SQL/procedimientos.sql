@@ -800,14 +800,59 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
 CREATE OR REPLACE FUNCTION public.actualizar_estatus_solicitud_reposicion(
     p_solicitud_id INT,
     p_nuevo_estatus_id INT
 )
 RETURNS VOID AS $$
+DECLARE
+    -- Variable para guardar el ID del inventario a actualizar.
+    v_inventario_id INT;
+    -- ¡CONFIGURAR AQUÍ! Asigna el ID que corresponde al estatus "Finalizado" en tu tabla 'estatus'.
+    v_id_estatus_finalizado INT := 5; -- ASUNCIÓN: El ID 3 corresponde a "Finalizado".
 BEGIN
-    INSERT INTO public.sol_rep_est (fk_sol_rep, fk_estatus, sol_rep_est_fecha_inicio)
-    VALUES (p_solicitud_id, p_nuevo_estatus_id, CURRENT_DATE);
+    -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+    -- PASO 1: CERRAR EL ESTATUS ANTERIOR
+    -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+    UPDATE public.sol_rep_est
+    SET sol_rep_est_fecha_fin = CURRENT_DATE
+    WHERE fk_sol_rep = p_solicitud_id AND sol_rep_est_fecha_fin IS NULL;
+
+    -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+    -- PASO 2: INSERTAR EL NUEVO REGISTRO DE ESTATUS
+    -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+    INSERT INTO public.sol_rep_est (fk_sol_rep, fk_estatus, sol_rep_est_fecha_inicio, sol_rep_est_fecha_fin)
+    VALUES (p_solicitud_id, p_nuevo_estatus_id, CURRENT_DATE, NULL);
+
+    -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+    -- PASO 3: REPONER STOCK SI EL ESTATUS ES "FINALIZADO"
+    -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+    IF p_nuevo_estatus_id = v_id_estatus_finalizado THEN
+        
+        -- Mensaje de depuración 1: Confirma que la condición de "Finalizado" se cumplió.
+        RAISE NOTICE 'Intento de reponer stock para la solicitud %. El estatus es "Finalizado".', p_solicitud_id;
+
+        -- Obtiene el ID del inventario asociado a esta solicitud de reposición.
+        SELECT fk_inv INTO v_inventario_id
+        FROM public.solicitud_reposicion
+        WHERE sol_rep_id = p_solicitud_id;
+
+        -- Si se encontró un ID de inventario, se suma 100 a la cantidad actual.
+        IF FOUND THEN
+            -- Mensaje de depuración 2: Confirma que se encontró un inventario.
+            RAISE NOTICE 'Inventario ID % encontrado para la solicitud %. Procediendo a sumar 100 unidades.', v_inventario_id, p_solicitud_id;
+            
+            UPDATE public.inventario
+            SET inv_cantidad = inv_cantidad + 100
+            WHERE inv_id = v_inventario_id;
+        ELSE
+            -- Mensaje de depuración 3: Se activa si no se encontró un inventario.
+            RAISE NOTICE 'ERROR: No se encontró un ID de inventario (fk_inv) para la solicitud %.', p_solicitud_id;
+        END IF;
+    END IF;
+
 END;
 $$ LANGUAGE plpgsql;
+
 
