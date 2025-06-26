@@ -380,12 +380,24 @@ BEGIN
     -- 2. Se procesan las incidencias para listarlas
     incumplimientos_procesados AS (
         SELECT fk_empleado, empleado_nombre, fecha, 'Llegada Tarde' AS tipo,
-               'Entrada pautada: ' || hora_entrada_pautada || ', Entrada real: ' || hora_entrada_real AS detalle,
+               json_build_object(
+                   'hora_entrada_pautada', hora_entrada_pautada,
+                   'hora_entrada_real', hora_entrada_real,
+                   'hora_salida_pautada', hora_salida_pautada,
+                   'hora_salida_real', COALESCE(hora_salida_real, NULL),
+                   'detalle_texto', 'Entrada pautada: ' || hora_entrada_pautada || ', Entrada real: ' || hora_entrada_real
+               ) AS detalle_info,
                diferencia_entrada AS duracion
         FROM incidencias WHERE tipo_incidencia_entrada IS NOT NULL
         UNION ALL
         SELECT fk_empleado, empleado_nombre, fecha, 'Salida Temprano' AS tipo,
-               'Salida pautada: ' || hora_salida_pautada || ', Salida real: ' || hora_salida_real AS detalle,
+               json_build_object(
+                   'hora_entrada_pautada', hora_entrada_pautada,
+                   'hora_entrada_real', hora_entrada_real,
+                   'hora_salida_pautada', hora_salida_pautada,
+                   'hora_salida_real', hora_salida_real,
+                   'detalle_texto', 'Salida pautada: ' || hora_salida_pautada || ', Salida real: ' || hora_salida_real
+               ) AS detalle_info,
                diferencia_salida AS duracion
         FROM incidencias WHERE tipo_incidencia_salida IS NOT NULL
     )
@@ -406,7 +418,7 @@ BEGIN
                 json_build_object(
                     'fecha', TO_CHAR(fecha, 'DD/MM/YYYY'),
                     'tipo', tipo,
-                    'detalle', detalle,
+                    'detalle', detalle_info,
                     'duracion', TO_CHAR(duracion, 'HH24:MI:SS')
                 ) ORDER BY fecha
             ) AS incidencias_agrupadas
