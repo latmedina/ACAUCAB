@@ -1,0 +1,38 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0"><i class="fas fa-user-shield me-2"></i>Asignar Privilegios al Rol</h4>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="row">
+                    {% for priv_id, priv_nombre in privilegios %}
+                        <div class="col-md-6 mb-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="privilegios" value="{{ priv_id }}"
+                                    id="priv_{{ priv_id }}" {% if priv_id in privilegios_asignados %}checked{% endif %}>
+                                <label class="form-check-label" for="priv_{{ priv_id }}">
+                                    {{ priv_nombre }}
+                                </label>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="mt-4 text-end">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check-circle me-2"></i>Asignar Privilegios
+                    </button>
+                    <a href="{% url 'empleados:listar_roles' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Volver
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
