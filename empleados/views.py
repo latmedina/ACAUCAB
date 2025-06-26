@@ -4,9 +4,12 @@ from django.contrib.auth.decorators import login_required
 from django.db import connection
 from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib import messages
+from django.views.decorators.csrf import csrf_exempt
 import json
 import traceback
 from datetime import datetime
+
+from store.models import estatus as Estatus
 
 
 @login_required
@@ -364,3 +367,152 @@ def reporte_ordenes_pendientes_api(request):
         traceback.print_exc()
         print("-----------------------------------------------------------\n")
         return JsonResponse({'error': f'Ocurrió un error en el servidor: {e}'}, status=500)
+
+# GESTIÓN DE ÓRDENES DE COMPRA
+@login_required
+def vista_gestion_ordenes(request):
+    """
+    Renderiza la página de gestión de órdenes de compra. Pasa la lista de
+    posibles estatus a la plantilla para llenar los dropdowns.
+    """
+    estatus_posibles = list(Estatus.objects.values('est_id', 'est_tipo_estatus'))
+    context = {
+        'estatus_posibles': estatus_posibles
+    }
+    return render(request, 'empleados/gestion_ordenes.html', context)
+
+@login_required
+@login_required
+def gestion_ordenes_api(request):
+    """
+    API endpoint que devuelve la lista completa de órdenes de compra.
+    """
+    print("Iniciando llamada al API de gestión de órdenes...")
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT public.obtener_todas_ordenes_compra();")
+            result = cursor.fetchone()
+            
+            if result is None or result[0] is None:
+                print("La consulta a la BD no devolvió resultados.")
+                return JsonResponse([], safe=False)
+
+            data = result[0]
+            print("Datos obtenidos de la BD correctamente. Enviando respuesta.")
+            return JsonResponse(data, safe=False)
+            
+    except Exception as e:
+        print("\n¡Ocurrió un error grave en la vista del API de Gestión de Órdenes!")
+        print("-----------------------------------------------------------------")
+        print(f"Tipo de Excepción: {type(e).__name__}")
+        print(f"Error: {e}")
+        traceback.print_exc()
+        print("-----------------------------------------------------------------\n")
+        return JsonResponse({'error': f'Ocurrió un error en el servidor: {e}'}, status=500)
+
+
+@csrf_exempt # Usar con precaución. Idealmente, configurarías CSRF con AJAX.
+@login_required
+def actualizar_orden_api(request, orden_id):
+    """
+    API endpoint para actualizar el estado de una orden de compra.
+    """
+    if request.method == 'POST':
+        try:
+            nuevo_estatus_id = request.POST.get('nuevo_estatus_id')
+            if not nuevo_estatus_id:
+                return JsonResponse({'success': False, 'error': 'Falta el ID del nuevo estatus.'}, status=400)
+
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "SELECT public.actualizar_estatus_orden_compra(%s, %s);",
+                    [orden_id, nuevo_estatus_id]
+                )
+            return JsonResponse({'success': True, 'message': 'Estatus actualizado correctamente.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+def vista_orden_compra_directa(request, orden_id):
+    """
+    Renderiza el reporte de una orden de compra específica, obteniendo los datos
+    directamente desde la base de datos y pasándolos a la plantilla.
+    """
+    try:
+        with connection.cursor() as cursor:
+            # 1. Llama a la función SQL que ya creamos para obtener los datos
+            cursor.execute("SELECT public.obtener_datos_orden_compra(%s);", [orden_id])
+            result = cursor.fetchone()
+
+            if result is None or result[0] is None:
+                return HttpResponseNotFound("<h1>Orden de Compra no encontrada</h1><p>No se encontraron datos para la orden especificada.</p>")
+
+            # 2. Los datos vienen en formato JSON desde la base de datos
+            report_data = result[0]
+            
+            # 3. Se pasan los datos a la plantilla en un contexto.
+            context = {
+                'report_data': report_data
+            }
+            
+            # 4. Renderiza la nueva plantilla de orden de compra
+            return render(request, 'empleados/orden_template.html', context)
+
+    except Exception as e:
+        # Manejo de errores
+        print(f"Error al generar la orden de compra directa: {e}")
+        return HttpResponse(f"<h1>Error al generar la orden</h1><p>{e}</p>", status=500)
+    
+
+@login_required
+def vista_gestion_reposicion(request):
+    """
+    Renderiza la página de gestión de solicitudes de reposición.
+    """
+    # Esta línea ahora funcionará porque el modelo 'Estatus' ha sido importado.
+    estatus_posibles = list(Estatus.objects.values('est_id', 'est_tipo_estatus'))
+    
+    context = {
+        'estatus_posibles': estatus_posibles
+    }
+    return render(request, 'empleados/gestion_reposicion.html', context)
+
+@login_required
+def gestion_reposicion_api(request):
+    """
+    API endpoint que devuelve la lista completa de solicitudes de reposición.
+    """
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT public.obtener_todas_solicitudes_reposicion();")
+            result = cursor.fetchone()
+            data = result[0] if result and result[0] is not None else []
+            return JsonResponse(data, safe=False)
+    except Exception as e:
+        # Para depuración
+        import traceback
+        print("Error en gestion_reposicion_api:", e)
+        traceback.print_exc()
+        return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
+@login_required
+def actualizar_reposicion_api(request, solicitud_id):
+    """
+    API endpoint para actualizar el estado de una solicitud de reposición.
+    """
+    if request.method == 'POST':
+        try:
+            nuevo_estatus_id = request.POST.get('nuevo_estatus_id')
+            if not nuevo_estatus_id:
+                return JsonResponse({'success': False, 'error': 'Falta el ID del nuevo estatus.'}, status=400)
+
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "SELECT public.actualizar_estatus_solicitud_reposicion(%s, %s);",
+                    [solicitud_id, nuevo_estatus_id]
+                )
+            return JsonResponse({'success': True, 'message': 'Estatus actualizado correctamente.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    return JsonResponse({'error': 'Método no permitido'}, status=405)

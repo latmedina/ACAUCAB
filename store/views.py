@@ -13,7 +13,7 @@ import traceback
 from .models import (
     presentacion, venta_online, detalle_venta_online, pre_alm, 
     metodo_pago, pago, moneda, historico_moneda, historico_precio_punto, tienda, 
-    inventario, venta_fisica, detalle_venta_fisica, cliente, proveedor, empleado, emp_car, usuario, lugar
+    inventario, venta_fisica, detalle_venta_fisica, cliente, proveedor, empleado, emp_car, usuario, lugar, estatus as Estatus
 )
 from django.db import connection
 from django.contrib.auth import authenticate, login, logout
@@ -2228,3 +2228,4 @@ def vista_factura_directa(request, venta_id):
     except Exception as e:
         print(f"Error al generar factura directa: {e}")
         return HttpResponse(f"<h1>Error al generar la factura</h1><p>{e}</p>", status=500)
+    
