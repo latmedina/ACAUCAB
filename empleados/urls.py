@@ -40,4 +40,15 @@ urlpatterns = [
     # Órdenes Pendientes
     path('reportes/ordenes-pendientes/', views.vista_reporte_ordenes_pendientes, name='vista_reporte_ordenes_pendientes'),
     path('api/reportes/ordenes-pendientes/', views.reporte_ordenes_pendientes_api, name='reporte_ordenes_pendientes_api'),
-] 
+
+    # Gestión de órdenes de compra
+    path('gestion_ordenes/', views.vista_gestion_ordenes, name='vista_gestion_ordenes'),
+    path('api/gestion/ordenes/', views.gestion_ordenes_api, name='api_gestion_ordenes'),
+    path('gestion_ordenes/api/gestion/ordenes/actualizar/<int:orden_id>/', views.actualizar_orden_api, name='api_actualizar_orden'),
+    path('gestion_ordenes/orden/<int:orden_id>/', views.vista_orden_compra_directa, name='vista_orden_compra_directa'),
+
+    path('gestion_reposicion/', views.vista_gestion_reposicion, name='vista_gestion_reposicion'),
+    path('api/gestion/reposicion/', views.gestion_reposicion_api, name='api_gestion_reposicion'),
+    path('gestion_reposicion/api/gestion/reposicion/actualizar/<int:solicitud_id>/', views.actualizar_reposicion_api, name='api_actualizar_reposicion'),
+]
+    
