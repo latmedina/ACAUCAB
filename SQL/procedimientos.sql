@@ -453,7 +453,6 @@ BEGIN
                 'orden_id', sc.sol_com_id,
                 'fecha_solicitud', TO_CHAR(sc.sol_com_fecha, 'DD/MM/YYYY'),
                 'proveedor_nombre', p.pro_razon_social,
-                'solicitado_por', u.username,
                 'total_orden', sc.sol_com_total
             )
         ), '[]'::json)
@@ -461,9 +460,8 @@ BEGIN
     FROM public.solicitud_compra sc
     -- Se une con la CTE que contiene el análisis de los estados.
     JOIN estados_por_solicitud eps ON sc.sol_com_id = eps.fk_sol_com
-    -- Se unen las tablas de proveedor y usuario para obtener sus nombres.
+    -- Se unen las tablas de proveedor (el usuario aprobador será NULL para pendientes).
     LEFT JOIN public.proveedor p ON sc.fk_proveedor = p.pro_id
-    LEFT JOIN public.usuario u ON sc.fk_usuario = u.id
     -- 3. CONDICIÓN FINAL: Se filtra para incluir solo solicitudes que:
     --    a) Tienen exactamente un (1) registro de estado en total.
     --    b) Y ese único estado es 'PENDIENTE' (conteo_pendiente = 1).
@@ -726,7 +724,7 @@ BEGIN
                 'orden_id', sc.sol_com_id,
                 'fecha_solicitud', TO_CHAR(sc.sol_com_fecha, 'DD/MM/YYYY'),
                 'proveedor_nombre', p.pro_razon_social,
-                'solicitado_por', u.username,
+                'aprobado_por', u.username,
                 'total_orden', sc.sol_com_total,
                 'estatus_actual_id', e.est_id,
                 'estatus_actual_nombre', e.est_tipo_estatus,
@@ -808,6 +806,233 @@ RETURNS VOID AS $$
 BEGIN
     INSERT INTO public.sol_rep_est (fk_sol_rep, fk_estatus, sol_rep_est_fecha_inicio)
     VALUES (p_solicitud_id, p_nuevo_estatus_id, CURRENT_DATE);
+END;
+$$ LANGUAGE plpgsql;
+
+-- obtener todos los proveedores
+CREATE OR REPLACE FUNCTION public.obtener_proveedores()
+RETURNS JSON AS $$
+DECLARE
+    v_proveedores JSON;
+BEGIN
+    SELECT COALESCE(json_agg(
+        json_build_object(
+            'id', p.pro_id,
+            'nombre', COALESCE(p.pro_razon_social, p.pro_denominacion_comercial, 'Sin nombre'),
+            'rif', p.pro_rif
+        ) ORDER BY p.pro_razon_social
+    ), '[]'::json)
+    INTO v_proveedores
+    FROM public.proveedor p;
+
+    RETURN v_proveedores;
+END;
+$$ LANGUAGE plpgsql;
+
+-- cambiar proveedor de una solicitud de compra
+CREATE OR REPLACE FUNCTION public.cambiar_proveedor_solicitud(
+    p_solicitud_id INT,
+    p_nuevo_proveedor_id INT
+)
+RETURNS VOID AS $$
+BEGIN
+    UPDATE public.solicitud_compra
+    SET fk_proveedor = p_nuevo_proveedor_id
+    WHERE sol_com_id = p_solicitud_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- aprobar solicitud con usuario aprobador
+CREATE OR REPLACE FUNCTION public.aprobar_solicitud_compra(
+    p_solicitud_id INT,
+    p_usuario_aprobador_id INT
+)
+RETURNS VOID AS $$
+BEGIN
+    -- Actualizar el usuario que aprueba la solicitud
+    UPDATE public.solicitud_compra
+    SET fk_usuario = p_usuario_aprobador_id
+    WHERE sol_com_id = p_solicitud_id;
+    
+    -- Insertar el nuevo estatus APROBADO (id = 2)
+    INSERT INTO public.sol_com_est (fk_sol_com, fk_estatus, sol_com_est_fecha_inicio)
+    VALUES (p_solicitud_id, 2, CURRENT_DATE);
+END;
+$$ LANGUAGE plpgsql;
+
+-- rechazar solicitud con usuario que rechaza
+CREATE OR REPLACE FUNCTION public.rechazar_solicitud_compra(
+    p_solicitud_id INT,
+    p_usuario_rechaza_id INT
+)
+RETURNS VOID AS $$
+BEGIN
+    -- Actualizar el usuario que rechaza la solicitud
+    UPDATE public.solicitud_compra
+    SET fk_usuario = p_usuario_rechaza_id
+    WHERE sol_com_id = p_solicitud_id;
+    
+    -- Insertar el nuevo estatus RECHAZADO (id = 3)
+    INSERT INTO public.sol_com_est (fk_sol_com, fk_estatus, sol_com_est_fecha_inicio)
+    VALUES (p_solicitud_id, 3, CURRENT_DATE);
+END;
+$$ LANGUAGE plpgsql;
+
+-- devolver solicitud rechazada a pendiente
+CREATE OR REPLACE FUNCTION public.devolver_solicitud_a_pendiente(
+    p_solicitud_id INT
+)
+RETURNS VOID AS $$
+BEGIN
+    -- Limpiar el usuario para indicar que vuelve a estar sin revisar
+    UPDATE public.solicitud_compra
+    SET fk_usuario = NULL
+    WHERE sol_com_id = p_solicitud_id;
+    
+    -- Insertar el nuevo estatus PENDIENTE (id = 1)
+    INSERT INTO public.sol_com_est (fk_sol_com, fk_estatus, sol_com_est_fecha_inicio)
+    VALUES (p_solicitud_id, 1, CURRENT_DATE);
+END;
+$$ LANGUAGE plpgsql;
+
+-- marcar solicitud como entregada
+CREATE OR REPLACE FUNCTION public.marcar_solicitud_entregada(
+    p_solicitud_id INT
+)
+RETURNS VOID AS $$
+BEGIN
+    -- Insertar el nuevo estatus ENTREGADO (id = 7)
+    INSERT INTO public.sol_com_est (fk_sol_com, fk_estatus, sol_com_est_fecha_inicio)
+    VALUES (p_solicitud_id, 7, CURRENT_DATE);
+END;
+$$ LANGUAGE plpgsql;
+
+-- obtener solicitudes aprobadas
+CREATE OR REPLACE FUNCTION public.obtener_solicitudes_aprobadas()
+RETURNS JSON AS $$
+DECLARE
+    v_reporte_data JSON;
+BEGIN
+    WITH
+    ultimo_estatus AS (
+        SELECT
+            fk_sol_com,
+            ROW_NUMBER() OVER(PARTITION BY fk_sol_com ORDER BY sol_com_est_fecha_inicio DESC, sol_com_est_id DESC) as rn,
+            fk_estatus
+        FROM public.sol_com_est
+    )
+    SELECT
+        COALESCE(json_agg(
+            json_build_object(
+                'orden_id', sc.sol_com_id,
+                'fecha_solicitud', TO_CHAR(sc.sol_com_fecha, 'DD/MM/YYYY'),
+                'fecha_aprobacion', TO_CHAR(sce_aprob.sol_com_est_fecha_inicio, 'DD/MM/YYYY'),
+                'proveedor_nombre', p.pro_razon_social,
+                'aprobado_por', u.username,
+                'total_orden', sc.sol_com_total
+            ) ORDER BY sc.sol_com_id DESC
+        ), '[]'::json)
+    INTO v_reporte_data
+    FROM public.solicitud_compra sc
+    JOIN ultimo_estatus ue ON sc.sol_com_id = ue.fk_sol_com AND ue.rn = 1
+    JOIN public.estatus e ON ue.fk_estatus = e.est_id
+    -- JOIN para obtener la fecha de aprobación específica
+    LEFT JOIN public.sol_com_est sce_aprob ON sc.sol_com_id = sce_aprob.fk_sol_com AND sce_aprob.fk_estatus = 2
+    LEFT JOIN public.proveedor p ON sc.fk_proveedor = p.pro_id
+    LEFT JOIN public.usuario u ON sc.fk_usuario = u.id
+    WHERE UPPER(e.est_tipo_estatus) = 'APROBADO';
+
+    RETURN v_reporte_data;
+END;
+$$ LANGUAGE plpgsql;
+
+-- obtener solicitudes rechazadas
+CREATE OR REPLACE FUNCTION public.obtener_solicitudes_rechazadas()
+RETURNS JSON AS $$
+DECLARE
+    v_reporte_data JSON;
+BEGIN
+    WITH
+    ultimo_estatus AS (
+        SELECT
+            fk_sol_com,
+            ROW_NUMBER() OVER(PARTITION BY fk_sol_com ORDER BY sol_com_est_fecha_inicio DESC, sol_com_est_id DESC) as rn,
+            fk_estatus
+        FROM public.sol_com_est
+    )
+    SELECT
+        COALESCE(json_agg(
+            json_build_object(
+                'orden_id', sc.sol_com_id,
+                'fecha_solicitud', TO_CHAR(sc.sol_com_fecha, 'DD/MM/YYYY'),
+                'fecha_rechazo', TO_CHAR(sce_rech.sol_com_est_fecha_inicio, 'DD/MM/YYYY'),
+                'proveedor_nombre', p.pro_razon_social,
+                'rechazado_por', u.username,
+                'total_orden', sc.sol_com_total
+            ) ORDER BY sc.sol_com_id DESC
+        ), '[]'::json)
+    INTO v_reporte_data
+    FROM public.solicitud_compra sc
+    JOIN ultimo_estatus ue ON sc.sol_com_id = ue.fk_sol_com AND ue.rn = 1
+    JOIN public.estatus e ON ue.fk_estatus = e.est_id
+    -- JOIN para obtener la fecha de rechazo específica
+    LEFT JOIN public.sol_com_est sce_rech ON sc.sol_com_id = sce_rech.fk_sol_com AND sce_rech.fk_estatus = 3
+    LEFT JOIN public.proveedor p ON sc.fk_proveedor = p.pro_id
+    LEFT JOIN public.usuario u ON sc.fk_usuario = u.id
+    WHERE UPPER(e.est_tipo_estatus) = 'RECHAZADO';
+
+    RETURN v_reporte_data;
+END;
+$$ LANGUAGE plpgsql;
+
+-- obtener solicitudes entregadas con paginación
+CREATE OR REPLACE FUNCTION public.obtener_solicitudes_entregadas(
+    p_limite INT DEFAULT 20,
+    p_offset INT DEFAULT 0
+)
+RETURNS JSON AS $$
+DECLARE
+    v_reporte_data JSON;
+BEGIN
+    WITH
+    ultimo_estatus AS (
+        SELECT
+            fk_sol_com,
+            ROW_NUMBER() OVER(PARTITION BY fk_sol_com ORDER BY sol_com_est_fecha_inicio DESC, sol_com_est_id DESC) as rn,
+            fk_estatus,
+            sol_com_est_fecha_inicio as fecha_entrega
+        FROM public.sol_com_est
+    )
+    SELECT
+        json_build_object(
+            'solicitudes', COALESCE(json_agg(
+                json_build_object(
+                    'orden_id', sc.sol_com_id,
+                    'fecha_solicitud', TO_CHAR(sc.sol_com_fecha, 'DD/MM/YYYY'),
+                    'fecha_entrega', TO_CHAR(ue.fecha_entrega, 'DD/MM/YYYY'),
+                    'proveedor_nombre', p.pro_razon_social,
+                    'aprobado_por', u.username,
+                    'total_orden', sc.sol_com_total
+                ) ORDER BY ue.fecha_entrega DESC
+            ), '[]'::json),
+            'total_count', (
+                SELECT COUNT(*)
+                FROM public.solicitud_compra sc2
+                JOIN ultimo_estatus ue2 ON sc2.sol_com_id = ue2.fk_sol_com AND ue2.rn = 1
+                JOIN public.estatus e2 ON ue2.fk_estatus = e2.est_id
+                WHERE UPPER(e2.est_tipo_estatus) = 'ENTREGADO'
+            )
+        )
+    INTO v_reporte_data
+    FROM public.solicitud_compra sc
+    JOIN ultimo_estatus ue ON sc.sol_com_id = ue.fk_sol_com AND ue.rn = 1
+    JOIN public.estatus e ON ue.fk_estatus = e.est_id
+    LEFT JOIN public.proveedor p ON sc.fk_proveedor = p.pro_id
+    LEFT JOIN public.usuario u ON sc.fk_usuario = u.id
+    WHERE UPPER(e.est_tipo_estatus) = 'ENTREGADO'
+    LIMIT p_limite OFFSET p_offset;
+
+    RETURN v_reporte_data;
 END;
 $$ LANGUAGE plpgsql;
 

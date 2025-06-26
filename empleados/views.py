@@ -516,3 +516,195 @@ def actualizar_reposicion_api(request, solicitud_id):
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
     return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+# ========== GESTIÓN DE SOLICITUDES PENDIENTES ==========
+
+@login_required
+def vista_gestion_solicitudes_pendientes(request):
+    """
+    Vista para gestionar específicamente las solicitudes de compra pendientes.
+    Permite cambiar proveedor y aprobar solicitudes.
+    """
+    if not hasattr(request.user, 'fk_emp_car') or not request.user.fk_emp_car:
+        messages.error(request, 'Acceso denegado.')
+        return redirect('login')
+    
+    return render(request, 'empleados/gestion_solicitudes_pendientes.html')
+
+@login_required
+def solicitudes_pendientes_api(request):
+    """
+    API endpoint que devuelve las solicitudes de compra pendientes con información detallada.
+    """
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT public.obtener_ordenes_compra_pendientes();")
+            result = cursor.fetchone()
+            data = result[0] if result and result[0] is not None else []
+            return JsonResponse(data, safe=False)
+    except Exception as e:
+        print(f"Error en solicitudes_pendientes_api: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+@login_required
+def proveedores_api(request):
+    """
+    API endpoint que devuelve la lista de todos los proveedores.
+    """
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT public.obtener_proveedores();")
+            result = cursor.fetchone()
+            data = result[0] if result and result[0] is not None else []
+            return JsonResponse(data, safe=False)
+    except Exception as e:
+        print(f"Error en proveedores_api: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
+@login_required
+def cambiar_proveedor_api(request, solicitud_id):
+    """
+    API endpoint para cambiar el proveedor de una solicitud de compra.
+    """
+    if request.method == 'POST':
+        try:
+            nuevo_proveedor_id = request.POST.get('nuevo_proveedor_id')
+            if not nuevo_proveedor_id:
+                return JsonResponse({'success': False, 'error': 'Falta el ID del nuevo proveedor.'}, status=400)
+
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "SELECT public.cambiar_proveedor_solicitud(%s, %s);",
+                    [solicitud_id, nuevo_proveedor_id]
+                )
+            return JsonResponse({'success': True, 'message': 'Proveedor actualizado correctamente.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+@csrf_exempt
+@login_required
+def aprobar_solicitud_api(request, solicitud_id):
+    """
+    API endpoint para aprobar una solicitud de compra (cambiar estatus a APROBADO).
+    """
+    if request.method == 'POST':
+        try:
+            # Obtener el usuario actual que está aprobando
+            usuario_aprobador_id = request.user.id
+            
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "SELECT public.aprobar_solicitud_compra(%s, %s);",
+                    [solicitud_id, usuario_aprobador_id]
+                )
+            return JsonResponse({'success': True, 'message': 'Solicitud aprobada correctamente.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+@login_required
+def solicitudes_aprobadas_api(request):
+    """
+    API endpoint que devuelve las solicitudes de compra aprobadas.
+    """
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT public.obtener_solicitudes_aprobadas();")
+            result = cursor.fetchone()
+            data = result[0] if result and result[0] is not None else []
+            return JsonResponse(data, safe=False)
+    except Exception as e:
+        print(f"Error en solicitudes_aprobadas_api: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+@login_required
+def solicitudes_rechazadas_api(request):
+    """
+    API endpoint que devuelve las solicitudes de compra rechazadas.
+    """
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT public.obtener_solicitudes_rechazadas();")
+            result = cursor.fetchone()
+            data = result[0] if result and result[0] is not None else []
+            return JsonResponse(data, safe=False)
+    except Exception as e:
+        print(f"Error en solicitudes_rechazadas_api: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+@login_required
+def solicitudes_entregadas_api(request):
+    """
+    API endpoint que devuelve las solicitudes de compra entregadas con paginación.
+    """
+    try:
+        limite = int(request.GET.get('limite', 20))
+        pagina = int(request.GET.get('pagina', 1))
+        offset = (pagina - 1) * limite
+        
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT public.obtener_solicitudes_entregadas(%s, %s);", [limite, offset])
+            result = cursor.fetchone()
+            data = result[0] if result and result[0] is not None else {'solicitudes': [], 'total_count': 0}
+            return JsonResponse(data, safe=False)
+    except Exception as e:
+        print(f"Error en solicitudes_entregadas_api: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
+@login_required
+def rechazar_solicitud_api(request, solicitud_id):
+    """
+    API endpoint para rechazar una solicitud de compra.
+    """
+    if request.method == 'POST':
+        try:
+            usuario_rechaza_id = request.user.id
+            
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "SELECT public.rechazar_solicitud_compra(%s, %s);",
+                    [solicitud_id, usuario_rechaza_id]
+                )
+            return JsonResponse({'success': True, 'message': 'Solicitud rechazada correctamente.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+@csrf_exempt
+@login_required
+def devolver_a_pendiente_api(request, solicitud_id):
+    """
+    API endpoint para devolver una solicitud rechazada a pendiente.
+    """
+    if request.method == 'POST':
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "SELECT public.devolver_solicitud_a_pendiente(%s);",
+                    [solicitud_id]
+                )
+            return JsonResponse({'success': True, 'message': 'Solicitud devuelta a pendiente correctamente.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+@csrf_exempt
+@login_required
+def marcar_entregada_api(request, solicitud_id):
+    """
+    API endpoint para marcar una solicitud como entregada.
+    """
+    if request.method == 'POST':
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "SELECT public.marcar_solicitud_entregada(%s);",
+                    [solicitud_id]
+                )
+            return JsonResponse({'success': True, 'message': 'Solicitud marcada como entregada correctamente.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    return JsonResponse({'error': 'Método no permitido'}, status=405)

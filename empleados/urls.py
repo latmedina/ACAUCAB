@@ -50,5 +50,18 @@ urlpatterns = [
     path('gestion_reposicion/', views.vista_gestion_reposicion, name='vista_gestion_reposicion'),
     path('api/gestion/reposicion/', views.gestion_reposicion_api, name='api_gestion_reposicion'),
     path('gestion_reposicion/api/gestion/reposicion/actualizar/<int:solicitud_id>/', views.actualizar_reposicion_api, name='api_actualizar_reposicion'),
+
+    # ========== GESTIÓN DE SOLICITUDES PENDIENTES ==========
+    path('solicitudes-pendientes/', views.vista_gestion_solicitudes_pendientes, name='vista_gestion_solicitudes_pendientes'),
+    path('api/solicitudes-pendientes/', views.solicitudes_pendientes_api, name='api_solicitudes_pendientes'),
+    path('api/solicitudes-aprobadas/', views.solicitudes_aprobadas_api, name='api_solicitudes_aprobadas'),
+    path('api/solicitudes-rechazadas/', views.solicitudes_rechazadas_api, name='api_solicitudes_rechazadas'),
+    path('api/solicitudes-entregadas/', views.solicitudes_entregadas_api, name='api_solicitudes_entregadas'),
+    path('api/proveedores/', views.proveedores_api, name='api_proveedores'),
+    path('api/solicitudes-pendientes/<int:solicitud_id>/cambiar-proveedor/', views.cambiar_proveedor_api, name='api_cambiar_proveedor'),
+    path('api/solicitudes-pendientes/<int:solicitud_id>/aprobar/', views.aprobar_solicitud_api, name='api_aprobar_solicitud'),
+    path('api/solicitudes-pendientes/<int:solicitud_id>/rechazar/', views.rechazar_solicitud_api, name='api_rechazar_solicitud'),
+    path('api/solicitudes-rechazadas/<int:solicitud_id>/devolver-pendiente/', views.devolver_a_pendiente_api, name='api_devolver_pendiente'),
+    path('api/solicitudes-aprobadas/<int:solicitud_id>/marcar-entregada/', views.marcar_entregada_api, name='api_marcar_entregada'),
 ]
     
