@@ -6,10 +6,10 @@ from django.utils import timezone
 from django.contrib.auth.models import User, Group
 from django.contrib import messages
 from django.db import connection, transaction
-from django.http import JsonResponse, HttpResponseNotFound
-from django.http import JsonResponse, HttpResponse, HttpResponseNotFound
+from django.http import JsonResponse, HttpResponse, HttpResponseNotFound, HttpResponseForbidden
 from django.core.serializers.json import DjangoJSONEncoder
 import traceback
+from empleados.utils import obtener_privilegios
 from .models import (
     presentacion, venta_online, detalle_venta_online, pre_alm, 
     metodo_pago, pago, moneda, historico_moneda, historico_precio_punto, tienda, 
@@ -23,6 +23,8 @@ from decimal import Decimal
 from datetime import datetime, date
 from .forms import ClienteForm, EmpleadoForm, ProveedorForm
 from .utils import crear_usuario_sql, modificar_usuario_sql, eliminar_usuario_sql
+from empleados.utils import requiere_privilegio
+
 
 def validate_expiration_date(exp_date_str):
     """Valida que la fecha de vencimiento no sea anterior a la actual"""
@@ -1983,29 +1985,25 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user:
             login(request, user)
-            
+
+            # Obtener privilegios desde la BD y guardarlos en la sesión
+            request.session['privilegios'] = list(obtener_privilegios(user))
+
             # DETECTAR TIPO DE USUARIO Y REDIRIGIR APROPIADAMENTE
-            # Verificar si el usuario es un empleado (tiene emp_car)
             if hasattr(user, 'fk_emp_car') and user.fk_emp_car:
                 messages.success(request, f'¡Bienvenido al módulo de empleados, {user.get_full_name() or user.username}!')
                 return redirect('empleados:dashboard')
-            
-            # Verificar si el usuario es un cliente
             elif hasattr(user, 'fk_cliente') and user.fk_cliente:
                 messages.success(request, f'¡Bienvenido a la tienda, {user.get_full_name() or user.username}!')
                 return redirect('store_view', tipo='fisica')
-            
-            # Verificar si el usuario es un proveedor  
             elif hasattr(user, 'fk_proveedor') and user.fk_proveedor:
                 messages.success(request, f'¡Bienvenido, {user.get_full_name() or user.username}!')
                 return redirect('home')
-            
-            # Redirigir al checkout si viene desde el carrito
+
             next_url = request.GET.get('next')
             if next_url:
                 return redirect(next_url)
-                
-            # Por defecto ir a home
+
             return redirect('home')
         else:
             return render(request, 'login.html', {'error': 'Credenciales inválidas'})
@@ -2015,7 +2013,7 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
-
+@requiere_privilegio("crear_usuario")
 def crear_usuario_view(request, tipo, id_entidad):
     if request.method == 'POST':
         username = request.POST.get('username')

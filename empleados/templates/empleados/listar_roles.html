@@ -1,0 +1,42 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Listado de Roles</h2>
+
+    {% if roles %}
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre del Rol</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rol in roles %}
+                <tr>
+                    <td>{{ rol.rol_id }}</td>
+                    <td>{{ rol.rol_nombre }}</td>
+                    <td>
+                        {% if 'Administrador' in privilegios %}
+                            <a href="{% url 'empleados:modificar_rol' rol.rol_id %}" class="btn btn-primary btn-sm">Modificar</a>
+                        {% endif %}
+                        {% if 'Administrador' in privilegios %}
+                            <form action="{% url 'empleados:eliminar_rol' rol.rol_id %}" method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Estás seguro de que deseas eliminar este rol?');">Eliminar</button>
+                            </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert alert-info">No hay roles registrados.</div>
+    {% endif %}
+
+</div>
+{% endblock %}

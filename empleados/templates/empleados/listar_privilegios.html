@@ -1,0 +1,41 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Listado de Privilegios</h2>
+
+    {% if privilegios_list %}
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre del Privilegio</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for priv in privilegios_list %}
+                <tr>
+                    <td>{{ priv.privilegio_id }}</td>
+                    <td>{{ priv.privilegio_nombre }}</td>
+                    <td>
+                        {% if 'Administrador' in privilegios %}
+                            <a href="{% url 'empleados:modificar_privilegio' priv.privilegio_id %}" class="btn btn-primary btn-sm">Modificar</a>
+                        {% endif %}
+                        {% if 'Administrador' in privilegios %}
+                            <form action="{% url 'empleados:eliminar_privilegio' priv.privilegio_id %}" method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Estás seguro de que deseas eliminar este privilegio?');">Eliminar</button>
+                            </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert alert-info">No hay privilegios registrados.</div>
+    {% endif %}
+</div>
+{% endblock %}
