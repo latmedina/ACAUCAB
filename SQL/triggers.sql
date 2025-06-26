@@ -142,10 +142,114 @@ $$ LANGUAGE plpgsql;
 -- Crear el trigger que se ejecuta después de cada INSERT en venta_fisica
 DROP TRIGGER IF EXISTS tr_otorgar_puntos_venta_fisica ON venta_fisica;
 
-CREATE TRIGGER tr_otorgar_puntos_venta_fisica
-    AFTER INSERT ON venta_fisica
-    FOR EACH ROW
-    EXECUTE FUNCTION fn_otorgar_puntos_venta_fisica();
+
+CREATE OR REPLACE FUNCTION public.fn_generar_reposicion_desde_inventario()
+RETURNS TRIGGER AS $$
+DECLARE
+    -- Variable para guardar el ID de la tabla pre_alm correspondiente.
+    v_id_pre_alm INTEGER;
+    -- Variable para guardar el ID de la nueva solicitud creada.
+    v_nueva_solicitud_id INTEGER;
+    -- Variable para el ID del estatus "Pendiente". ¡Ajustar si es diferente!
+    v_id_estatus_pendiente INTEGER := 1; -- ASUNCIÓN: El ID 1 corresponde a "Pendiente".
+    -- Variable para verificar si ya existe una solicitud pendiente.
+    v_solicitud_existente INTEGER;
+BEGIN
+    -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+    -- PASO CLAVE: BLOQUEO DE TRANSACCIÓN POR ID DE INVENTARIO
+    -- Se adquiere un bloqueo exclusivo para el ID de este inventario. Si otra transacción
+    -- intenta adquirir el mismo bloqueo, esperará hasta que esta transacción termine (COMMIT o ROLLBACK).
+    -- Esto serializa las operaciones para un mismo producto y previene condiciones de carrera.
+    -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+    PERFORM pg_advisory_xact_lock(NEW.inv_id);
+
+    -- La lógica principal de validación (WHEN) ya está en el trigger, pero este IF
+    -- sirve como doble chequeo y ahora está protegido por el bloqueo.
+    IF NEW.inv_cantidad <= 20 AND NEW.inv_cantidad < OLD.inv_cantidad THEN
+
+        -- PASO 1: VERIFICAR SI YA EXISTE UNA SOLICITUD PENDIENTE (AHORA DE FORMA SEGURA)
+        SELECT sr.sol_rep_id INTO v_solicitud_existente
+        FROM public.solicitud_reposicion sr
+        JOIN public.sol_rep_est sre ON sr.sol_rep_id = sre.fk_sol_rep
+        WHERE sr.fk_inv = NEW.inv_id
+          AND sre.fk_estatus = v_id_estatus_pendiente
+          AND sre.sol_rep_est_fecha_fin IS NULL
+        LIMIT 1;
+
+        -- PASO 2: SI NO HAY SOLICITUDES PENDIENTES, PROCEDER A CREAR UNA NUEVA
+        IF v_solicitud_existente IS NULL THEN
+            -- Buscar el 'pre_alm_id' correspondiente para completar la información.
+            SELECT pre_alm_id INTO v_id_pre_alm
+            FROM public.pre_alm
+            WHERE fk_presentacion = NEW.fk_presentacion
+            LIMIT 1;
+
+            -- Si se encontró el registro en pre_alm, crear la solicitud y su estatus.
+            IF FOUND THEN
+                -- Insertar la nueva solicitud de reposición.
+                INSERT INTO public.solicitud_reposicion (
+                    sol_rep_fecha_hora,
+                    sol_rep_descripcion,
+                    fk_inv,
+                    fk_pre_alm,
+                    fk_usuario
+                )
+                VALUES (
+                    NOW(),
+                    CONCAT('Stock bajo en inventario ID: ', NEW.inv_id),
+                    NEW.inv_id,
+                    v_id_pre_alm,
+                    NULL
+                )
+                RETURNING sol_rep_id INTO v_nueva_solicitud_id;
+
+                IF NOT EXISTS (
+                    SELECT 1 FROM public.sol_rep_est
+                    WHERE fk_sol_rep = v_nueva_solicitud_id
+                    AND fk_estatus = v_id_estatus_pendiente
+                    AND sol_rep_est_fecha_fin IS NULL
+                ) THEN
+                    INSERT INTO public.sol_rep_est (
+                        sol_rep_est_fecha_inicio,
+                        sol_rep_est_fecha_fin,
+                        fk_estatus,
+                        fk_sol_rep
+                    )
+                    VALUES (
+                        CURRENT_DATE,
+                        NULL,
+                        v_id_estatus_pendiente,
+                        v_nueva_solicitud_id
+                    );
+                END IF;
+            END IF; -- Fin de la creación de la solicitud
+        END IF; -- Fin de la verificación de solicitud existente
+    END IF;
+
+    -- Para triggers AFTER, el valor de retorno se ignora, pero se recomienda devolver NEW.
+    -- El bloqueo adquirido con pg_advisory_xact_lock se libera automáticamente al final de la transacción.
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- ========= TRIGGER (VERSIÓN 2 - CORREGIDO) =========
+-- Este trigger no necesita cambios. Su lógica sigue siendo correcta.
+-- Es importante asegurarse de que solo exista UN trigger para esta acción en la tabla.
+
+-- Primero, eliminamos el trigger si ya existe para evitar errores al volver a ejecutar el script.
+DROP TRIGGER IF EXISTS trg_verificar_stock_inventario ON public.inventario;
+
+-- Creamos el trigger en la tabla correcta ('inventario')
+CREATE TRIGGER trg_verificar_stock_inventario
+-- Se dispara DESPUÉS de que una fila se haya ACTUALIZADO
+AFTER UPDATE ON public.inventario
+-- Se ejecuta para cada fila modificada
+FOR EACH ROW
+-- Condición corregida y optimizada: se ejecuta solo si la cantidad disminuye Y es menor/igual a 20.
+WHEN (NEW.inv_cantidad < OLD.inv_cantidad AND NEW.inv_cantidad <= 20)
+-- Llama a la nueva función que contiene la lógica correcta
+EXECUTE FUNCTION public.fn_generar_reposicion_desde_inventario();
 
 -- =====================================================
 -- COMENTARIOS Y DOCUMENTACIÓN
@@ -216,7 +320,7 @@ TABLA DISPARADORA:
 - venta_fisica (AFTER INSERT)
 
 CAMPOS UTILIZADOS:
-- NEW.ven_fis_total (monto total de la venta)
+- NEW.ven_fis_total (monto total de lawssdsdsd venta)
 - NEW.fk_cliente (ID del cliente que recibe los puntos)
 
 EJEMPLO DE USO:
