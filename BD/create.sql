@@ -4981,43 +4981,6 @@ CREATE INDEX venta_online_fk_tienda_2b45db66 ON public.venta_online USING btree 
 CREATE INDEX venta_online_fk_usuario_ff559976 ON public.venta_online USING btree (fk_usuario);
 
 
---
--- TOC entry 5562 (class 2620 OID 24080)
--- Name: detalle_venta_fisica tr_descuento_inventario_venta_fisica; Type: TRIGGER; Schema: public; Owner: postgres
---
-
-CREATE TRIGGER tr_descuento_inventario_venta_fisica AFTER INSERT ON public.detalle_venta_fisica FOR EACH ROW EXECUTE FUNCTION public.fn_descuento_inventario_venta_fisica();
-
-
---
--- TOC entry 5563 (class 2620 OID 24082)
--- Name: inventario trg_verificar_stock_inventario; Type: TRIGGER; Schema: public; Owner: postgres
---
-
-CREATE TRIGGER trg_verificar_stock_inventario AFTER UPDATE ON public.inventario FOR EACH ROW WHEN (((new.inv_cantidad < old.inv_cantidad) AND (new.inv_cantidad <= 20))) EXECUTE FUNCTION public.fn_generar_reposicion_desde_inventario();
-
-
---
--- TOC entry 5565 (class 2620 OID 24071)
--- Name: sol_com_est trigger_entrega_completada; Type: TRIGGER; Schema: public; Owner: postgres
---
-
-CREATE TRIGGER trigger_entrega_completada AFTER INSERT ON public.sol_com_est FOR EACH ROW EXECUTE FUNCTION public.actualizar_stock_entrega();
-
-
---
--- TOC entry 5564 (class 2620 OID 24069)
--- Name: pre_alm trigger_stock_bajo; Type: TRIGGER; Schema: public; Owner: postgres
---
-
-CREATE TRIGGER trigger_stock_bajo AFTER UPDATE ON public.pre_alm FOR EACH ROW EXECUTE FUNCTION public.crear_solicitud_compra();
-
-
---
--- TOC entry 5442 (class 2606 OID 23339)
--- Name: afi_est afi_est_fk_afiliacion_c96a58d5_fk_afiliacion_afi_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.afi_est
     ADD CONSTRAINT afi_est_fk_afiliacion_c96a58d5_fk_afiliacion_afi_id FOREIGN KEY (fk_afiliacion) REFERENCES public.afiliacion(afi_id) DEFERRABLE INITIALLY DEFERRED;
 
