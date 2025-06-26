@@ -56,6 +56,11 @@ urlpatterns = [
     path('factura/<int:venta_id>/', views.vista_factura_directa, name='vista_factura_directa'),
 
 
+
+
+
+
+
     # NOTA: Los reportes se han movido al módulo de empleados (/empleados/reportes/)
 
 
