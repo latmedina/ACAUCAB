@@ -76,7 +76,7 @@ DROP TABLE IF EXISTS ANAQUEL CASCADE;
 DROP TABLE IF EXISTS LUGAR_TIENDA CASCADE;
 DROP TABLE IF EXISTS DETALLE_COMPRA CASCADE;   
 DROP TABLE IF EXISTS public.admin_interface_theme CASCADE;
-
+drop table if exists public.rol_privilegio cascade;
 DROP TABLE IF EXISTS public.auth_group CASCADE;
 DROP TABLE IF EXISTS public.auth_group_permissions CASCADE;
 DROP TABLE IF EXISTS public.auth_permission CASCADE;
