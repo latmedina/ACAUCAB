@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             const data = await response.json();
 
-            if (!data || data.length === 0) {
+            if (!data || data.length === 0 || data.every(empleado => !empleado.incumplimientos || empleado.incumplimientos.length === 0)) {
                 reportContainer.innerHTML = `
                     <div class="card">
                         <div class="card-body text-center">
@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="card-header bg-warning text-dark">
                         <h5 class="mb-0">
                             <i class="fas fa-exclamation-triangle me-2"></i>
-                            Incumplimientos Encontrados (${data.length})
+                            Incumplimientos Encontrados (${data.reduce((total, empleado) => total + empleado.incumplimientos.length, 0)})
                         </h5>
                     </div>
                     <div class="card-body">
@@ -142,6 +142,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <th>Fecha</th>
                                         <th>Horario Asignado</th>
                                         <th>Hora de Llegada</th>
+                                        <th>Hora de Salida</th>
                                         <th>Retraso</th>
                                         <th>Tipo</th>
                                     </tr>
@@ -149,37 +150,59 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <tbody>
             `;
 
-            data.forEach(incumplimiento => {
-                const tipoIncumplimiento = incumplimiento.tipo_incumplimiento || 'Retraso';
-                const badgeClass = tipoIncumplimiento === 'Falta' ? 'bg-danger' : 'bg-warning text-dark';
+            // Procesar datos agrupados por empleado
+            data.forEach(empleado => {
+                empleado.incumplimientos.forEach(incumplimiento => {
+                    const tipoIncumplimiento = incumplimiento.tipo || 'Retraso';
+                    const badgeClass = tipoIncumplimiento === 'Falta' ? 'bg-danger' : 
+                                     tipoIncumplimiento.includes('Llegada') ? 'bg-warning text-dark' : 'bg-info text-dark';
+                    
+                    // Extraer información del detalle (ahora es un objeto JSON)
+                    const detalle = incumplimiento.detalle || {};
+                    const horaEntradaPautada = detalle.hora_entrada_pautada || 'N/A';
+                    const horaSalidaPautada = detalle.hora_salida_pautada || 'N/A';
+                    const horaEntradaReal = detalle.hora_entrada_real || 'N/A';
+                    const horaSalidaReal = detalle.hora_salida_real || 'N/A';
+                    
+                    // Convertir duración a minutos
+                    const duracion = incumplimiento.duracion || '00:00:00';
+                    const [horas, minutos, segundos] = duracion.split(':').map(Number);
+                    const totalMinutos = (horas * 60) + minutos + (segundos > 0 ? 1 : 0);
 
-                html += `
-                    <tr>
-                        <td>
-                            <strong>${incumplimiento.empleado_nombre || 'N/A'}</strong>
-                            <br><small class="text-muted">ID: ${incumplimiento.empleado_id || 'N/A'}</small>
-                        </td>
-                        <td>${incumplimiento.fecha || 'N/A'}</td>
-                        <td>
-                            ${incumplimiento.hora_entrada || 'N/A'} - ${incumplimiento.hora_salida || 'N/A'}
-                        </td>
-                        <td>
-                            <span class="${incumplimiento.hora_llegada ? '' : 'text-danger'}">
-                                ${incumplimiento.hora_llegada || 'No registrada'}
-                            </span>
-                        </td>
-                        <td>
-                            <span class="text-warning fw-bold">
-                                ${incumplimiento.minutos_retraso || 0} minutos
-                            </span>
-                        </td>
-                        <td>
-                            <span class="badge ${badgeClass}">
-                                ${tipoIncumplimiento}
-                            </span>
-                        </td>
-                    </tr>
-                `;
+                    html += `
+                        <tr>
+                            <td>
+                                <strong>${empleado.empleado_nombre || 'N/A'}</strong>
+                                <br><small class="text-muted">ID: ${empleado.empleado_id || 'N/A'}</small>
+                            </td>
+                            <td>${incumplimiento.fecha || 'N/A'}</td>
+                            <td>
+                                <small class="text-muted">Entrada:</small> ${horaEntradaPautada}<br>
+                                <small class="text-muted">Salida:</small> ${horaSalidaPautada}
+                            </td>
+                            <td>
+                                <span class="${horaEntradaReal !== 'N/A' ? '' : 'text-muted'}">
+                                    ${horaEntradaReal}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="${horaSalidaReal !== 'N/A' ? '' : 'text-muted'}">
+                                    ${horaSalidaReal}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="text-warning fw-bold">
+                                    ${totalMinutos} minutos
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge ${badgeClass}">
+                                    ${tipoIncumplimiento}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                });
             });
 
             html += `
@@ -190,7 +213,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="alert alert-info">
-                                        <strong>Total de incumplimientos:</strong> ${data.length}
+                                        <strong>Total de incumplimientos:</strong> ${data.reduce((total, empleado) => total + empleado.incumplimientos.length, 0)}
                                     </div>
                                 </div>
                                 <div class="col-md-6">
