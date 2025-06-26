@@ -41,6 +41,24 @@ urlpatterns = [
     path('reportes/ordenes-pendientes/', views.vista_reporte_ordenes_pendientes, name='vista_reporte_ordenes_pendientes'),
     path('api/reportes/ordenes-pendientes/', views.reporte_ordenes_pendientes_api, name='reporte_ordenes_pendientes_api'),
 
+    # ROLES
+    path('crear-rol/', views.crear_rol_view, name='crear_rol'),
+    path('asignar-rol/', views.asignar_rol_view, name='asignar_rol'),
+    path('roles/', views.listar_roles_view, name='listar_roles'),
+    path('modificar-rol/<int:rol_id>/', views.modificar_rol_view, name='modificar_rol'),
+    path('eliminar-rol/<int:id>/', views.eliminar_rol_view, name='eliminar_rol'),
+
+    #Privilegios
+    path('crear-privilegio/', views.crear_privilegio_view, name='crear_privilegio'),
+    path('privilegios/', views.listar_privilegios_view, name='listar_privilegios'),
+    path('modificar-privilegio/<int:id>/', views.modificar_privilegio_view, name='modificar_privilegio'),
+    path('eliminar-privilegio/<int:id>/', views.eliminar_privilegio_view, name='eliminar_privilegio'),
+    path('asignar-privilegios/', views.seleccionar_rol_para_privilegios_view, name='seleccionar_rol_para_privilegios'),
+    path('asignar-privilegios/<int:id>/', views.asignar_privilegio_view, name='asignar_privilegios'),
+
+    #GESTIÓN DE USUARIOS
+    path('gestion-usuarios/', views.gestion_usuarios_view, name='gestion_usuarios'),
+
     # Gestión de órdenes de compra
     path('gestion_ordenes/', views.vista_gestion_ordenes, name='vista_gestion_ordenes'),
     path('api/gestion/ordenes/', views.gestion_ordenes_api, name='api_gestion_ordenes'),
