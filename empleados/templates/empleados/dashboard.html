@@ -97,11 +97,11 @@
     <div class="col-lg-4 col-md-6 mb-4">
         <div class="card h-100 border-success">
             <div class="card-header bg-success text-white">
-                <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i>Gestión de Solicitudes</h5>
+                <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i>Ordenes de Compra</h5>
             </div>
             <div class="card-body text-center">
                 <div class="display-4 text-success mb-3">
-                    <i class="fas fa-clipboard-check"></i>
+                    <i class="fas fa-dolly-flatbed"></i>
                 </div>
                 <h6 class="card-title">Aprobar Solicitudes de Compra</h6>
                 <p class="card-text text-muted">Revisa y aprueba las solicitudes de compra pendientes en el sistema.</p>
@@ -111,43 +111,36 @@
                 </div>
             </div>
             <div class="card-footer bg-transparent">
-                <button type="button" class="btn btn-success w-100" onclick="alert('Funcionalidad en desarrollo')">
-                    <i class="fas fa-thumbs-up me-2"></i>Aprobar Solicitudes de Compra
+                <button id="gestion_orden_compra" type="button" class="btn btn-success w-100" onclick="window.location.href='{% url 'empleados:vista_gestion_ordenes' %}'">
+                    <i class="fas fa-thumbs-up me-2"></i>Gestionar Solicitudes de Compra
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- System Info Card Mejorada -->
     <div class="col-lg-4 col-md-6 mb-4">
-        <div class="card h-100 border-info">
-            <div class="card-header bg-info text-white">
-                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Información del Sistema</h5>
+        <div class="card h-100 border-success">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i>Solicitudes de Reposición</h5>
             </div>
-            <div class="card-body">
-                <p class="card-text text-muted mb-3">Estado y configuración del sistema ACAUCAB.</p>
-                <div class="row g-2 mb-3">
-                    <div class="col-6">
-                        <div class="border rounded p-3 text-center bg-light">
-                            <h5 class="text-primary mb-1"><i class="fas fa-beer"></i></h5>
-                            <small class="text-muted">ACAUCAB</small>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="border rounded p-3 text-center bg-light">
-                            <h5 class="text-success mb-1"><i class="fas fa-user-tie"></i></h5>
-                            <small class="text-muted">Empleados</small>
-                        </div>
-                    </div>
+            <div class="card-body text-center">
+                <div class="display-4 text-success mb-3">
+                    <i class="fas fa-clipboard-check"></i>
                 </div>
-                <div class="alert alert-info border-info">
-                    <i class="fas fa-lightbulb me-2"></i>
-                    <small><strong>Tip:</strong> Utiliza el menú lateral para navegar entre secciones.</small>
+                <h6 class="card-title">Aprobar Solicitudes de Reposición</h6>
+                <p class="card-text text-muted">Revisa y aprueba las solicitudes de reposición pendientes en el sistema.</p>
+                <div class="alert alert-light border-success">
+                    <i class="fas fa-info-circle text-success me-2"></i>
+                    <small>Gestiona el flujo de aprobaciones</small>
                 </div>
+            </div>
+            <div class="card-footer bg-transparent">
+                <button id="gestion_orden_reposicion" type="button" class="btn btn-success w-100" onclick="window.location.href='{% url 'empleados:vista_gestion_reposicion' %}'">
+                    <i class="fas fa-thumbs-up me-2"></i>Gestionar Solicitudes de Reposición
+                </button>
             </div>
         </div>
     </div>
-</div>
 
 <!-- Recent Activity/Stats Cards -->
 <div class="row">
