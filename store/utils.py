@@ -105,3 +105,5 @@ def eliminar_usuario_sql(id_usuario):
     print(f"Llamando procedimiento eliminar_usuario con ID: {id_usuario}")
     with connection.cursor() as cursor:
         cursor.callproc('eliminar_usuario', [id_usuario])
+
+

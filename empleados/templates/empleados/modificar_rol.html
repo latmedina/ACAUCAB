@@ -1,0 +1,32 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Modificar Rol</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="rol_nombre" class="form-label">Nombre del Rol</label>
+            <input type="text" class="form-control" id="rol_nombre" name="rol_nombre" value="{{ rol.rol_nombre }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="privilegios" class="form-label">Privilegios Asociados</label>
+            <select multiple class="form-control" id="privilegios" name="privilegios">
+                {% for priv in privilegios %}
+                    <option value="{{ priv.privilegio_id }}"
+                        {% if priv in rol_privilegios %}selected{% endif %}>
+                        {{ priv.privilegio_nombre }}
+                    </option>
+                {% endfor %}
+            </select>
+            <small class="form-text text-muted">Usa Ctrl (o Cmd en Mac) para seleccionar múltiples privilegios.</small>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        <a href="{% url 'empleados:listar_roles' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

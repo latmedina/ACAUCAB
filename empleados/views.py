@@ -8,28 +8,29 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 import traceback
 from datetime import datetime
-
-from store.models import estatus as Estatus
-
+from .forms import AsignarRolForm
+from store.models import usuario, privilegio, rol, rol_privilegio
+from empleados.utils import requiere_privilegio
+from django.views.decorators.csrf import csrf_protect
+from django.shortcuts import get_object_or_404
 
 @login_required
 def empleado_dashboard(request):
-    """
-    Dashboard principal para empleados.
-    """
-    # Verificar que el usuario es un empleado
     if not hasattr(request.user, 'fk_emp_car') or not request.user.fk_emp_car:
         messages.error(request, 'Acceso denegado. Solo empleados pueden acceder a este módulo.')
         return redirect('login')
     
-    # Obtener el empleado a través de emp_car
     empleado = request.user.fk_emp_car.fk_empleado
-    
+
+    # ⬇️ NUEVO: traer los privilegios desde la sesión
+    privilegios = request.session.get('privilegios', [])
+
     context = {
         'empleado': empleado,
         'usuario': request.user,
+        'privilegios': privilegios  # ⬅️ PASA ESTO AL TEMPLATE
     }
-    
+
     return render(request, 'empleados/dashboard.html', context)
 
 
@@ -368,6 +369,175 @@ def reporte_ordenes_pendientes_api(request):
         print("-----------------------------------------------------------\n")
         return JsonResponse({'error': f'Ocurrió un error en el servidor: {e}'}, status=500)
 
+from store.models import privilegio, rol, rol_privilegio
+
+@requiere_privilegio("crear_rol")
+def crear_rol_view(request):
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre')
+        privilegios_seleccionados = request.POST.getlist('privilegios')
+
+        # Crear el rol
+        nuevo_rol = rol.objects.create(rol_nombre=nombre)
+
+        # Asociar privilegios
+        for nombre_priv in privilegios_seleccionados:
+            try:
+                priv = privilegio.objects.get(privilegio_nombre=nombre_priv)
+                rol_privilegio.objects.create(fk_rol=nuevo_rol, fk_privilegio=priv)
+            except privilegio.DoesNotExist:
+                pass  # Ignora privilegios inválidos
+
+        return redirect('empleados:dashboard')
+
+    # Mostrar formulario
+    return render(request, 'empleados/crear_rol.html', {'privilegios': privilegio.objects.all()})
+
+@requiere_privilegio("asignar_rol")
+def asignar_rol_view(request):
+    if request.method == 'POST':
+        form = AsignarRolForm(request.POST)
+        if form.is_valid():
+            usuario_obj = form.cleaned_data['usuario']
+            rol_obj = form.cleaned_data['rol']
+            usuario_obj.fk_rol = rol_obj
+            usuario_obj.save()
+            return redirect('empleados:dashboard')  # Redirige al dashboard u otra página
+    else:
+        form = AsignarRolForm()
+    return render(request, 'empleados/asignar_rol_form.html', {'form': form})
+
+@login_required
+def gestion_usuarios_view(request):
+    usuarios = usuario.objects.all().select_related('fk_rol', 'fk_cliente', 'fk_proveedor', 'fk_emp_car')
+    return render(request, 'empleados/gestion_usuarios.html', {'usuarios': usuarios})
+
+@requiere_privilegio("crear_privilegio")
+@csrf_protect
+def crear_privilegio_view(request):
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre')
+        if nombre:
+            privilegio.objects.create(privilegio_nombre=nombre.strip().lower())
+            messages.success(request, "Privilegio creado exitosamente.")
+            return redirect('empleados:dashboard')
+        else:
+            messages.error(request, "El nombre no puede estar vacío.")
+    
+    return render(request, 'empleados/crear_privilegio.html')
+
+@requiere_privilegio('crear_privilegio')  # Usa el privilegio correspondiente
+def modificar_privilegio_view(request, id):
+    if request.method == 'POST':
+        nuevo_nombre = request.POST.get('nombre')
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT modificar_privilegio(%s, %s);", [id, nuevo_nombre])
+        return redirect('lista_privilegios')  # o a donde desees redirigir
+    return render(request, 'empleados/modificar_privilegio.html', {'id': id})
+
+def modificar_rol_view(request, rol_id):
+    rol_actual = get_object_or_404(rol, pk=rol_id)
+    privilegios = privilegio.objects.all()
+    privilegios_seleccionados = rol_privilegio.objects.filter(fk_rol=rol_actual).values_list('fk_privilegio', flat=True)
+
+    if request.method == 'POST':
+        nuevo_nombre = request.POST.get('nombre').strip()
+        nuevos_privilegios = request.POST.getlist('privilegios')
+
+        # Actualizar nombre
+        rol_actual.rol_nombre = nuevo_nombre
+        rol_actual.save()
+
+        # Actualizar privilegios (eliminamos todos y volvemos a insertar)
+        rol_privilegio.objects.filter(fk_rol=rol_actual).delete()
+        for priv_id in nuevos_privilegios:
+            rol_privilegio.objects.create(fk_rol=rol_actual, fk_privilegio=priv_id)
+
+        messages.success(request, "Rol actualizado exitosamente.")
+        return redirect('nombre_de_la_vista_de_listado_de_roles')
+
+    context = {
+        'rol': rol_actual,
+        'privilegios': privilegio.objects.all(),
+        'privilegios_seleccionados': list(privilegios_seleccionados),
+    }
+    return render(request, 'empleados/modificar_rol.html', context)
+
+@requiere_privilegio('modificar_rol')
+def listar_roles_view(request):
+    roles = rol.objects.all()
+    privilegios = request.session.get('privilegios', [])  # ✅ obtener de la sesión
+    return render(request, 'empleados/listar_roles.html', {
+        'roles': roles,
+        'privilegios': privilegios  # ✅ incluir en el contexto
+    })
+
+@requiere_privilegio('modificar_privilegio')
+def listar_privilegios_view(request):
+    privilegios_list = privilegio.objects.all()
+    privilegios_usuario = request.session.get('privilegios', [])
+    return render(request, 'empleados/listar_privilegios.html', {
+        'privilegios_list': privilegios_list,
+        'privilegios': privilegios_usuario
+    })
+
+@requiere_privilegio('eliminar_rol')
+def eliminar_rol_view(request, id):
+    if request.method == 'POST':
+        rol_obj = get_object_or_404(rol, id=id)
+        rol_obj.delete()
+        messages.success(request, 'Rol eliminado correctamente.')
+        return redirect('empleados:listar_roles')
+    return HttpResponseForbidden("Método no permitido.")
+
+@requiere_privilegio('eliminar_privilegio')
+def eliminar_privilegio_view(request, id):
+    if request.method == 'POST':
+        privilegio_obj = get_object_or_404(privilegio, id=id)
+        privilegio_obj.delete()
+        messages.success(request, 'Privilegio eliminado correctamente.')
+        return redirect('empleados:listar_privilegios')
+    return HttpResponseForbidden("Método no permitido.")
+
+@requiere_privilegio('asignar_privilegio')
+def seleccionar_rol_para_privilegios_view(request):
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT rol_id, rol_nombre FROM rol;")
+        roles = cursor.fetchall()
+
+    return render(request, 'empleados/seleccionar_rol_para_privilegios.html', {
+        'roles': roles
+    })
+
+@requiere_privilegio('asignar_privilegio')
+def asignar_privilegio_view(request, id):
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT privilegio_id, privilegio_nombre FROM privilegio;")
+        privilegios = cursor.fetchall()
+
+        cursor.execute("SELECT fk_privilegio FROM rol_privilegio WHERE fk_rol = %s;", [id])
+        privilegios_asignados = [row[0] for row in cursor.fetchall()]
+
+    if request.method == 'POST':
+        privilegios_seleccionados = request.POST.getlist('privilegios')  # ['1', '2', '5']
+        privilegios_seleccionados = list(map(int, privilegios_seleccionados))  # convertir a enteros
+
+        with connection.cursor() as cursor:
+            # 1. Eliminar todos los privilegios actuales de ese rol
+            cursor.execute("DELETE FROM rol_privilegio WHERE fk_rol = %s;", [id])
+
+            # 2. Insertar los seleccionados
+            for p_id in privilegios_seleccionados:
+                cursor.execute("SELECT asignar_privilegio_a_rol(%s, %s);", [p_id, id])
+
+        messages.success(request, 'Privilegios asignados correctamente.')
+        return redirect('empleados:dashboard')
+
+    return render(request, 'empleados/asignar_privilegio.html', {
+        'rol_id': id,
+        'privilegios': privilegios,
+        'privilegios_asignados': privilegios_asignados,
+    })
 # GESTIÓN DE ÓRDENES DE COMPRA
 @login_required
 def vista_gestion_ordenes(request):
