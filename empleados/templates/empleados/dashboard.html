@@ -95,28 +95,32 @@
     </div>
     {% endif %}
 
-    <!-- Nueva Tarjeta: Aprobar Solicitudes -->
+    <!-- Tarjeta: Gestión de Solicitudes de Compra -->
     {% if 'gestion_solicitud' in privilegios %}
     <div class="col-lg-4 col-md-6 mb-4">
         <div class="card h-100 border-success">
             <div class="card-header bg-success text-white">
-                <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i>Ordenes de Compra</h5>
+                <h5 class="mb-0">
+                    <i class="fas fa-check-circle me-2"></i>Gestión de Solicitudes
+                </h5>
             </div>
             <div class="card-body text-center">
                 <div class="display-4 text-success mb-3">
                     <i class="fas fa-dolly-flatbed"></i>
                 </div>
                 <h6 class="card-title">Aprobar Solicitudes de Compra</h6>
-                <p class="card-text text-muted">Revisa y aprueba las solicitudes de compra pendientes en el sistema.</p>
+                <p class="card-text text-muted">
+                    Revisa y aprueba las solicitudes de compra pendientes en el sistema.
+                </p>
                 <div class="alert alert-light border-success">
                     <i class="fas fa-info-circle text-success me-2"></i>
                     <small>Gestiona el flujo de aprobaciones</small>
                 </div>
             </div>
             <div class="card-footer bg-transparent">
-                <button id="gestion_orden_compra" type="button" class="btn btn-success w-100" onclick="window.location.href='{% url 'empleados:vista_gestion_ordenes' %}'">
+                <a href="{% url 'empleados:vista_gestion_ordenes' %}" class="btn btn-success w-100">
                     <i class="fas fa-thumbs-up me-2"></i>Gestionar Solicitudes de Compra
-                </button>
+                </a>
             </div>
         </div>
     </div>
