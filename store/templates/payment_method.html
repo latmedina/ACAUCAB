@@ -427,16 +427,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Forzar actualización de controles de pago en bolívares para puntos
                 document.getElementById('currency-symbol-display').textContent = 'Bs';
                 document.getElementById('max-currency-symbol').textContent = 'Bs';
+                
+                // Configurar valor mínimo del input para puntos
+                const valorPunto = {{ valor_punto|default:0 }};
+                paymentAmountInput.setAttribute('min', valorPunto.toFixed(2));
+                paymentAmountInput.setAttribute('step', valorPunto.toFixed(2));
+                
                 if (totalRemaining > 0) {
-                    paymentAmountInput.value = totalRemaining.toFixed(2);
+                    // Asegurar que el valor inicial sea al menos el valor del punto
+                    const initialValue = Math.max(valorPunto, totalRemaining);
+                    paymentAmountInput.value = initialValue.toFixed(2);
                     paymentAmountInput.setAttribute('max', totalRemaining.toFixed(2));
-                    paymentAmountInput.setAttribute('step', '0.01');
                     document.getElementById('max-amount-display').textContent = totalRemaining.toFixed(2);
                 }
             } else {
                 monedaSelect.disabled = false;
                 monedaSelect.style.opacity = '1';
                 document.getElementById('currency-lock-message').style.display = 'none';
+                
+                // Limpiar configuración específica de puntos
+                paymentAmountInput.removeAttribute('min');
+                paymentAmountInput.setAttribute('step', '0.01');
             }
             
             if (selectedPaymentMethod === 'efectivo' || selectedPaymentMethod === 'puntos' || selectedPaymentMethod === 'cheque') {
@@ -703,11 +714,21 @@ document.addEventListener('DOMContentLoaded', function() {
         const puntosDisponibles = {{ puntos_disponibles|default:0 }};
         
         if (valorPunto > 0) {
+            const pointsMessage = document.getElementById('points-message');
+            
+            // VALIDACIÓN: Verificar monto mínimo
+            if (amount < valorPunto && amount > 0) {
+                pointsMessage.className = 'alert alert-danger';
+                pointsMessage.textContent = `El monto mínimo para pago con puntos es ${valorPunto.toFixed(2)} Bs (equivalente a 1 punto)`;
+                pointsMessage.style.display = 'block';
+                document.getElementById('required-points').textContent = '0';
+                return;
+            }
+            
             const puntosNecesarios = Math.ceil(amount / valorPunto);
             
             document.getElementById('required-points').textContent = puntosNecesarios;
             
-            const pointsMessage = document.getElementById('points-message');
             if (puntosNecesarios <= puntosDisponibles) {
                 pointsMessage.className = 'alert alert-success';
                 pointsMessage.textContent = '¡Tienes suficientes puntos para realizar este pago!';
@@ -778,11 +799,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('max-amount-display').textContent = totalRemaining.toFixed(2);
                 document.getElementById('max-currency-symbol').textContent = 'Bs';
                 paymentAmountInput.setAttribute('max', totalRemaining.toFixed(2));
-                paymentAmountInput.setAttribute('step', '0.01');
                 
-                // Solo actualizar el valor si el input está vacío o si acabamos de cambiar a puntos
-                if (!paymentAmountInput.value || selectedPaymentMethod === 'puntos') {
-                    paymentAmountInput.value = totalRemaining.toFixed(2);
+                if (selectedPaymentMethod === 'puntos') {
+                    // Configurar valores específicos para puntos
+                    const valorPunto = {{ valor_punto|default:0 }};
+                    paymentAmountInput.setAttribute('min', valorPunto.toFixed(2));
+                    paymentAmountInput.setAttribute('step', valorPunto.toFixed(2));
+                    
+                    // Solo actualizar el valor si está vacío o es menor al valor del punto
+                    if (!paymentAmountInput.value || parseFloat(paymentAmountInput.value) < valorPunto) {
+                        const initialValue = Math.max(valorPunto, totalRemaining);
+                        paymentAmountInput.value = initialValue.toFixed(2);
+                    }
+                } else {
+                    // Configuración normal para otros métodos
+                    paymentAmountInput.removeAttribute('min');
+                    paymentAmountInput.setAttribute('step', '0.01');
+                    
+                    // Solo actualizar el valor si el input está vacío
+                    if (!paymentAmountInput.value) {
+                        paymentAmountInput.value = totalRemaining.toFixed(2);
+                    }
                 }
             }
         }
@@ -960,6 +997,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     alert('Error: Número de cheque es requerido');
                     return;
                 }
+            } else if (tipoPago === 'puntos') {
+                const valorPunto = {{ valor_punto|default:0 }};
+                if (amountInBolivares < valorPunto) {
+                    alert(`Error: El monto mínimo para pago con puntos es ${valorPunto.toFixed(2)} Bs (equivalente a 1 punto)`);
+                    return;
+                }
             }
         }
         
@@ -1013,10 +1056,13 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('currency-symbol-display').textContent = 'Bs';
         document.getElementById('max-currency-symbol').textContent = 'Bs';
         
+        // Limpiar configuración específica de puntos
+        paymentAmountInput.removeAttribute('min');
+        paymentAmountInput.setAttribute('step', '0.01');
+        
         if (totalRemaining > 0) {
             paymentAmountInput.value = totalRemaining.toFixed(2);
             paymentAmountInput.setAttribute('max', totalRemaining.toFixed(2));
-            paymentAmountInput.setAttribute('step', '0.01');
             document.getElementById('max-amount-display').textContent = totalRemaining.toFixed(2);
         }
     }
@@ -1037,7 +1083,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    alert('¡Compra finalizada exitosamente!');
+                    // Redirigir automáticamente a la página de éxito sin mostrar alerta
                     window.location.href = data.redirect_url || '/store/fisica/';
                 } else {
                     alert('Error: ' + data.message);

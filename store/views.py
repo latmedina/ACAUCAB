@@ -737,13 +737,14 @@ def processOrder(request):
     request.session['pending_venta_id'] = venta.ven_fis_id
     request.session['pending_total'] = float(total_venta_usd)  # Mantener en USD para compatibilidad con métodos de pago
     request.session['pending_tipo'] = 'fisica'
-    # NO limpiar el carrito aquí - se limpiará después del pago exitoso
+    # Limpiar el carrito ahora que la venta fue exitosa
+    request.session['cart'] = {}
 
     return JsonResponse({
         'status': 'ok', 
         'message': 'Venta registrada', 
         'venta_id': venta.ven_fis_id,
-        'redirect_to_payment': True
+        'redirect_url': f'/compra-exitosa/{venta.ven_fis_id}/'
     })
 
 def ejecutar_registro_venta_fisica(cliente_id, tienda_id, total_bolivares):
@@ -1107,6 +1108,13 @@ def add_partial_payment(request):
                 if valor_punto <= 0:
                     return JsonResponse({'status': 'error', 'message': 'No hay precio de puntos configurado'}, status=400)
                 
+                # VALIDACIÓN: El monto mínimo debe ser equivalente al valor de 1 punto
+                if amount_bolivares < valor_punto:
+                    return JsonResponse({
+                        'status': 'error', 
+                        'message': f'El monto mínimo para pago con puntos es {valor_punto} Bs (equivalente a 1 punto)'
+                    }, status=400)
+                
                 puntos_necesarios = int(math.ceil(amount_bolivares / valor_punto))
                 payment_data['puntos_utilizados'] = puntos_necesarios
                 payment_data['valor_punto'] = valor_punto
@@ -1287,18 +1295,73 @@ def finalize_multiple_payment_purchase(request):
         request.session.pop('partial_payments', None)
         request.session[cart_key] = {}  # Limpiar el carrito
         
+        # Obtener el ID de la venta para la página de éxito
+        venta_id = venta_fisica_obj.ven_fis_id if venta_fisica_obj else venta_online_obj.ven_onl_id
+        
         return JsonResponse({
             'status': 'success',
             'message': 'Compra finalizada exitosamente',
-            'venta_id': venta_fisica_obj.ven_fis_id if venta_fisica_obj else venta_online_obj.ven_onl_id,
+            'venta_id': venta_id,
             'total_pagos': len(created_payments),
             'pagos_creados': created_payments,
-            'redirect_url': f'/store/{order_data["tipo"]}/'
+            'redirect_url': f'/compra-exitosa/{venta_id}/'
         })
         
     except Exception as e:
         print(f"Error finalizando compra múltiple: {e}")
         return JsonResponse({'status': 'error', 'message': f'Error finalizando compra: {str(e)}'}, status=500)
+
+@login_required
+def purchase_success_view(request, venta_id):
+    """Vista para mostrar la página de éxito después de completar una compra"""
+    try:
+        # Verificar que la venta existe y pertenece al usuario actual
+        venta_fisica_obj = None
+        venta_online_obj = None
+        
+        # Intentar encontrar la venta en ambas tablas
+        try:
+            venta_fisica_obj = venta_fisica.objects.get(ven_fis_id=venta_id)
+            # Verificar que la venta pertenece al cliente del usuario actual
+            if request.user.fk_cliente and venta_fisica_obj.fk_cliente.cli_id != request.user.fk_cliente.cli_id:
+                return HttpResponseNotFound("No se encontró la venta especificada.")
+        except venta_fisica.DoesNotExist:
+            try:
+                venta_online_obj = venta_online.objects.get(ven_onl_id=venta_id)
+                # Verificar que la venta pertenece al usuario actual
+                if venta_online_obj.fk_usuario.id != request.user.id:
+                    return HttpResponseNotFound("No se encontró la venta especificada.")
+            except venta_online.DoesNotExist:
+                return HttpResponseNotFound("No se encontró la venta especificada.")
+        
+        # Determinar el tipo de venta y obtener información básica
+        if venta_fisica_obj:
+            venta_info = {
+                'id': venta_fisica_obj.ven_fis_id,
+                'fecha': venta_fisica_obj.ven_fis_fecha.strftime('%d/%m/%Y %H:%M'),
+                'total': venta_fisica_obj.ven_fis_total,
+                'tipo': 'Venta Física',
+                'tienda': venta_fisica_obj.fk_tienda.tie_nombre if venta_fisica_obj.fk_tienda else 'N/A'
+            }
+        else:
+            venta_info = {
+                'id': venta_online_obj.ven_onl_id,
+                'fecha': venta_online_obj.ven_onl_fecha.strftime('%d/%m/%Y %H:%M'),
+                'total': venta_online_obj.ven_onl_total,
+                'tipo': 'Venta Online',
+                'tienda': venta_online_obj.fk_tienda.tie_nombre if venta_online_obj.fk_tienda else 'N/A'
+            }
+        
+        context = {
+            'venta_info': venta_info,
+            'venta_id': venta_id
+        }
+        
+        return render(request, 'purchase_success.html', context)
+        
+    except Exception as e:
+        print(f"Error en página de éxito: {e}")
+        return HttpResponse(f"<h1>Error</h1><p>Ocurrió un error al mostrar la página de éxito: {str(e)}</p>", status=500)
 
 def create_payment_method_from_partial_data(user, payment_data):
     """Función para crear un método de pago desde los datos de un pago parcial"""
@@ -1665,6 +1728,9 @@ def process_payment_method_original(request):
         request.session.pop('pending_order_data', None)
         request.session[cart_key] = {}  # Limpiar el carrito SOLO después del pago exitoso
         
+        # Obtener el ID de la venta para la página de éxito
+        venta_id = venta_fisica_obj.ven_fis_id if venta_fisica_obj else venta_online_obj.ven_onl_id
+        
         return JsonResponse({
             'status': 'success',
             'message': 'Pago procesado exitosamente',
@@ -1673,7 +1739,7 @@ def process_payment_method_original(request):
             'monto_convertido': float(monto_convertido),
             'moneda': moneda_obj.mon_tipo,
             'tasa_cambio': float(ultimo_historico.his_valor_cambio),
-            'redirect_url': f'/store/{pending_tipo}/'  # Redirigir de vuelta al tipo de tienda correcto
+            'redirect_url': f'/compra-exitosa/{venta_id}/'  # Redirigir a la página de éxito
         })
         
     except Exception as e:
@@ -1704,6 +1770,13 @@ def process_points_payment(request, data, order_data, total, pending_tipo):
             
             if valor_punto == 0:
                 return JsonResponse({'status': 'error', 'message': 'No hay precio de puntos configurado'}, status=400)
+            
+            # VALIDACIÓN: El monto mínimo debe ser equivalente al valor de 1 punto
+            if float(total_bs) < valor_punto:
+                return JsonResponse({
+                    'status': 'error', 
+                    'message': f'El monto mínimo para pago con puntos es {valor_punto} Bs (equivalente a 1 punto)'
+                }, status=400)
             
             puntos_necesarios = int(math.ceil(float(total_bs) / valor_punto))
             
@@ -1740,13 +1813,16 @@ def process_points_payment(request, data, order_data, total, pending_tipo):
         request.session.pop('pending_order_data', None)
         request.session[cart_key] = {}
         
+        # Obtener el ID de la venta para la página de éxito
+        venta_id = venta_fisica_obj.ven_fis_id if venta_fisica_obj else venta_online_obj.ven_onl_id
+        
         return JsonResponse({
             'status': 'success',
             'message': 'Pago con puntos procesado exitosamente',
             'pago_id': pago_id,
             'puntos_utilizados': puntos_utilizados,
             'puntos_restantes': puntos_restantes,
-            'redirect_url': f'/store/{pending_tipo}/'
+            'redirect_url': f'/compra-exitosa/{venta_id}/'
         })
         
     except Exception as e:
@@ -2217,6 +2293,10 @@ def vista_factura_directa(request, venta_id):
 
             # Se obtienen los datos como un diccionario de Python
             report_data = result[0]
+            
+            # Agregar la tasa de cambio del dólar para conversión en el template
+            dollar_rate = get_dollar_exchange_rate()
+            report_data['dollar_rate'] = float(dollar_rate)
             
             # CORRECCIÓN: Pasamos el diccionario directamente en el contexto
             context = {

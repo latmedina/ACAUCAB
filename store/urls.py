@@ -32,6 +32,7 @@ urlpatterns = [
     path('add-partial-payment/', views.add_partial_payment, name='add_partial_payment'),
     path('remove-partial-payment/', views.remove_partial_payment, name='remove_partial_payment'),
     path('finalize-multiple-payment-purchase/', views.finalize_multiple_payment_purchase, name='finalize_multiple_payment_purchase'),
+    path('compra-exitosa/<int:venta_id>/', views.purchase_success_view, name='purchase_success'),
     
     # Métodos de pago originales (compatibilidad)
     path('payment-method-original/', views.payment_method_view_original, name='payment_method_original'),

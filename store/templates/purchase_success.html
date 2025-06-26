@@ -1,0 +1,272 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+.success-container {
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 40px;
+    background-color: #f8f9fa;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.success-icon {
+    font-size: 5rem;
+    color: #28a745;
+    margin-bottom: 20px;
+    animation: checkmark 0.6s ease-in-out;
+}
+
+@keyframes checkmark {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.success-title {
+    color: #28a745;
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.success-subtitle {
+    color: #6c757d;
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+}
+
+.purchase-details {
+    background-color: white;
+    border-radius: 10px;
+    padding: 25px;
+    margin: 30px 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #28a745;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.detail-value {
+    color: #212529;
+}
+
+.action-buttons {
+    margin-top: 30px;
+}
+
+.btn-invoice {
+    background: linear-gradient(45deg, #007bff, #0056b3);
+    border: none;
+    color: white;
+    padding: 12px 30px;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    margin: 0 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 10px rgba(0, 123, 255, 0.3);
+}
+
+.btn-invoice:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+    color: white;
+}
+
+.btn-continue {
+    background: linear-gradient(45deg, #28a745, #20c997);
+    border: none;
+    color: white;
+    padding: 12px 30px;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    margin: 0 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 10px rgba(40, 167, 69, 0.3);
+}
+
+.btn-continue:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+    color: white;
+}
+
+.additional-info {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #e7f3ff;
+    border-radius: 8px;
+    border-left: 4px solid #007bff;
+}
+
+.additional-info h5 {
+    color: #007bff;
+    margin-bottom: 10px;
+}
+
+.additional-info p {
+    color: #495057;
+    margin-bottom: 0;
+    line-height: 1.6;
+}
+
+.confetti {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: #f1c40f;
+    animation: confetti-fall 3s linear infinite;
+}
+
+@keyframes confetti-fall {
+    to {
+        transform: translateY(100vh) rotate(360deg);
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="success-container">
+        <!-- Icono de éxito animado -->
+        <div class="success-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        
+        <!-- Título principal -->
+        <h1 class="success-title">¡Compra Exitosa!</h1>
+        <p class="success-subtitle">Tu pago ha sido procesado correctamente</p>
+        
+        <!-- Detalles de la compra -->
+        <div class="purchase-details">
+            <h4 class="mb-3">
+                <i class="fas fa-receipt text-primary"></i> 
+                Detalles de tu Compra
+            </h4>
+            
+            <div class="detail-row">
+                <span class="detail-label">
+                    <i class="fas fa-hashtag"></i> Número de Venta:
+                </span>
+                <span class="detail-value">#{{ venta_info.id }}</span>
+            </div>
+            
+            <div class="detail-row">
+                <span class="detail-label">
+                    <i class="fas fa-calendar-alt"></i> Fecha y Hora:
+                </span>
+                <span class="detail-value">{{ venta_info.fecha }}</span>
+            </div>
+            
+            <div class="detail-row">
+                <span class="detail-label">
+                    <i class="fas fa-store"></i> Tipo de Venta:
+                </span>
+                <span class="detail-value">{{ venta_info.tipo }}</span>
+            </div>
+            
+            <div class="detail-row">
+                <span class="detail-label">
+                    <i class="fas fa-map-marker-alt"></i> Tienda:
+                </span>
+                <span class="detail-value">{{ venta_info.tienda }}</span>
+            </div>
+            
+            <div class="detail-row">
+                <span class="detail-label">
+                    <i class="fas fa-money-bill-wave"></i> Total Pagado:
+                </span>
+                <span class="detail-value">{{ venta_info.total|floatformat:2 }} Bs</span>
+            </div>
+        </div>
+        
+        <!-- Botones de acción -->
+        <div class="action-buttons">
+            <a href="{% url 'vista_factura_directa' venta_id %}" 
+               class="btn btn-invoice" 
+               target="_blank">
+                <i class="fas fa-file-invoice"></i> Ver Factura
+            </a>
+            
+            <a href="{% url 'store_view' tipo='fisica' %}" 
+               class="btn btn-continue">
+                <i class="fas fa-shopping-cart"></i> Continuar Comprando
+            </a>
+        </div>
+        
+        <!-- Información adicional -->
+        <div class="additional-info">
+            <h5>
+                <i class="fas fa-info-circle"></i> 
+                Información Importante
+            </h5>
+            <p>
+                Tu compra ha sido registrada exitosamente en nuestro sistema. 
+                Puedes consultar tu factura en cualquier momento haciendo clic en el botón "Ver Factura" 
+                o accediendo a tu historial de compras desde tu perfil de usuario.
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Crear confeti animado
+    function createConfetti() {
+        const colors = ['#f1c40f', '#e74c3c', '#3498db', '#2ecc71', '#9b59b6'];
+        
+        for (let i = 0; i < 50; i++) {
+            setTimeout(() => {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 3 + 's';
+                confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => {
+                    confetti.remove();
+                }, 5000);
+            }, i * 100);
+        }
+    }
+    
+    // Iniciar animación de confeti
+    createConfetti();
+    
+    // Reproducir sonido de éxito (opcional)
+    // const audio = new Audio('{% static "audio/success.mp3" %}');
+    // audio.play().catch(e => console.log('No se pudo reproducir el sonido'));
+});
+</script>
+{% endblock %} 

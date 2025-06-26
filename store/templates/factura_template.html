@@ -113,15 +113,15 @@
             <div class="totals">
                 <div class="totals-row">
                     <div class="label">BASE</div>
-                    <div class="value">{{formatCurrency venta.subtotal}}</div>
+                    <div class="value">{{convertToUSD venta.subtotal dollar_rate}}</div>
                 </div>
                 <div class="totals-row">
                     <div class="label">IVA (16%)</div>
-                    <div class="value">{{formatCurrency venta.iva}}</div>
+                    <div class="value">{{convertToUSD venta.iva dollar_rate}}</div>
                 </div>
                 <div class="totals-row">
                     <div class="label">TOTAL</div>
-                    <div class="value">{{formatCurrency venta.total}}</div>
+                    <div class="value">{{convertToUSD venta.total dollar_rate}}</div>
                 </div>
             </div>
         </footer>
@@ -144,6 +144,17 @@
         Handlebars.registerHelper('formatCurrency', function(value) {
             if (typeof value !== 'number') value = parseFloat(value);
             return value ? '$' + value.toFixed(2) : '$0.00';
+        });
+
+        // Helper para convertir bolívares a dólares
+        Handlebars.registerHelper('convertToUSD', function(valueInBolivares, dollarRate) {
+            if (typeof valueInBolivares !== 'number') valueInBolivares = parseFloat(valueInBolivares);
+            if (typeof dollarRate !== 'number') dollarRate = parseFloat(dollarRate);
+            
+            if (!valueInBolivares || !dollarRate || dollarRate === 0) return '$0.00';
+            
+            const valueInUSD = valueInBolivares / dollarRate;
+            return '$' + valueInUSD.toFixed(2);
         });
 
         const container = document.getElementById('factura-container');
