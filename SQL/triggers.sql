@@ -229,3 +229,150 @@ MANTENIMIENTO:
 - Para deshabilitar: DROP TRIGGER tr_otorgar_puntos_venta_fisica ON venta_fisica;
 - Para modificar: Alterar la función fn_otorgar_puntos_venta_fisica()
 */
+
+-- Trigger para crear solicitud de compra cuando stock baja de 100
+CREATE OR REPLACE FUNCTION crear_solicitud_compra()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_proveedor_id INTEGER;
+    v_solicitud_id INTEGER;
+BEGIN
+    -- Solo actuar si la cantidad bajó de 100
+    IF NEW.pre_alm_cantidad < 100 AND OLD.pre_alm_cantidad >= 100 THEN
+        
+        -- Obtener un proveedor (tomar el primero disponible)
+        SELECT pro_id INTO v_proveedor_id 
+        FROM proveedor 
+        LIMIT 1;
+        
+        -- Crear la solicitud de compra
+        INSERT INTO solicitud_compra (
+            sol_com_fecha,
+            sol_com_total,
+            fk_proveedor,
+            fk_pre_alm,
+            fk_usuario
+        ) VALUES (
+            NOW(),
+            NEW.pre_alm_precio * 1000,  -- total = precio unitario * cantidad
+            v_proveedor_id,
+            NEW.pre_alm_id,
+            NULL  -- sin usuario específico
+        ) RETURNING sol_com_id INTO v_solicitud_id;
+        
+        -- Crear el detalle de compra
+        INSERT INTO detalle_compra (
+            det_com_cantidad,
+            det_com_precio_unitario,
+            fk_sol_com,
+            fk_presentacion
+        ) VALUES (
+            1000,
+            NEW.pre_alm_precio,
+            v_solicitud_id,
+            NEW.fk_presentacion
+        );
+        
+        -- Asignar estatus PENDIENTE (id = 1)
+        INSERT INTO sol_com_est (
+            sol_com_est_fecha_inicio,
+            sol_com_est_fecha_fin,
+            fk_sol_com,
+            fk_estatus
+        ) VALUES (
+            CURRENT_DATE,
+            NULL,
+            v_solicitud_id,
+            1  -- PENDIENTE
+        );
+        
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Crear el trigger para pre_alm
+CREATE OR REPLACE TRIGGER trigger_stock_bajo
+    AFTER UPDATE ON pre_alm
+    FOR EACH ROW
+    EXECUTE FUNCTION crear_solicitud_compra();
+
+-- Trigger para actualizar stock cuando se entrega la solicitud
+CREATE OR REPLACE FUNCTION actualizar_stock_entrega()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_presentacion_id INTEGER;
+    v_cantidad INTEGER;
+    v_pre_alm_id INTEGER;
+    v_almacen_id INTEGER;
+    v_precio_unitario DECIMAL(10,2);
+    detalle_record RECORD;
+BEGIN
+    -- Solo actuar si el nuevo registro tiene estatus ENTREGADO (id = 7)
+    IF NEW.fk_estatus = 7 THEN
+        
+        -- Obtener el almacén de la solicitud original
+        SELECT pa.fk_almacen INTO v_almacen_id
+        FROM solicitud_compra sc
+        JOIN pre_alm pa ON sc.fk_pre_alm = pa.pre_alm_id
+        WHERE sc.sol_com_id = NEW.fk_sol_com;
+        
+        -- Recorrer todos los detalles de compra de esta solicitud
+        FOR detalle_record IN 
+            SELECT dc.fk_presentacion, dc.det_com_cantidad, dc.det_com_precio_unitario
+            FROM detalle_compra dc
+            WHERE dc.fk_sol_com = NEW.fk_sol_com
+        LOOP
+            v_presentacion_id := detalle_record.fk_presentacion;
+            v_cantidad := detalle_record.det_com_cantidad;
+            v_precio_unitario := detalle_record.det_com_precio_unitario;
+            
+            -- Buscar el pre_alm correspondiente a esta presentación en el mismo almacén
+            SELECT pa.pre_alm_id INTO v_pre_alm_id
+            FROM pre_alm pa
+            WHERE pa.fk_presentacion = v_presentacion_id
+            AND pa.fk_almacen = v_almacen_id;
+            
+            -- Si encontramos el pre_alm, actualizar la cantidad
+            IF v_pre_alm_id IS NOT NULL THEN
+                UPDATE pre_alm
+                SET pre_alm_cantidad = pre_alm_cantidad + v_cantidad
+                WHERE pre_alm_id = v_pre_alm_id;
+            ELSE
+                -- Si no existe el registro, crearlo
+                INSERT INTO pre_alm (
+                    pre_alm_precio,
+                    pre_alm_cantidad,
+                    fk_almacen,
+                    fk_presentacion,
+                    fk_oferta
+                ) VALUES (
+                    v_precio_unitario,
+                    v_cantidad,
+                    v_almacen_id,
+                    v_presentacion_id,
+                    NULL  -- sin oferta por defecto
+                );
+            END IF;
+            
+        END LOOP;
+        
+        -- Cerrar el estatus anterior poniendo fecha fin
+        UPDATE sol_com_est
+        SET sol_com_est_fecha_fin = CURRENT_DATE
+        WHERE fk_sol_com = NEW.fk_sol_com 
+        AND fk_estatus != 7 
+        AND sol_com_est_fecha_fin IS NULL;
+        
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Crear el trigger para sol_com_est
+CREATE OR REPLACE TRIGGER trigger_entrega_completada
+    AFTER INSERT ON sol_com_est
+    FOR EACH ROW
+    EXECUTE FUNCTION actualizar_stock_entrega();
