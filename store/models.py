@@ -838,6 +838,50 @@ class venta_evento(models.Model):
         db_table = 'venta_evento'
 
 
+class tipo_invitado(models.Model):
+    tip_inv_id = models.AutoField(primary_key=True)
+    tip_inv_nombre = models.CharField(max_length=255)
+    tip_inv_descripcion = models.CharField(max_length=1000)
+    
+    class Meta:
+        managed = True
+        db_table = 'tipo_invitado'
+
+    def __str__(self):
+        return self.tip_inv_nombre
+
+
+
+class invitado(models.Model):
+    inv_id = models.AutoField(primary_key=True)
+    inv_nombre = models.CharField(max_length=255)
+    inv_apellido = models.CharField(max_length=255)
+    inv_CI = models.CharField(max_length=50, unique=True)
+    fk_tipo_invitado = models.ForeignKey(tipo_invitado, models.DO_NOTHING, db_column='fk_tipo_invitado')
+    
+    class Meta:
+        managed = True
+        db_table = 'invitado'
+
+    def __str__(self):
+        return self.inv_nombre
+
+class inv_evento(models.Model):
+    inv_eve_id = models.AutoField(primary_key=True)
+    inv_eve_entrada = models.DateTimeField()
+    inv_eve_salida = models.DateTimeField()
+    fk_evento = models.ForeignKey(evento, models.DO_NOTHING, db_column='fk_evento')
+    fk_invitado = models.ForeignKey(invitado, models.DO_NOTHING, db_column='fk_invitado')
+
+    class Meta:
+        managed = True
+        db_table = 'inv_evento'
+        unique_together = (('fk_evento', 'fk_invitado'),)
+
+    def __str__(self):
+        return f"Invitación #{self.inv_eve_id} para {self.fk_invitado.inv_nombre} en {self.fk_evento.eve_nombre}"
+
+
 class venta_fisica(models.Model):
     ven_fis_id = models.AutoField(primary_key=True)
     ven_fis_fecha = models.DateField()

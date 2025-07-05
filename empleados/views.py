@@ -14,6 +14,17 @@ from empleados.utils import requiere_privilegio
 from django.views.decorators.csrf import csrf_protect
 from django.shortcuts import get_object_or_404
 
+# Importaciones adicionales para el módulo de eventos
+from store.models import (
+    evento, tipo_evento, tipo_invitado, invitado, 
+    inv_evento, eve_pro, existencia_evento, presentacion,
+    proveedor, lugar, venta_boleto_evento, asistencia_evento
+)
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+import json
+from datetime import datetime
+
 @login_required
 def empleado_dashboard(request):
     if not hasattr(request.user, 'fk_emp_car') or not request.user.fk_emp_car:
@@ -878,3 +889,404 @@ def marcar_entregada_api(request, solicitud_id):
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
     return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+# Vistas del módulo de Eventos
+@login_required
+def lista_eventos(request):
+    """Lista todos los eventos con filtros"""
+    eventos = evento.objects.all().select_related('fk_lugar', 'fk_tip_eve').order_by('-eve_fecha_hora')
+    
+    # Filtros
+    tipo_evento_id = request.GET.get('tipo_evento')
+    fecha_desde = request.GET.get('fecha_desde')
+    fecha_hasta = request.GET.get('fecha_hasta')
+    lugar_id = request.GET.get('lugar')
+    
+    if tipo_evento_id:
+        eventos = eventos.filter(fk_tip_eve_id=tipo_evento_id)
+    if fecha_desde:
+        eventos = eventos.filter(eve_fecha_hora__date__gte=fecha_desde)
+    if fecha_hasta:
+        eventos = eventos.filter(eve_fecha_hora__date__lte=fecha_hasta)
+    if lugar_id:
+        eventos = eventos.filter(fk_lugar_id=lugar_id)
+    
+    # Obtener datos para los filtros
+    tipos_evento = tipo_evento.objects.all()
+    lugares = lugar.objects.all()
+    
+    # Agregar información adicional a cada evento
+    for evt in eventos:
+        evt.num_proveedores = eve_pro.objects.filter(fk_evento=evt).count()
+        evt.num_invitados = inv_evento.objects.filter(fk_evento=evt).count()
+        evt.boletos_vendidos = asistencia_evento.objects.filter(fk_evento=evt).count()
+    
+    context = {
+        'eventos': eventos,
+        'tipos_evento': tipos_evento,
+        'lugares': lugares,
+        'filtros': {
+            'tipo_evento': tipo_evento_id,
+            'fecha_desde': fecha_desde,
+            'fecha_hasta': fecha_hasta,
+            'lugar': lugar_id
+        }
+    }
+    
+    return render(request, 'empleados/eventos/lista_eventos.html', context)
+
+
+@login_required
+def crear_evento(request):
+    """Crear un nuevo evento"""
+    if request.method == 'POST':
+        try:
+            # Obtener datos del formulario
+            nombre = request.POST.get('eve_nombre')
+            descripcion = request.POST.get('eve_descripcion')
+            fecha_hora = request.POST.get('eve_fecha_hora')
+            nro_boletos = request.POST.get('eve_nro_boletos')
+            lugar_id = request.POST.get('fk_lugar')
+            tipo_evento_id = request.POST.get('fk_tip_eve')
+            
+            # Crear el evento
+            nuevo_evento = evento.objects.create(
+                eve_nombre=nombre,
+                eve_descripcion=descripcion,
+                eve_fecha_hora=fecha_hora,
+                eve_nro_boletos=nro_boletos,
+                fk_lugar_id=lugar_id,
+                fk_tip_eve_id=tipo_evento_id
+            )
+            
+            messages.success(request, f'Evento "{nombre}" creado exitosamente.')
+            return redirect('empleados:detalle_evento', evento_id=nuevo_evento.eve_id)
+            
+        except Exception as e:
+            messages.error(request, f'Error al crear el evento: {str(e)}')
+    
+    # GET request
+    tipos_evento = tipo_evento.objects.all()
+    lugares = lugar.objects.all()
+    
+    context = {
+        'tipos_evento': tipos_evento,
+        'lugares': lugares
+    }
+    
+    return render(request, 'empleados/eventos/crear_evento.html', context)
+
+
+@login_required
+def editar_evento(request, evento_id):
+    """Editar un evento existente"""
+    evento_obj = get_object_or_404(evento, eve_id=evento_id)
+    
+    if request.method == 'POST':
+        try:
+            # Actualizar datos del evento
+            evento_obj.eve_nombre = request.POST.get('eve_nombre')
+            evento_obj.eve_descripcion = request.POST.get('eve_descripcion')
+            evento_obj.eve_fecha_hora = request.POST.get('eve_fecha_hora')
+            evento_obj.eve_nro_boletos = request.POST.get('eve_nro_boletos')
+            evento_obj.fk_lugar_id = request.POST.get('fk_lugar')
+            evento_obj.fk_tip_eve_id = request.POST.get('fk_tip_eve')
+            evento_obj.save()
+            
+            messages.success(request, 'Evento actualizado exitosamente.')
+            return redirect('empleados:detalle_evento', evento_id=evento_id)
+            
+        except Exception as e:
+            messages.error(request, f'Error al actualizar el evento: {str(e)}')
+    
+    # GET request
+    tipos_evento = tipo_evento.objects.all()
+    lugares = lugar.objects.all()
+    
+    context = {
+        'evento': evento_obj,
+        'tipos_evento': tipos_evento,
+        'lugares': lugares
+    }
+    
+    return render(request, 'empleados/eventos/editar_evento.html', context)
+
+
+@login_required
+def eliminar_evento(request, evento_id):
+    """Eliminar un evento"""
+    if request.method == 'POST':
+        try:
+            evento_obj = get_object_or_404(evento, eve_id=evento_id)
+            nombre = evento_obj.eve_nombre
+            
+            # Verificar si hay ventas asociadas
+            if asistencia_evento.objects.filter(fk_evento=evento_obj).exists():
+                messages.error(request, 'No se puede eliminar el evento porque tiene ventas asociadas.')
+                return redirect('empleados:detalle_evento', evento_id=evento_id)
+            
+            evento_obj.delete()
+            messages.success(request, f'Evento "{nombre}" eliminado exitosamente.')
+            return redirect('empleados:lista_eventos')
+            
+        except Exception as e:
+            messages.error(request, f'Error al eliminar el evento: {str(e)}')
+    
+    return redirect('empleados:lista_eventos')
+
+
+@login_required
+def detalle_evento(request, evento_id):
+    """Ver detalle completo de un evento"""
+    evento_obj = get_object_or_404(evento, eve_id=evento_id)
+    
+    # Obtener proveedores del evento
+    proveedores_evento = eve_pro.objects.filter(fk_evento=evento_obj).select_related('fk_proveedor')
+    
+    # Obtener invitados del evento
+    invitados_evento = inv_evento.objects.filter(fk_evento=evento_obj).select_related('fk_invitado', 'fk_invitado__fk_tipo_invitado')
+    
+    # Obtener existencias del evento (cervezas aportadas)
+    existencias = existencia_evento.objects.filter(
+        fk_evento_proveedor__fk_evento=evento_obj
+    ).select_related('fk_presentacion', 'fk_evento_proveedor__fk_proveedor')
+    
+    # Estadísticas del evento
+    boletos_vendidos = asistencia_evento.objects.filter(fk_evento=evento_obj).count()
+    boletos_disponibles = evento_obj.eve_nro_boletos - boletos_vendidos
+    
+    context = {
+        'evento': evento_obj,
+        'proveedores_evento': proveedores_evento,
+        'invitados_evento': invitados_evento,
+        'existencias': existencias,
+        'estadisticas': {
+            'boletos_vendidos': boletos_vendidos,
+            'boletos_disponibles': boletos_disponibles,
+            'porcentaje_vendido': (boletos_vendidos / evento_obj.eve_nro_boletos * 100) if evento_obj.eve_nro_boletos > 0 else 0
+        }
+    }
+    
+    return render(request, 'empleados/eventos/detalle_evento.html', context)
+
+
+@login_required
+def asignar_invitados(request, evento_id):
+    """Asignar invitados (jueces, etc.) a un evento"""
+    evento_obj = get_object_or_404(evento, eve_id=evento_id)
+    
+    if request.method == 'POST':
+        try:
+            invitado_id = request.POST.get('invitado_id')
+            entrada = request.POST.get('inv_eve_entrada')
+            salida = request.POST.get('inv_eve_salida')
+            
+            # Verificar si el invitado ya está asignado
+            if inv_evento.objects.filter(fk_evento=evento_obj, fk_invitado_id=invitado_id).exists():
+                messages.error(request, 'Este invitado ya está asignado al evento.')
+                return redirect('empleados:asignar_invitados', evento_id=evento_id)
+            
+            # Crear la asignación
+            inv_evento.objects.create(
+                fk_evento=evento_obj,
+                fk_invitado_id=invitado_id,
+                inv_eve_entrada=entrada,
+                inv_eve_salida=salida
+            )
+            
+            messages.success(request, 'Invitado asignado exitosamente.')
+            return redirect('empleados:asignar_invitados', evento_id=evento_id)
+            
+        except Exception as e:
+            messages.error(request, f'Error al asignar invitado: {str(e)}')
+    
+    # GET request
+    invitados_evento = inv_evento.objects.filter(fk_evento=evento_obj).select_related('fk_invitado', 'fk_invitado__fk_tipo_invitado')
+    
+    # Filtrar invitados según el tipo de evento
+    # Para eventos de degustación, mostrar solo jueces
+    if 'degustación' in evento_obj.fk_tip_eve.tip_eve_nombre.lower():
+        invitados_disponibles = invitado.objects.filter(
+            fk_tipo_invitado__tip_inv_nombre__icontains='juez'
+        ).exclude(
+            inv_evento__fk_evento=evento_obj
+        )
+    else:
+        invitados_disponibles = invitado.objects.exclude(
+            inv_evento__fk_evento=evento_obj
+        )
+    
+    context = {
+        'evento': evento_obj,
+        'invitados_evento': invitados_evento,
+        'invitados_disponibles': invitados_disponibles
+    }
+    
+    return render(request, 'empleados/eventos/asignar_invitados.html', context)
+
+
+@login_required
+def eliminar_invitado_evento(request, evento_id, inv_eve_id):
+    """Eliminar un invitado de un evento"""
+    if request.method == 'POST':
+        try:
+            inv_eve = get_object_or_404(inv_evento, inv_eve_id=inv_eve_id, fk_evento_id=evento_id)
+            inv_eve.delete()
+            messages.success(request, 'Invitado eliminado del evento.')
+        except Exception as e:
+            messages.error(request, f'Error al eliminar invitado: {str(e)}')
+    
+    return redirect('empleados:asignar_invitados', evento_id=evento_id)
+
+
+@login_required
+def asignar_proveedores(request, evento_id):
+    """Asignar proveedores y sus aportes a un evento"""
+    evento_obj = get_object_or_404(evento, eve_id=evento_id)
+    
+    if request.method == 'POST':
+        try:
+            proveedor_id = request.POST.get('proveedor_id')
+            
+            # Verificar si el proveedor ya está asignado
+            if eve_pro.objects.filter(fk_evento=evento_obj, fk_proveedor_id=proveedor_id).exists():
+                messages.error(request, 'Este proveedor ya está asignado al evento.')
+                return redirect('empleados:asignar_proveedores', evento_id=evento_id)
+            
+            # Crear la relación evento-proveedor
+            eve_pro_obj = eve_pro.objects.create(
+                fk_evento=evento_obj,
+                fk_proveedor_id=proveedor_id
+            )
+            
+            # Obtener las presentaciones y cantidades del formulario
+            presentaciones = request.POST.getlist('presentacion_id[]')
+            cantidades = request.POST.getlist('cantidad[]')
+            
+            for i in range(len(presentaciones)):
+                if presentaciones[i] and cantidades[i]:
+                    existencia_evento.objects.create(
+                        fk_evento_proveedor=eve_pro_obj,
+                        fk_presentacion_id=presentaciones[i],
+                        exi_eve_cantidad=cantidades[i]
+                    )
+            
+            messages.success(request, 'Proveedor y aportes asignados exitosamente.')
+            return redirect('empleados:asignar_proveedores', evento_id=evento_id)
+            
+        except Exception as e:
+            messages.error(request, f'Error al asignar proveedor: {str(e)}')
+    
+    # GET request
+    proveedores_evento = eve_pro.objects.filter(fk_evento=evento_obj).select_related('fk_proveedor')
+    proveedores_disponibles = proveedor.objects.exclude(
+        eve_pro__fk_evento=evento_obj
+    )
+    
+    # Obtener existencias por proveedor
+    existencias_por_proveedor = {}
+    for prov_eve in proveedores_evento:
+        existencias_por_proveedor[prov_eve.eve_pro_id] = existencia_evento.objects.filter(
+            fk_evento_proveedor=prov_eve
+        ).select_related('fk_presentacion')
+    
+    context = {
+        'evento': evento_obj,
+        'proveedores_evento': proveedores_evento,
+        'proveedores_disponibles': proveedores_disponibles,
+        'existencias_por_proveedor': existencias_por_proveedor
+    }
+    
+    return render(request, 'empleados/eventos/asignar_proveedores.html', context)
+
+
+@login_required
+def eliminar_proveedor_evento(request, evento_id, eve_pro_id):
+    """Eliminar un proveedor de un evento"""
+    if request.method == 'POST':
+        try:
+            eve_pro_obj = get_object_or_404(eve_pro, eve_pro_id=eve_pro_id, fk_evento_id=evento_id)
+            eve_pro_obj.delete()
+            messages.success(request, 'Proveedor eliminado del evento.')
+        except Exception as e:
+            messages.error(request, f'Error al eliminar proveedor: {str(e)}')
+    
+    return redirect('empleados:asignar_proveedores', evento_id=evento_id)
+
+
+@login_required
+@require_http_methods(["GET"])
+def obtener_presentaciones_proveedor(request, proveedor_id):
+    """Obtener las presentaciones de cerveza de un proveedor específico"""
+    try:
+        # Obtener todas las cervezas del proveedor a través de las presentaciones
+        presentaciones = presentacion.objects.filter(
+            fk_cerveza__isnull=False
+        ).select_related('fk_cerveza')
+        
+        # Filtrar por proveedor si hay una relación directa
+        # Si no, devolver todas las presentaciones disponibles
+        
+        data = {
+            'presentaciones': [
+                {
+                    'id': pres.prese_id,
+                    'nombre': pres.prese_nombre,
+                    'cerveza': pres.fk_cerveza.cer_nombre if pres.fk_cerveza else 'N/A',
+                    'volumen': str(pres.prese_volumen),
+                    'recipiente': pres.prese_recipiente
+                }
+                for pres in presentaciones
+            ]
+        }
+        
+        return JsonResponse(data)
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+
+@login_required
+def gestionar_existencias_evento(request, evento_id, eve_pro_id):
+    """Gestionar las existencias (aportes) de un proveedor en un evento"""
+    evento_obj = get_object_or_404(evento, eve_id=evento_id)
+    eve_pro_obj = get_object_or_404(eve_pro, eve_pro_id=eve_pro_id, fk_evento=evento_obj)
+    
+    if request.method == 'POST':
+        try:
+            # Eliminar existencias anteriores
+            existencia_evento.objects.filter(fk_evento_proveedor=eve_pro_obj).delete()
+            
+            # Obtener las presentaciones y cantidades del formulario
+            presentaciones = request.POST.getlist('presentacion_id[]')
+            cantidades = request.POST.getlist('cantidad[]')
+            
+            for i in range(len(presentaciones)):
+                if presentaciones[i] and cantidades[i]:
+                    existencia_evento.objects.create(
+                        fk_evento_proveedor=eve_pro_obj,
+                        fk_presentacion_id=presentaciones[i],
+                        exi_eve_cantidad=cantidades[i]
+                    )
+            
+            messages.success(request, 'Existencias actualizadas exitosamente.')
+            return redirect('empleados:asignar_proveedores', evento_id=evento_id)
+            
+        except Exception as e:
+            messages.error(request, f'Error al actualizar existencias: {str(e)}')
+    
+    # GET request
+    existencias = existencia_evento.objects.filter(
+        fk_evento_proveedor=eve_pro_obj
+    ).select_related('fk_presentacion')
+    
+    todas_presentaciones = presentacion.objects.all()
+    
+    context = {
+        'evento': evento_obj,
+        'eve_pro': eve_pro_obj,
+        'existencias': existencias,
+        'todas_presentaciones': todas_presentaciones
+    }
+    
+    return render(request, 'empleados/eventos/gestionar_existencias_evento.html', context)

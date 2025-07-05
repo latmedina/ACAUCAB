@@ -1,0 +1,118 @@
+{% extends 'empleados/eventos/base_eventos.html' %}
+
+{% block titulo %}Crear Nuevo Evento{% endblock %}
+
+{% block eventos_content %}
+<div class="container">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'empleados:lista_eventos' %}">Eventos</a></li>
+            <li class="breadcrumb-item active">Crear Nuevo Evento</li>
+        </ol>
+    </nav>
+
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">
+                <i class="fas fa-calendar-plus me-2"></i> Crear Nuevo Evento
+            </h4>
+        </div>
+        <div class="card-body">
+            <form method="post" id="formCrearEvento">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="mb-3">
+                            <label for="eve_nombre" class="form-label">Nombre del Evento <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="eve_nombre" name="eve_nombre" required>
+                            <div class="form-text">Ejemplo: UBirra 2025, Feria de Cerveza Artesanal</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="fk_tip_eve" class="form-label">Tipo de Evento <span class="text-danger">*</span></label>
+                            <select class="form-select" id="fk_tip_eve" name="fk_tip_eve" required>
+                                <option value="">Seleccione un tipo</option>
+                                {% for tipo in tipos_evento %}
+                                    <option value="{{ tipo.tip_eve_id }}">{{ tipo.tip_eve_nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="eve_descripcion" class="form-label">Descripción <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="eve_descripcion" name="eve_descripcion" rows="3" required></textarea>
+                    <div class="form-text">Describa el propósito y actividades principales del evento</div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="eve_fecha_hora" class="form-label">Fecha y Hora <span class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control" id="eve_fecha_hora" name="eve_fecha_hora" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="fk_lugar" class="form-label">Lugar <span class="text-danger">*</span></label>
+                            <select class="form-select" id="fk_lugar" name="fk_lugar" required>
+                                <option value="">Seleccione un lugar</option>
+                                {% for lugar in lugares %}
+                                    <option value="{{ lugar.lug_id }}">{{ lugar.lug_nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="eve_nro_boletos" class="form-label">Número de Boletos <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="eve_nro_boletos" name="eve_nro_boletos" 
+                                   min="1" required>
+                            <div class="form-text">Capacidad máxima del evento</div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Nota:</strong> Después de crear el evento, podrá asignar proveedores, invitados especiales y gestionar las existencias de cerveza.
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{% url 'empleados:lista_eventos' %}" class="btn btn-secondary">
+                        <i class="fas fa-times me-2"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i> Crear Evento
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Establecer fecha mínima como hoy
+    const fechaInput = document.getElementById('eve_fecha_hora');
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    fechaInput.min = now.toISOString().slice(0, 16);
+
+    // Validación del formulario
+    document.getElementById('formCrearEvento').addEventListener('submit', function(e) {
+        const nroBoletos = document.getElementById('eve_nro_boletos').value;
+        if (parseInt(nroBoletos) <= 0) {
+            e.preventDefault();
+            alert('El número de boletos debe ser mayor a 0');
+            return false;
+        }
+    });
+});
+</script>
+{% endblock %} 

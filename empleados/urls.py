@@ -81,5 +81,23 @@ urlpatterns = [
     path('api/solicitudes-pendientes/<int:solicitud_id>/rechazar/', views.rechazar_solicitud_api, name='api_rechazar_solicitud'),
     path('api/solicitudes-rechazadas/<int:solicitud_id>/devolver-pendiente/', views.devolver_a_pendiente_api, name='api_devolver_pendiente'),
     path('api/solicitudes-aprobadas/<int:solicitud_id>/marcar-entregada/', views.marcar_entregada_api, name='api_marcar_entregada'),
+
+    # Removed: duplicate/missing functions
+    # path('obtener-ordenes-pendientes/', views.obtener_ordenes_pendientes, name='obtener_ordenes_pendientes'),
+    # path('actualizar-fecha-ven-onl-est/', views.actualizar_fecha_ven_onl_est, name='actualizar_fecha_ven_onl_est'),
+    # path('cargar-presentaciones/', views.cargar_presentaciones, name='cargar_presentaciones'),
+    
+    # URLs del módulo de Eventos
+    path('eventos/', views.lista_eventos, name='lista_eventos'),
+    path('eventos/crear/', views.crear_evento, name='crear_evento'),
+    path('eventos/<int:evento_id>/', views.detalle_evento, name='detalle_evento'),
+    path('eventos/<int:evento_id>/editar/', views.editar_evento, name='editar_evento'),
+    path('eventos/<int:evento_id>/eliminar/', views.eliminar_evento, name='eliminar_evento'),
+    path('eventos/<int:evento_id>/invitados/', views.asignar_invitados, name='asignar_invitados'),
+    path('eventos/<int:evento_id>/invitados/<int:inv_eve_id>/eliminar/', views.eliminar_invitado_evento, name='eliminar_invitado_evento'),
+    path('eventos/<int:evento_id>/proveedores/', views.asignar_proveedores, name='asignar_proveedores'),
+    path('eventos/<int:evento_id>/proveedores/<int:eve_pro_id>/eliminar/', views.eliminar_proveedor_evento, name='eliminar_proveedor_evento'),
+    path('eventos/<int:evento_id>/proveedores/<int:eve_pro_id>/existencias/', views.gestionar_existencias_evento, name='gestionar_existencias_evento'),
+    path('api/proveedores/<int:proveedor_id>/presentaciones/', views.obtener_presentaciones_proveedor, name='obtener_presentaciones_proveedor'),
 ]
     
