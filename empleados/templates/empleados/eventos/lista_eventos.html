@@ -1,0 +1,140 @@
+{% extends 'empleados/eventos/base_eventos.html' %}
+
+{% block titulo %}Gestión de Eventos{% endblock %}
+
+{% block eventos_content %}
+<div class="container-fluid">
+    <div class="eventos-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-0">
+                    <i class="fas fa-calendar-alt me-2"></i> Gestión de Eventos
+                </h1>
+                <p class="mb-0 mt-2">Administra los eventos de degustación, ferias y exposiciones de ACAUCAB</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{% url 'empleados:crear_evento' %}" class="btn btn-light">
+                    <i class="fas fa-plus me-2"></i> Nuevo Evento
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filter-card">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Tipo de Evento</label>
+                <select name="tipo_evento" class="form-select">
+                    <option value="">Todos los tipos</option>
+                    {% for tipo in tipos_evento %}
+                        <option value="{{ tipo.tip_eve_id }}" {% if filtros.tipo_evento == tipo.tip_eve_id|stringformat:"s" %}selected{% endif %}>
+                            {{ tipo.tip_eve_nombre }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Lugar</label>
+                <select name="lugar" class="form-select">
+                    <option value="">Todos los lugares</option>
+                    {% for lugar in lugares %}
+                        <option value="{{ lugar.lug_id }}" {% if filtros.lugar == lugar.lug_id|stringformat:"s" %}selected{% endif %}>
+                            {{ lugar.lug_nombre }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Fecha Desde</label>
+                <input type="date" name="fecha_desde" class="form-control" value="{{ filtros.fecha_desde }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Fecha Hasta</label>
+                <input type="date" name="fecha_hasta" class="form-control" value="{{ filtros.fecha_hasta }}">
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search me-2"></i> Filtrar
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Lista de Eventos -->
+    <div class="row">
+        {% for evento in eventos %}
+            <div class="col-lg-6">
+                <div class="card evento-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h5 class="card-title mb-1">{{ evento.eve_nombre }}</h5>
+                                <p class="text-muted small mb-0">
+                                    <i class="fas fa-map-marker-alt me-1"></i> {{ evento.fk_lugar.lug_nombre }}
+                                </p>
+                            </div>
+                            {% now "Y-m-d H:i:s" as current_datetime %}
+                            {% if evento.eve_fecha_hora|date:"Y-m-d H:i:s" > current_datetime %}
+                                <span class="badge badge-evento badge-proximo">Próximo</span>
+                            {% elif evento.eve_fecha_hora|date:"Y-m-d" == current_datetime|date:"Y-m-d" %}
+                                <span class="badge badge-evento badge-en-curso">En Curso</span>
+                            {% else %}
+                                <span class="badge badge-evento badge-finalizado">Finalizado</span>
+                            {% endif %}
+                        </div>
+
+                        <p class="card-text mb-3">{{ evento.eve_descripcion|truncatewords:20 }}</p>
+
+                        <div class="row text-center mb-3">
+                            <div class="col-4">
+                                <div class="stat-item">
+                                    <div class="stat-value">{{ evento.eve_fecha_hora|date:"d" }}</div>
+                                    <div class="stat-label">{{ evento.eve_fecha_hora|date:"M Y" }}</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="stat-item">
+                                    <div class="stat-value">{{ evento.num_proveedores }}</div>
+                                    <div class="stat-label">Proveedores</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="stat-item">
+                                    <div class="stat-value">{{ evento.boletos_vendidos }}/{{ evento.eve_nro_boletos }}</div>
+                                    <div class="stat-label">Boletos</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'empleados:detalle_evento' evento.eve_id %}" class="btn btn-evento btn-sm flex-fill">
+                                <i class="fas fa-eye me-1"></i> Ver Detalle
+                            </a>
+                            <a href="{% url 'empleados:editar_evento' evento.eve_id %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            {% if evento.boletos_vendidos == 0 %}
+                                <form method="post" action="{% url 'empleados:eliminar_evento' evento.eve_id %}" 
+                                      onsubmit="return confirm('¿Está seguro de eliminar este evento?')" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle me-2"></i>
+                    No se encontraron eventos con los filtros seleccionados.
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 

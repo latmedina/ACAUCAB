@@ -1,0 +1,100 @@
+{% extends 'empleados/base_empleados.html' %}
+
+{% block extra_css %}
+<style>
+    .eventos-header {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+    }
+
+    .evento-card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        margin-bottom: 1.5rem;
+    }
+
+    .evento-card:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transform: translateY(-2px);
+    }
+
+    .evento-stats {
+        display: flex;
+        gap: 2rem;
+        margin-top: 1rem;
+    }
+
+    .stat-item {
+        flex: 1;
+        text-align: center;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #6366f1;
+    }
+
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.875rem;
+    }
+
+    .filter-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+
+    .btn-evento {
+        background: #6366f1;
+        color: white;
+        border: none;
+        padding: 0.5rem 1.5rem;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-evento:hover {
+        background: #4f46e5;
+        transform: translateY(-1px);
+    }
+
+    .badge-evento {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+    }
+
+    .badge-proximo {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .badge-en-curso {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .badge-finalizado {
+        background: #e5e7eb;
+        color: #6b7280;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% block eventos_content %}
+<!-- El contenido específico de cada página de eventos irá aquí -->
+{% endblock %}
+{% endblock %} 
