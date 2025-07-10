@@ -57,6 +57,7 @@
             <input type="date" id="fecha_fin" class="form-control">
             <label for="intervalo_crecimiento" style="margin-left: 15px;">Comparar:</label>
             <select id="intervalo_crecimiento" class="form-control">
+                <option value="semana">Semana Anterior</option>
                 <option value="mes">Mes Anterior</option>
                 <option value="ano">Año Anterior</option>
             </select>
@@ -127,7 +128,7 @@
             const crecimientoMonto = crecimiento.crecimiento_monto || 0;
             const crecimientoPorcentaje = crecimiento.crecimiento_porcentaje || 0;
             const esPositivo = crecimientoMonto >= 0;
-            const textoIntervalo = { 'mes': 'mes anterior', 'ano': 'año anterior' };
+            const textoIntervalo = { 'semana': 'semana anterior', 'mes': 'mes anterior', 'ano': 'año anterior' };
 
             const html = `
                 <div class="kpi-grid">

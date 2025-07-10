@@ -110,7 +110,7 @@
     </div>
     {% endif %}
 
-    <!-- Gestión de Solicitudes -->
+    <!-- indicadores de ventas -->
     {% if 'gestion_solicitud' in privilegios %}
     <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
         <div class="card h-100 text-center border-success dashboard-card">
@@ -126,6 +126,100 @@
             </div>
         </div>
     </div>
+    {% endif %}
+
+    <!-- indicadores de clientes -->
+    {% if 'gestion_solicitud' in privilegios %}
+    <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+        <div class="card h-100 text-center border-success dashboard-card">
+            <div class="card-body">
+                <div class="display-4 text-success mb-3">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h6 class="card-title">Indicadores de Clientes</h6>
+                <p class="card-text text-muted small">Estadisticas de clientes</p>
+                <a href="{% url 'empleados:indicadores_clientes' %}" class="btn btn-outline-success btn-sm">
+                    <i class="fas fa-arrow-right me-1"></i>Acceder
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- indicadores de inventario -->
+    {% if 'gestion_solicitud' in privilegios %}
+    <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+        <div class="card h-100 text-center border-success dashboard-card">
+            <div class="card-body">
+                <div class="display-4 text-success mb-3">
+                    <i class="fas fa-check"></i>
+                </div>
+                <h6 class="card-title">Indicadores de inventario</h6>
+                <p class="card-text text-muted small">Estadisticas del inventario</p>
+                <a href="{% url 'empleados:indicadores_inventario' %}" class="btn btn-outline-success btn-sm">
+                    <i class="fas fa-arrow-right me-1"></i>Acceder
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    {% endif %}
+
+    <!-- Tendencia de ventas -->
+    {% if 'gestion_solicitud' in privilegios %}
+    <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+        <div class="card h-100 text-center border-success dashboard-card">
+            <div class="card-body">
+                <div class="display-4 text-success mb-3">
+                    <i class="fas fa-check"></i>
+                </div>
+                <h6 class="card-title">Tendencia de ventas</h6>
+                <p class="card-text text-muted small">Estadisticas del inventario</p>
+                <a href="{% url 'empleados:vista_grafico_tendencia' %}" class="btn btn-outline-success btn-sm">
+                    <i class="fas fa-arrow-right me-1"></i>Acceder
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    {% endif %}
+
+     <!-- Productos más vendidos -->
+    {% if 'gestion_solicitud' in privilegios %}
+    <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+        <div class="card h-100 text-center border-success dashboard-card">
+            <div class="card-body">
+                <div class="display-4 text-success mb-3">
+                    <i class="fas fa-check"></i>
+                </div>
+                <h6 class="card-title">Productos más vendidos</h6>
+                <p class="card-text text-muted small">Estadisticas de de venta de productos</p>
+                <a href="{% url 'empleados:vista_productos_mas_vendidos' %}" class="btn btn-outline-success btn-sm">
+                    <i class="fas fa-arrow-right me-1"></i>Acceder
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    {% endif %}
+
+     <!-- Productos más vendidos -->
+    {% if 'gestion_solicitud' in privilegios %}
+    <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+        <div class="card h-100 text-center border-success dashboard-card">
+            <div class="card-body">
+                <div class="display-4 text-success mb-3">
+                    <i class="fas fa-check"></i>
+                </div>
+                <h6 class="card-title">Inventario Actual</h6>
+                <p class="card-text text-muted small">Productos disponibles</p>
+                <a href="{% url 'empleados:vista_reporte_inventario' %}" class="btn btn-outline-success btn-sm">
+                    <i class="fas fa-arrow-right me-1"></i>Acceder
+                </a>
+            </div>
+        </div>
+    </div>
+    
     {% endif %}
 
 {% endblock %}

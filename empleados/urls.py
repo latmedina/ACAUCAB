@@ -87,7 +87,7 @@ urlpatterns = [
     # path('actualizar-fecha-ven-onl-est/', views.actualizar_fecha_ven_onl_est, name='actualizar_fecha_ven_onl_est'),
     # path('cargar-presentaciones/', views.cargar_presentaciones, name='cargar_presentaciones'),
     
-     # ========== indicadores de ventas ==========
+    # ========== indicadores de ventas ==========
     path('', views.empleado_dashboard_indicadores, name='dashboard_indicadores'),
     path('dashboard_indicadores/', views.empleado_dashboard_indicadores, name='dashboard_indicadores'),
     path('dashboard_indicadores/indicadores_ventas', views.vista_indicadores_ventas, name='indicadores_ventas'),
@@ -98,6 +98,28 @@ urlpatterns = [
     path('api/kpi/volumen-unidades/', views.kpi_volumen_unidades_api, name='api_kpi_volumen_unidades'),
     path('api/kpi/ventas-por-estilo/', views.kpi_ventas_por_estilo_api, name='api_kpi_ventas_por_estilo'),
 
+    # ========== indicadores de clientes ==========
+    path('dashboard_indicadores/indicadores_clientes/', views.vista_indicadores_clientes, name='indicadores_clientes'),
+    path('api/kpi/clientes-nuevos-recurrentes/', views.kpi_clientes_nuevos_recurrentes_api, name='api_kpi_clientes_nuevos_recurrentes'),
+    path('api/kpi/tasa-retencion/', views.kpi_tasa_retencion_api, name='api_kpi_tasa_retencion'),
+
+    # ========== indicadores de inventario ==========
+    path('dashboard_indicadores/indicadores_inventario/', views.vista_indicadores_inventario, name='indicadores_inventario'),
+    path('api/kpi/rotacion-inventario/', views.kpi_rotacion_inventario_api, name='api_kpi_rotacion_inventario'),
+    path('api/kpi/ruptura-stock/', views.kpi_tasa_ruptura_stock_api, name='api_kpi_ruptura_stock'),
+
+    # ========== graficos de tendencia de ventas ==========
+    path('graficos/tendencia-ventas/', views.vista_grafico_tendencia, name='vista_grafico_tendencia'),
+    path('api/graficos/tendencia-ventas/', views.grafico_tendencia_ventas_api, name='api_grafico_tendencia_ventas'),
+
+    # ========== graficos de productos mas vendidos ==========
+    path('reportes/top-productos/', views.vista_productos_mas_vendidos, name='vista_productos_mas_vendidos'),
+    path('api/kpi/top-productos/', views.kpi_productos_mas_vendidos_api, name='api_kpi_top_productos'),
+
+    # ========== graficos de productos mas vendidos ==========
+    path('reportes/inventario-actual/', views.vista_reporte_inventario, name='vista_reporte_inventario'),
+    path('api/stock-por-presentacion/', views.reporte_stock_presentacion_api, name='api_reporte_stock_presentacion'),
+    
 
     # URLs del módulo de Eventos
     path('eventos/', views.lista_eventos, name='lista_eventos'),
