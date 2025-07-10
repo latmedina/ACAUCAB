@@ -173,7 +173,8 @@ document.addEventListener('DOMContentLoaded', function() {
     contentContainer.addEventListener('click', function(event) {
         if (event.target && event.target.matches('button.btn-factura')) {
             const ventaId = event.target.dataset.id;
-            window.open(`/factura/${ventaId}`, '_blank');
+            const tipoFactura = event.target.dataset.tipo;
+            window.open(`/factura/${tipoFactura}/${ventaId}`, '_blank');
         }
     });
 

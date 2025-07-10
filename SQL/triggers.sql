@@ -141,7 +141,16 @@ $$ LANGUAGE plpgsql;
 
 -- Crear el trigger que se ejecuta después de cada INSERT en venta_fisica
 DROP TRIGGER IF EXISTS tr_otorgar_puntos_venta_fisica ON venta_fisica;
+CREATE TRIGGER tr_otorgar_puntos_venta_fisica
+    AFTER INSERT ON venta_fisica
+    FOR EACH ROW
+    EXECUTE FUNCTION fn_otorgar_puntos_venta_fisica();
 
+-- =====================================================
+-- TRIGGER: GENERAR SOLICITUD DE REPOSICIÓN DESDE INVENTARIO
+-- =====================================================
+-- Este trigger se ejecuta automáticamente cuando se actualiza la cantidad de un inventario
+-- y genera una solicitud de reposición si el stock baja de 20 unidades.
 
 CREATE OR REPLACE FUNCTION public.fn_generar_reposicion_desde_inventario()
 RETURNS TRIGGER AS $$
@@ -242,97 +251,12 @@ DROP TRIGGER IF EXISTS trg_verificar_stock_inventario ON public.inventario;
 
 -- Creamos el trigger en la tabla correcta ('inventario')
 CREATE TRIGGER trg_verificar_stock_inventario
--- Se dispara DESPUÉS de que una fila se haya ACTUALIZADO
-AFTER UPDATE ON public.inventario
--- Se ejecuta para cada fila modificada
-FOR EACH ROW
--- Condición corregida y optimizada: se ejecuta solo si la cantidad disminuye Y es menor/igual a 20.
-WHEN (NEW.inv_cantidad < OLD.inv_cantidad AND NEW.inv_cantidad <= 20)
--- Llama a la nueva función que contiene la lógica correcta
-EXECUTE FUNCTION public.fn_generar_reposicion_desde_inventario();
+    AFTER UPDATE ON public.inventario
+    FOR EACH ROW
+    WHEN (NEW.inv_cantidad < OLD.inv_cantidad AND NEW.inv_cantidad <= 20)
+    EXECUTE FUNCTION public.fn_generar_reposicion_desde_inventario();
 
--- =====================================================
--- COMENTARIOS Y DOCUMENTACIÓN
--- =====================================================
-/*
-DESCRIPCIÓN:
-Este trigger se ejecuta automáticamente cada vez que se inserta un registro 
-en la tabla detalle_venta_fisica (cuando se registra una venta física).
 
-FUNCIONALIDAD:
-1. Valida que la cantidad vendida sea positiva
-2. Verifica que el inventario especificado existe
-3. Comprueba que hay suficiente stock disponible
-4. Descuenta automáticamente la cantidad vendida del inventario
-5. Proporciona mensajes de error descriptivos en caso de problemas
-
-VENTAJAS:
-- Automático: No requiere intervención manual ni código en Django
-- Consistente: Garantiza que el inventario siempre se actualice
-- Atómico: Forma parte de la misma transacción de la venta
-- Seguro: Valida antes de actualizar para evitar inventarios negativos
-
-TABLA AFECTADA:
-- inventario.inv_cantidad (se decrementa)
-
-TABLA DISPARADORA:
-- detalle_venta_fisica (AFTER INSERT)
-
-CAMPOS UTILIZADOS:
-- NEW.det_ven_fis_cantidad (cantidad vendida)
-- NEW.fk_inventario (ID del inventario a actualizar)
-
-EJEMPLO DE USO:
-Cuando se ejecute:
-INSERT INTO detalle_venta_fisica (det_ven_fis_cantidad, det_ven_fis_precio_unitario, fk_venta_fisica, fk_inventario) 
-VALUES (5, 12.50, 1, 3);
-
-El trigger automáticamente ejecutará:
-UPDATE inventario SET inv_cantidad = inv_cantidad - 5 WHERE inv_id = 3;
-
-MANTENIMIENTO:
-- Para deshabilitar: DROP TRIGGER tr_descuento_inventario_venta_fisica ON detalle_venta_fisica;
-- Para modificar: Alterar la función fn_descuento_inventario_venta_fisica()
-
-==========================================================================
-
-TRIGGER DE PUNTOS POR VENTA FÍSICA:
-
-DESCRIPCIÓN:
-Este trigger se ejecuta automáticamente cada vez que se inserta un registro 
-en la tabla venta_fisica y otorga puntos al cliente basándose en el 10% del monto total.
-
-FUNCIONALIDAD:
-1. Calcula el 10% del monto total de la venta física
-2. Obtiene el último precio histórico de los puntos
-3. Divide el 10% entre el valor del punto para obtener los puntos a otorgar
-4. Suma los puntos calculados al cliente asociado a la venta
-
-LÓGICA DE CÁLCULO:
-- Monto para puntos = Total de venta × 0.10
-- Puntos otorgados = FLOOR(Monto para puntos ÷ Valor del punto)
-- Nuevos puntos cliente = Puntos actuales + Puntos otorgados
-
-TABLA AFECTADA:
-- cliente.cli_cantidad_puntos (se incrementa)
-
-TABLA DISPARADORA:
-- venta_fisica (AFTER INSERT)
-
-CAMPOS UTILIZADOS:
-- NEW.ven_fis_total (monto total de lawssdsdsd venta)
-- NEW.fk_cliente (ID del cliente que recibe los puntos)
-
-EJEMPLO DE USO:
-Si se registra una venta física de $100:
-- Monto para puntos: $100 × 0.10 = $10
-- Si valor del punto = $1, entonces: puntos = FLOOR($10 ÷ $1) = 10 puntos
-- Los puntos del cliente se incrementan en 10
-
-MANTENIMIENTO:
-- Para deshabilitar: DROP TRIGGER tr_otorgar_puntos_venta_fisica ON venta_fisica;
-- Para modificar: Alterar la función fn_otorgar_puntos_venta_fisica()
-*/
 
 -- Trigger para crear solicitud de compra cuando stock baja de 100
 CREATE OR REPLACE FUNCTION crear_solicitud_compra()
@@ -480,3 +404,69 @@ CREATE OR REPLACE TRIGGER trigger_entrega_completada
     AFTER INSERT ON sol_com_est
     FOR EACH ROW
     EXECUTE FUNCTION actualizar_stock_entrega();
+
+-- ===========================================
+-- TRIGGER: Descuento de stock en venta online
+-- Descuenta automáticamente el stock de pre_alm 
+-- cuando se registra un detalle de venta online
+-- ===========================================
+
+CREATE OR REPLACE FUNCTION fn_descuento_stock_venta_online()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_cantidad_disponible INTEGER;
+    v_producto_nombre VARCHAR(255);
+BEGIN
+    -- Validar que la cantidad a vender sea positiva
+    IF NEW.det_ven_onl_cantidad <= 0 THEN
+        RAISE EXCEPTION 'La cantidad vendida debe ser mayor a cero. Cantidad recibida: %', NEW.det_ven_onl_cantidad;
+    END IF;
+
+    -- Obtener la cantidad disponible actual en pre_alm
+    SELECT pre_alm_cantidad 
+    INTO v_cantidad_disponible
+    FROM pre_alm 
+    WHERE pre_alm_id = NEW.fk_pre_alm;
+    
+    -- Verificar que el registro de pre_alm existe
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'No se encontró el registro de pre_alm con ID: %', NEW.fk_pre_alm;
+    END IF;
+    
+    -- Obtener nombre del producto para mensajes más descriptivos
+    SELECT p.prese_nombre
+    INTO v_producto_nombre
+    FROM pre_alm pa
+    INNER JOIN presentacion p ON pa.fk_presentacion = p.prese_id
+    WHERE pa.pre_alm_id = NEW.fk_pre_alm;
+    
+    -- Verificar que hay suficiente stock disponible
+    IF v_cantidad_disponible < NEW.det_ven_onl_cantidad THEN
+        RAISE EXCEPTION 'Stock insuficiente para el producto "%" (ID: %). Disponible: %, Solicitado: %', 
+            COALESCE(v_producto_nombre, 'Producto'), 
+            NEW.fk_pre_alm, 
+            v_cantidad_disponible, 
+            NEW.det_ven_onl_cantidad;
+    END IF;
+    
+    -- Descontar la cantidad vendida del stock de pre_alm
+    UPDATE pre_alm 
+    SET pre_alm_cantidad = pre_alm_cantidad - NEW.det_ven_onl_cantidad
+    WHERE pre_alm_id = NEW.fk_pre_alm;
+    
+    -- Verificar que el update fue exitoso
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Error al actualizar el stock de pre_alm con ID: %', NEW.fk_pre_alm;
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Crear el trigger que se ejecuta después de cada INSERT en detalle_venta_online
+DROP TRIGGER IF EXISTS tr_descuento_stock_venta_online ON detalle_venta_online;
+
+CREATE TRIGGER tr_descuento_stock_venta_online
+    AFTER INSERT ON detalle_venta_online
+    FOR EACH ROW
+    EXECUTE FUNCTION fn_descuento_stock_venta_online();

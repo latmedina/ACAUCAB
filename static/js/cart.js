@@ -104,7 +104,10 @@ function loadCartDropdownData() {
         </div>
     `;
 
-    fetch('/cart-dropdown-data/', {
+    // Detectar tipo de tienda
+    const storeType = window.currentStoreType || 'fisica';
+
+    fetch(`/cart-dropdown-data/?tipo=${storeType}`, {
         method: 'GET',
         headers: {
             'X-CSRFToken': getCookie('csrftoken'),
@@ -145,6 +148,9 @@ function renderCartDropdown(data) {
         return;
     }
 
+    // Usar el tipo de tienda desde los datos recibidos o la variable global
+    const storeType = data.tipo || window.currentStoreType || 'fisica';
+
     let itemsHtml = '';
     data.items.forEach(item => {
         const imageHtml = item.image 
@@ -160,7 +166,7 @@ function renderCartDropdown(data) {
                         <button class="btn btn-sm btn-outline-danger cart-btn-remove" 
                                 data-product="${item.product_id}" 
                                 data-action="remove" 
-                                data-tipo="fisica"
+                                data-tipo="${storeType}"
                                 title="Quitar uno">
                             <i class="fas fa-minus"></i>
                         </button>
@@ -168,7 +174,7 @@ function renderCartDropdown(data) {
                         <button class="btn btn-sm btn-outline-success cart-btn-add" 
                                 data-product="${item.product_id}" 
                                 data-action="add" 
-                                data-tipo="fisica"
+                                data-tipo="${storeType}"
                                 title="Agregar uno">
                             <i class="fas fa-plus"></i>
                         </button>
@@ -199,16 +205,12 @@ function renderCartDropdown(data) {
                 <span class="cart-total-label">Total Bs:</span>
                 <span class="cart-total-value">${data.total_bs.toFixed(2)} Bs</span>
             </div>
-            <div class="cart-total-row">
-                <span class="cart-total-label">Tasa del día:</span>
-                <span class="cart-total-value">${data.dollar_rate.toFixed(2)} Bs/$</span>
-            </div>
         </div>
     `;
 
     dropdownContent.innerHTML = itemsHtml + totalHtml;
-    
-    // Añadir event listeners para los botones del dropdown
+
+    // Agregar event listeners a los botones del dropdown
     attachCartDropdownEventListeners();
 }
 

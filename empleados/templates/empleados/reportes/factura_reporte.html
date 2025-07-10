@@ -191,8 +191,25 @@ document.addEventListener('DOMContentLoaded', function() {
         container.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Generando factura...</span></div><p class="mt-2">Generando factura...</p></div>';
 
         try {
-            // Nueva URL del API del módulo de empleados
-            const response = await fetch(`/empleados/api/reportes/venta/${ventaId}/`);
+            // Primero detectar el tipo de venta
+            let tipoVenta = 'fisica'; // Default
+            
+            // Verificar si existe como venta física
+            const verificaFisica = await fetch(`/factura/fisica/${ventaId}/`);
+            if (verificaFisica.ok) {
+                tipoVenta = 'fisica';
+            } else {
+                // Si no es física, verificar si es online
+                const verificaOnline = await fetch(`/factura/online/${ventaId}/`);
+                if (verificaOnline.ok) {
+                    tipoVenta = 'online';
+                } else {
+                    throw new Error('No se encontró una venta con ese ID.');
+                }
+            }
+            
+            // Ahora llamar al API con el tipo correcto
+            const response = await fetch(`/empleados/api/reportes/venta/${tipoVenta}/${ventaId}/`);
             if (!response.ok) {
                 throw new Error(`Error ${response.status}: Los datos de la venta no fueron encontrados.`);
             }

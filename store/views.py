@@ -429,8 +429,28 @@ def update_cart_view(request, tipo):
 def cart_dropdown_data(request):
     """Vista AJAX para obtener datos del carrito para el dropdown"""
     try:
-        # Usar carrito físico por defecto
-        data = cart_data(request, tipo='fisica')
+        # Detectar tipo de tienda basándose en la URL de referencia o el path actual
+        tipo = 'fisica'  # default
+        
+        # Verificar la URL de referencia (de dónde viene la petición)
+        referer = request.META.get('HTTP_REFERER', '')
+        if '/store/online/' in referer:
+            tipo = 'online'
+        elif '/store/fisica/' in referer:
+            tipo = 'fisica'
+        
+        # También verificar el path actual
+        current_path = request.path
+        if '/online/' in current_path:
+            tipo = 'online'
+        elif '/fisica/' in current_path:
+            tipo = 'fisica'
+            
+        # Si hay parámetro en la petición, usarlo
+        if request.GET.get('tipo'):
+            tipo = request.GET.get('tipo')
+        
+        data = cart_data(request, tipo=tipo)
         
         cart_items = []
         for item in data['items']:
@@ -451,7 +471,8 @@ def cart_dropdown_data(request):
             'total_usd': float(data['order']['get_cart_total_usd']),
             'total_bs': float(data['order']['get_cart_total_bs']),
             'dollar_rate': float(data['order']['dollar_rate']),
-            'empty': len(cart_items) == 0
+            'empty': len(cart_items) == 0,
+            'tipo': tipo  # Incluir el tipo detectado en la respuesta
         }
         
         return JsonResponse(response_data)
@@ -464,7 +485,8 @@ def cart_dropdown_data(request):
             'total_items': 0,
             'total_usd': 0,
             'total_bs': 0,
-            'empty': True
+            'empty': True,
+            'tipo': 'fisica'
         })
 
 # VISTAS DE AUTOPAGO
@@ -746,7 +768,7 @@ def processOrder(request):
         'status': 'ok', 
         'message': 'Venta registrada', 
         'venta_id': venta.ven_fis_id,
-        'redirect_url': f'/compra-exitosa/{venta.ven_fis_id}/'
+        'redirect_url': f'/compra-exitosa/fisica/{venta.ven_fis_id}/'
     })
 
 def ejecutar_registro_venta_fisica(cliente_id, tienda_id, total_bolivares):
@@ -1299,6 +1321,7 @@ def finalize_multiple_payment_purchase(request):
         
         # Obtener el ID de la venta para la página de éxito
         venta_id = venta_fisica_obj.ven_fis_id if venta_fisica_obj else venta_online_obj.ven_onl_id
+        tipo_venta = 'fisica' if venta_fisica_obj else 'online'
         
         return JsonResponse({
             'status': 'success',
@@ -1306,7 +1329,7 @@ def finalize_multiple_payment_purchase(request):
             'venta_id': venta_id,
             'total_pagos': len(created_payments),
             'pagos_creados': created_payments,
-            'redirect_url': f'/compra-exitosa/{venta_id}/'
+            'redirect_url': f'/compra-exitosa/{tipo_venta}/{venta_id}/'
         })
         
     except Exception as e:
@@ -1314,27 +1337,33 @@ def finalize_multiple_payment_purchase(request):
         return JsonResponse({'status': 'error', 'message': f'Error finalizando compra: {str(e)}'}, status=500)
 
 @login_required
-def purchase_success_view(request, venta_id):
+def purchase_success_view(request, tipo, venta_id):
     """Vista para mostrar la página de éxito después de completar una compra"""
     try:
-        # Verificar que la venta existe y pertenece al usuario actual
+        # Validar tipo de venta
+        if tipo not in ['fisica', 'online']:
+            return HttpResponseNotFound("Tipo de venta inválido.")
+        
+        # Buscar la venta en la tabla correcta según el tipo
         venta_fisica_obj = None
         venta_online_obj = None
         
-        # Intentar encontrar la venta en ambas tablas
-        try:
-            venta_fisica_obj = venta_fisica.objects.get(ven_fis_id=venta_id)
-            # Verificar que la venta pertenece al cliente del usuario actual
-            if request.user.fk_cliente and venta_fisica_obj.fk_cliente.cli_id != request.user.fk_cliente.cli_id:
-                return HttpResponseNotFound("No se encontró la venta especificada.")
-        except venta_fisica.DoesNotExist:
+        if tipo == 'fisica':
+            try:
+                venta_fisica_obj = venta_fisica.objects.get(ven_fis_id=venta_id)
+                # Verificar que la venta pertenece al cliente del usuario actual
+                if request.user.fk_cliente and venta_fisica_obj.fk_cliente.cli_id != request.user.fk_cliente.cli_id:
+                    return HttpResponseNotFound("No se encontró la venta especificada.")
+            except venta_fisica.DoesNotExist:
+                return HttpResponseNotFound("No se encontró la venta física especificada.")
+        else:  # tipo == 'online'
             try:
                 venta_online_obj = venta_online.objects.get(ven_onl_id=venta_id)
                 # Verificar que la venta pertenece al usuario actual
                 if venta_online_obj.fk_usuario.id != request.user.id:
                     return HttpResponseNotFound("No se encontró la venta especificada.")
             except venta_online.DoesNotExist:
-                return HttpResponseNotFound("No se encontró la venta especificada.")
+                return HttpResponseNotFound("No se encontró la venta online especificada.")
         
         # Determinar el tipo de venta y obtener información básica
         if venta_fisica_obj:
@@ -1343,6 +1372,7 @@ def purchase_success_view(request, venta_id):
                 'fecha': venta_fisica_obj.ven_fis_fecha.strftime('%d/%m/%Y %H:%M'),
                 'total': venta_fisica_obj.ven_fis_total,
                 'tipo': 'Venta Física',
+                'tipo_url': 'fisica',  # Para generar URL correcta
                 'tienda': venta_fisica_obj.fk_tienda.tie_nombre if venta_fisica_obj.fk_tienda else 'N/A'
             }
         else:
@@ -1351,6 +1381,7 @@ def purchase_success_view(request, venta_id):
                 'fecha': venta_online_obj.ven_onl_fecha.strftime('%d/%m/%Y %H:%M'),
                 'total': venta_online_obj.ven_onl_total,
                 'tipo': 'Venta Online',
+                'tipo_url': 'online',  # Para generar URL correcta
                 'tienda': venta_online_obj.fk_tienda.tie_nombre if venta_online_obj.fk_tienda else 'N/A'
             }
         
@@ -1732,6 +1763,7 @@ def process_payment_method_original(request):
         
         # Obtener el ID de la venta para la página de éxito
         venta_id = venta_fisica_obj.ven_fis_id if venta_fisica_obj else venta_online_obj.ven_onl_id
+        tipo_venta = 'fisica' if venta_fisica_obj else 'online'
         
         return JsonResponse({
             'status': 'success',
@@ -1741,7 +1773,7 @@ def process_payment_method_original(request):
             'monto_convertido': float(monto_convertido),
             'moneda': moneda_obj.mon_tipo,
             'tasa_cambio': float(ultimo_historico.his_valor_cambio),
-            'redirect_url': f'/compra-exitosa/{venta_id}/'  # Redirigir a la página de éxito
+            'redirect_url': f'/compra-exitosa/{tipo_venta}/{venta_id}/'  # Redirigir a la página de éxito
         })
         
     except Exception as e:
@@ -1817,6 +1849,7 @@ def process_points_payment(request, data, order_data, total, pending_tipo):
         
         # Obtener el ID de la venta para la página de éxito
         venta_id = venta_fisica_obj.ven_fis_id if venta_fisica_obj else venta_online_obj.ven_onl_id
+        tipo_venta = 'fisica' if venta_fisica_obj else 'online'
         
         return JsonResponse({
             'status': 'success',
@@ -1824,7 +1857,7 @@ def process_points_payment(request, data, order_data, total, pending_tipo):
             'pago_id': pago_id,
             'puntos_utilizados': puntos_utilizados,
             'puntos_restantes': puntos_restantes,
-            'redirect_url': f'/compra-exitosa/{venta_id}/'
+            'redirect_url': f'/compra-exitosa/{tipo_venta}/{venta_id}/'
         })
         
     except Exception as e:
@@ -2277,13 +2310,25 @@ def vista_historial_compras(request, id_usuario):
     context = {'cliente': cliente_obj, 'usuario': usuario_obj}
     return render(request, 'historial_compras_cliente.html', context)
 
-def vista_factura_directa(request, venta_id):
+def vista_factura_directa(request, tipo, venta_id):
     """
     Renderiza la factura para una venta específica.
     """
     try:
+        # Validar tipo de venta
+        if tipo not in ['fisica', 'online']:
+            return HttpResponseNotFound("<h1>Tipo de venta inválido</h1><p>El tipo debe ser 'fisica' u 'online'.</p>")
+        
+        # Verificar que la venta existe en la tabla correcta
+        if tipo == 'fisica':
+            if not venta_fisica.objects.filter(ven_fis_id=venta_id).exists():
+                return HttpResponseNotFound("<h1>Venta física no encontrada</h1><p>No se encontró una venta física con el ID especificado.</p>")
+        else:  # tipo == 'online'
+            if not venta_online.objects.filter(ven_onl_id=venta_id).exists():
+                return HttpResponseNotFound("<h1>Venta online no encontrada</h1><p>No se encontró una venta online con el ID especificado.</p>")
+        
         with connection.cursor() as cursor:
-            cursor.execute("SELECT public.obtener_datos_reporte_venta(%s);", [venta_id])
+            cursor.execute("SELECT public.obtener_datos_reporte_venta(%s, %s);", [venta_id, tipo])
             result = cursor.fetchone()
 
             if result is None or result[0] is None:

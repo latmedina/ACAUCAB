@@ -32,7 +32,7 @@ urlpatterns = [
     path('add-partial-payment/', views.add_partial_payment, name='add_partial_payment'),
     path('remove-partial-payment/', views.remove_partial_payment, name='remove_partial_payment'),
     path('finalize-multiple-payment-purchase/', views.finalize_multiple_payment_purchase, name='finalize_multiple_payment_purchase'),
-    path('compra-exitosa/<int:venta_id>/', views.purchase_success_view, name='purchase_success'),
+    path('compra-exitosa/<str:tipo>/<int:venta_id>/', views.purchase_success_view, name='purchase_success'),
     
     # Métodos de pago originales (compatibilidad)
     path('payment-method-original/', views.payment_method_view_original, name='payment_method_original'),
@@ -53,7 +53,7 @@ urlpatterns = [
     #Historial de compras 
     path('historial-compras/<int:id_usuario>/', views.vista_historial_compras, name='historial-compras'),
     path('api/historial/usuario/<int:id_usuario>/', views.historial_compras_api, name='api_historial_compras'),
-    path('factura/<int:venta_id>/', views.vista_factura_directa, name='vista_factura_directa'),
+    path('factura/<str:tipo>/<int:venta_id>/', views.vista_factura_directa, name='vista_factura_directa'),
 
 
 

@@ -211,7 +211,7 @@
         
         <!-- Botones de acción -->
         <div class="action-buttons">
-            <a href="{% url 'vista_factura_directa' venta_id %}" 
+            <a href="{% url 'vista_factura_directa' venta_info.tipo_url venta_id %}" 
                class="btn btn-invoice" 
                target="_blank">
                 <i class="fas fa-file-invoice"></i> Ver Factura
