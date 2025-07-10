@@ -67,58 +67,127 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- factura de venta física
-CREATE OR REPLACE FUNCTION public.obtener_datos_reporte_venta(p_venta_id INT)
+-- Factura que maneja tanto ventas físicas como online con tipo específico
+CREATE OR REPLACE FUNCTION public.obtener_datos_reporte_venta(p_venta_id INT, p_tipo_venta TEXT DEFAULT NULL)
 RETURNS JSON AS $$
 DECLARE
     v_reporte_data JSON;
 BEGIN
-    SELECT
-        -- Construye el objeto JSON principal
-        json_build_object(
-            -- Sección 'venta': contiene datos generales y totales de la factura
-            'venta', json_build_object(
-                'id', vf.ven_fis_id,
-                'fecha', TO_CHAR(vf.ven_fis_fecha, 'DD/MM/YYYY'),
-                'subtotal', vf.ven_fis_total / 1.16, -- Calcula la base imponible (asumiendo IVA 16%)
-                'iva', vf.ven_fis_total - (vf.ven_fis_total / 1.16), -- Calcula el monto del IVA
-                'total', vf.ven_fis_total
-            ),
-            -- Sección 'cliente': información del cliente que realizó la compra
-            'cliente', json_build_object(
-                'nombre', COALESCE(c.cli_nat_pnombre || ' ' || c.cli_nat_papellido, c.cli_jur_razon_social, 'No disponible'),
-                'rif', COALESCE(c.cli_rif, 'N/A'),
-                'direccion', COALESCE(c.cli_direccion_fisica, 'N/A'),
-                'telefono', (SELECT tel_numero::text FROM public.telefono WHERE fk_cliente = c.cli_id LIMIT 1) -- Subconsulta para obtener un teléfono
-            ),
-            -- Sección 'tienda': datos de la tienda donde se realizó la venta
-            'tienda', json_build_object(
-                'nombre', COALESCE(t.tie_nombre, 'No disponible'),
-                'direccion', COALESCE(t.tie_direccion, 'N/A')
-            ),
-            -- Sección 'detalles': una lista (array) de todos los productos en la venta
-            'detalles', (
-                SELECT COALESCE(json_agg(
-                    json_build_object(
-                        'id', p.prese_id, -- ID del producto/presentación
-                        'producto', p.prese_nombre,
-                        'cantidad', dvf.det_ven_fis_cantidad,
-                        'precio_unitario', dvf.det_ven_fis_precio_unitario,
-                        'total_linea', dvf.det_ven_fis_cantidad * dvf.det_ven_fis_precio_unitario
-                    )
-                ), '[]'::json) -- Si no hay detalles, devuelve un array JSON vacío
-                FROM public.detalle_venta_fisica dvf
-                JOIN public.inventario i ON dvf.fk_inventario = i.inv_id
-                JOIN public.presentacion p ON i.fk_presentacion = p.prese_id
-                WHERE dvf.fk_venta_fisica = vf.ven_fis_id
+    -- Si no se especifica tipo, intentar detectar automáticamente (backward compatibility)
+    IF p_tipo_venta IS NULL THEN
+        -- Verificar primero si existe como venta física
+        IF EXISTS(SELECT 1 FROM public.venta_fisica WHERE ven_fis_id = p_venta_id) THEN
+            p_tipo_venta := 'fisica';
+        ELSIF EXISTS(SELECT 1 FROM public.venta_online WHERE ven_onl_id = p_venta_id) THEN
+            p_tipo_venta := 'online';
+        ELSE
+            -- Venta no encontrada
+            RETURN NULL;
+        END IF;
+    END IF;
+    
+    -- Procesar según el tipo de venta especificado
+    IF p_tipo_venta = 'fisica' THEN
+        -- VENTA FÍSICA
+        SELECT
+            json_build_object(
+                -- Sección 'venta': contiene datos generales y totales de la factura
+                'venta', json_build_object(
+                    'id', vf.ven_fis_id,
+                    'fecha', TO_CHAR(vf.ven_fis_fecha, 'DD/MM/YYYY'),
+                    'tipo_venta', 'Venta Física',
+                    'subtotal', vf.ven_fis_total / 1.16, -- Calcula la base imponible (asumiendo IVA 16%)
+                    'iva', vf.ven_fis_total - (vf.ven_fis_total / 1.16), -- Calcula el monto del IVA
+                    'total', vf.ven_fis_total
+                ),
+                -- Sección 'cliente': información del cliente que realizó la compra
+                'cliente', json_build_object(
+                    'nombre', COALESCE(c.cli_nat_pnombre || ' ' || c.cli_nat_papellido, c.cli_jur_razon_social, 'No disponible'),
+                    'rif', COALESCE(c.cli_rif, 'N/A'),
+                    'direccion', COALESCE(c.cli_direccion_fisica, 'N/A'),
+                    'telefono', (SELECT tel_numero::text FROM public.telefono WHERE fk_cliente = c.cli_id LIMIT 1)
+                ),
+                -- Sección 'tienda': datos de la tienda donde se realizó la venta
+                'tienda', json_build_object(
+                    'nombre', COALESCE(t.tie_nombre, 'No disponible'),
+                    'direccion', COALESCE(t.tie_direccion, 'N/A')
+                ),
+                -- Sección 'detalles': productos vendidos (desde inventario físico)
+                'detalles', (
+                    SELECT COALESCE(json_agg(
+                        json_build_object(
+                            'id', p.prese_id,
+                            'producto', p.prese_nombre,
+                            'cantidad', dvf.det_ven_fis_cantidad,
+                            'precio_unitario', dvf.det_ven_fis_precio_unitario,
+                            'total_linea', dvf.det_ven_fis_cantidad * dvf.det_ven_fis_precio_unitario
+                        )
+                    ), '[]'::json)
+                    FROM public.detalle_venta_fisica dvf
+                    JOIN public.inventario i ON dvf.fk_inventario = i.inv_id
+                    JOIN public.presentacion p ON i.fk_presentacion = p.prese_id
+                    WHERE dvf.fk_venta_fisica = vf.ven_fis_id
+                )
             )
-        )
-    INTO v_reporte_data
-    FROM public.venta_fisica vf
-    -- Usamos LEFT JOIN para ser más robustos
-    LEFT JOIN public.cliente c ON vf.fk_cliente = c.cli_id
-    LEFT JOIN public.tienda t ON vf.fk_tienda = t.tie_id
-    WHERE vf.ven_fis_id = p_venta_id;
+        INTO v_reporte_data
+        FROM public.venta_fisica vf
+        LEFT JOIN public.cliente c ON vf.fk_cliente = c.cli_id
+        LEFT JOIN public.tienda t ON vf.fk_tienda = t.tie_id
+        WHERE vf.ven_fis_id = p_venta_id;
+        
+    ELSIF p_tipo_venta = 'online' THEN
+        -- VENTA ONLINE
+        SELECT
+            json_build_object(
+                -- Sección 'venta': contiene datos generales y totales de la factura
+                'venta', json_build_object(
+                    'id', vo.ven_onl_id,
+                    'fecha', TO_CHAR(vo.ven_onl_fecha, 'DD/MM/YYYY'),
+                    'tipo_venta', 'Venta Online',
+                    'subtotal', vo.ven_onl_total / 1.16, -- Calcula la base imponible (asumiendo IVA 16%)
+                    'iva', vo.ven_onl_total - (vo.ven_onl_total / 1.16), -- Calcula el monto del IVA
+                    'total', vo.ven_onl_total
+                ),
+                -- Sección 'cliente': información del cliente (a través del usuario)
+                'cliente', json_build_object(
+                    'nombre', COALESCE(c.cli_nat_pnombre || ' ' || c.cli_nat_papellido, c.cli_jur_razon_social, 'No disponible'),
+                    'rif', COALESCE(c.cli_rif, 'N/A'),
+                    'direccion', COALESCE(c.cli_direccion_fisica, 'N/A'),
+                    'telefono', (SELECT tel_numero::text FROM public.telefono WHERE fk_cliente = c.cli_id LIMIT 1)
+                ),
+                -- Sección 'tienda': datos de la tienda donde se realizó la venta
+                'tienda', json_build_object(
+                    'nombre', COALESCE(t.tie_nombre, 'No disponible'),
+                    'direccion', COALESCE(t.tie_direccion, 'N/A')
+                ),
+                -- Sección 'detalles': productos vendidos (desde pre_alm - tienda online)
+                'detalles', (
+                    SELECT COALESCE(json_agg(
+                        json_build_object(
+                            'id', p.prese_id,
+                            'producto', p.prese_nombre,
+                            'cantidad', dvo.det_ven_onl_cantidad,
+                            'precio_unitario', dvo.det_ven_onl_precio,
+                            'total_linea', dvo.det_ven_onl_cantidad * dvo.det_ven_onl_precio
+                        )
+                    ), '[]'::json)
+                    FROM public.detalle_venta_online dvo
+                    JOIN public.pre_alm pa ON dvo.fk_pre_alm = pa.pre_alm_id
+                    JOIN public.presentacion p ON pa.fk_presentacion = p.prese_id
+                    WHERE dvo.fk_venta_online = vo.ven_onl_id
+                )
+            )
+        INTO v_reporte_data
+        FROM public.venta_online vo
+        LEFT JOIN public.usuario u ON vo.fk_usuario = u.id
+        LEFT JOIN public.cliente c ON u.fk_cliente = c.cli_id
+        LEFT JOIN public.tienda t ON vo.fk_tienda = t.tie_id
+        WHERE vo.ven_onl_id = p_venta_id;
+        
+    ELSE
+        -- Tipo de venta no válido
+        v_reporte_data := NULL;
+    END IF;
 
     RETURN v_reporte_data;
 END;
@@ -769,6 +838,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- obtener todas las solicitudes de reposición
 CREATE OR REPLACE FUNCTION public.obtener_todas_solicitudes_reposicion()
 RETURNS JSON AS $$
 DECLARE
@@ -810,7 +880,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-
+-- actualizar estatus de solicitud de reposición
 CREATE OR REPLACE FUNCTION public.actualizar_estatus_solicitud_reposicion(
     p_solicitud_id INT,
     p_nuevo_estatus_id INT

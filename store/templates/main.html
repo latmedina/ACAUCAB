@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/cart-dropdown.css' %}">
+    
     {% block extra_css %}
     {% endblock %}
     <script>
@@ -57,6 +58,21 @@
     <a class="mx-auto text-white fw-bold text-decoration-none" style="font-size: 1.5rem;" href="{% url 'store_view' 'fisica' %}">
         <i class="fas fa-store me-2"></i>ACAUCAB
     </a>
+    
+        <!-- Toggle Switch para cambiar tipo de tienda -->
+        <div class="store-toggle-container me-4">
+            <span class="toggle-label" id="label-fisica">
+                <i class="fas fa-store me-1"></i>Física
+            </span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="store-toggle">
+                <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label" id="label-online">
+                <i class="fas fa-laptop me-1"></i>Online
+            </span>
+        </div>
+        
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
             aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -95,7 +111,7 @@
                 {% endif %}
                 
                 <div class="cart-dropdown-container position-relative me-3">
-                    <a href="{% url 'cart_view' 'fisica' %}" class="position-relative" id="cart-link">
+                    <a href="#" class="position-relative" id="cart-link">
                         <img id="cart-icon" src="{% static 'images/cart.png' %}" style="width: 25px;">
                         <span id="cart-total" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                             {{ cartItems }}
@@ -115,7 +131,7 @@
                             </div>
                         </div>
                         <div class="cart-dropdown-footer">
-                            <a href="{% url 'cart_view' 'fisica' %}" class="btn btn-primary btn-sm w-100">
+                            <a href="#" class="btn btn-primary btn-sm w-100" id="cart-full-link">
                                 Ver Carrito Completo
                             </a>
                         </div>
@@ -137,6 +153,92 @@
 
     <script type="text/javascript" src="{% static 'js/cart.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/search.js' %}"></script>
+
+    <script>
+        // Detectar tipo de tienda basándose en la URL actual
+        function detectStoreType() {
+            const currentPath = window.location.pathname;
+            if (currentPath.includes('/store/online/') || currentPath.includes('/cart/online/') || currentPath.includes('/checkout/online/')) {
+                return 'online';
+            } else if (currentPath.includes('/store/fisica/') || currentPath.includes('/cart/fisica/') || currentPath.includes('/checkout/fisica/')) {
+                return 'fisica';
+            } else {
+                // Default para otras páginas
+                return 'fisica';
+            }
+        }
+
+        // Función para actualizar la apariencia del toggle
+        function updateToggleAppearance(storeType) {
+            const toggle = document.getElementById('store-toggle');
+            const labelFisica = document.getElementById('label-fisica');
+            const labelOnline = document.getElementById('label-online');
+            
+            if (storeType === 'online') {
+                toggle.checked = true;
+                labelFisica.classList.remove('active');
+                labelOnline.classList.add('active');
+            } else {
+                toggle.checked = false;
+                labelFisica.classList.add('active');
+                labelOnline.classList.remove('active');
+            }
+        }
+
+        // Función para cambiar el tipo de tienda
+        function switchStoreType(newType) {
+            const currentPath = window.location.pathname;
+            let newPath;
+            
+            // Determinar la nueva URL basándose en la página actual
+            if (currentPath.includes('/store/')) {
+                newPath = `/store/${newType}/`;
+            } else if (currentPath.includes('/cart/')) {
+                newPath = `/cart/${newType}/`;
+            } else if (currentPath.includes('/checkout/')) {
+                newPath = `/checkout/${newType}/`;
+            } else {
+                // Para cualquier otra página, ir a la tienda
+                newPath = `/store/${newType}/`;
+            }
+            
+            // Redirigir a la nueva URL
+            window.location.href = newPath;
+        }
+
+        // Actualizar enlaces del carrito según el tipo detectado
+        document.addEventListener('DOMContentLoaded', function() {
+            const storeType = detectStoreType();
+            
+            // Actualizar apariencia del toggle
+            updateToggleAppearance(storeType);
+            
+            // Actualizar enlace principal del carrito
+            const cartLink = document.getElementById('cart-link');
+            if (cartLink) {
+                cartLink.href = `/cart/${storeType}/`;
+            }
+            
+            // Actualizar enlace del dropdown
+            const cartFullLink = document.getElementById('cart-full-link');
+            if (cartFullLink) {
+                cartFullLink.href = `/cart/${storeType}/`;
+            }
+            
+            // Guardar tipo en variable global para uso del JavaScript del carrito
+            window.currentStoreType = storeType;
+            
+            // Agregar event listener al toggle
+            const toggle = document.getElementById('store-toggle');
+            if (toggle) {
+                toggle.addEventListener('change', function() {
+                    const newType = this.checked ? 'online' : 'fisica';
+                    console.log(`Cambiando a tienda ${newType}`);
+                    switchStoreType(newType);
+                });
+            }
+        });
+    </script>
 </body>
 
 </html>

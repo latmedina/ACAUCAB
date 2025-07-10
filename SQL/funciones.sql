@@ -113,7 +113,7 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql;
 
--- Función para registrar un pago completo
+-- Función para registrar un pago completo venta física o online
 CREATE OR REPLACE FUNCTION public.registrar_pago(
     p_monto DECIMAL(12,2),
     p_metodo_pago_id INTEGER,

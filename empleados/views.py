@@ -18,7 +18,8 @@ from django.shortcuts import get_object_or_404
 from store.models import (
     evento, tipo_evento, tipo_invitado, invitado, 
     inv_evento, eve_pro, existencia_evento, presentacion,
-    proveedor, lugar, venta_boleto_evento, asistencia_evento
+    proveedor, lugar, venta_boleto_evento, asistencia_evento,
+    venta_fisica, venta_online  # Agregados para detección de tipo de venta
 )
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
@@ -121,7 +122,7 @@ def vista_factura(request):
     return render(request, 'empleados/reportes/factura_reporte.html')
 
 
-def generar_reporte_venta_api(request, venta_id):
+def generar_reporte_venta_api(request, tipo, venta_id):
     """
     API endpoint que obtiene los datos para un reporte de venta específico.
     """
@@ -129,9 +130,21 @@ def generar_reporte_venta_api(request, venta_id):
         return JsonResponse({'error': 'Método no permitido'}, status=405)
 
     try:
+        # Validar tipo de venta
+        if tipo not in ['fisica', 'online']:
+            return JsonResponse({'error': 'Tipo de venta inválido. Debe ser "fisica" u "online".'}, status=400)
+        
+        # Verificar que la venta existe en la tabla correcta
+        if tipo == 'fisica':
+            if not venta_fisica.objects.filter(ven_fis_id=venta_id).exists():
+                return HttpResponseNotFound(f'No se encontró una venta física con el ID {venta_id}')
+        else:  # tipo == 'online'
+            if not venta_online.objects.filter(ven_onl_id=venta_id).exists():
+                return HttpResponseNotFound(f'No se encontró una venta online con el ID {venta_id}')
+        
         with connection.cursor() as cursor:
-            print(f"Ejecutando consulta para venta_id: {venta_id}")
-            cursor.execute("SELECT obtener_datos_reporte_venta(%s);", [venta_id])
+            print(f"Ejecutando consulta para venta_id: {venta_id}, tipo: {tipo}")
+            cursor.execute("SELECT obtener_datos_reporte_venta(%s, %s);", [venta_id, tipo])
             result = cursor.fetchone()
             
             if result is None or result[0] is None:

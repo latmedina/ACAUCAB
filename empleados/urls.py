@@ -15,7 +15,7 @@ urlpatterns = [
     
     # Facturas
     path('reportes/facturas/', views.vista_factura, name='vista_factura'),
-    path('api/reportes/venta/<int:venta_id>/', views.generar_reporte_venta_api, name='generar_reporte_venta_api'),
+    path('api/reportes/venta/<str:tipo>/<int:venta_id>/', views.generar_reporte_venta_api, name='generar_reporte_venta_api'),
     
     # Órdenes de Compra
     path('reportes/ordenes-compra/', views.vista_orden_compra, name='vista_orden_compra'),
