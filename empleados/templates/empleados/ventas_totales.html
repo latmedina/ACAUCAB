@@ -1,0 +1,179 @@
+{% extends "main.html" %}
+{% load static %}
+
+{% block content %}
+<!-- Incluir la librería de gráficos ApexCharts -->
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+<style>
+    .dashboard-container { padding: 25px; }
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    .dashboard-header h1 { color: #1a237e; margin: 0; }
+    .filters { display: flex; gap: 15px; align-items: center; background-color: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; }
+    .kpi-card { background-color: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .kpi-card h3 { margin: 0 0 10px; color: #6c757d; font-size: 1rem; text-transform: uppercase; }
+    .kpi-value { font-size: 2.5rem; font-weight: 700; color: #1a237e; }
+    .kpi-growth { display: flex; align-items: center; gap: 10px; font-size: 1.2rem; font-weight: bold; }
+    .kpi-growth.positive { color: #198754; }
+    .kpi-growth.negative { color: #dc3545; }
+    .chart-container { background-color: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-top: 25px; }
+
+    /* Hace más pequeño el menú desplegable de intervalo */
+#intervalo_crecimiento {
+    width: 180px; /* Ajusta este valor en píxeles como necesites */
+    flex-shrink: 0; /* Evita que se encoja si no hay espacio */
+}
+
+/* Hace que el botón de generar crezca para ocupar el espacio disponible */
+#generarBtn {
+    width: 250px; /* Ajusta este valor en píxeles como necesites */
+    flex-grow: 1; /* Permite que el botón se expanda */
+    text-align: center; /* Mantiene el texto centrado */
+}
+
+#espacio {
+    height: 10px;
+}
+</style>
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <a href="{% url 'empleados:dashboard_indicadores' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Regresar</a>
+        <h1>Dashboard de Indicadores de Ventas</h1>
+    </div>
+    <div>
+        <div class="filters">
+            <label for="fecha_inicio">Desde:</label>
+            <input type="date" id="fecha_inicio" class="form-control">
+            <label for="fecha_fin">Hasta:</label>
+            <input type="date" id="fecha_fin" class="form-control">
+            <label for="intervalo_crecimiento" style="margin-left: 15px;">Comparar:</label>
+            <select id="intervalo_crecimiento" class="form-control">
+                <option value="mes">Mes Anterior</option>
+                <option value="ano">Año Anterior</option>
+            </select>
+            <button id="generarBtn" class="btn btn-primary">Generar</button>
+        </div>
+        <div id="espacio"> </div>
+    </div>
+
+    <div id="dashboard-content">
+        <div class="alert alert-info">Seleccione un rango de fechas para generar los indicadores.</div>
+    </div>
+</div>
+
+<script>
+    function formatCurrency(value) {
+        if (value === null || typeof value === 'undefined') return '$0.00';
+        return '$' + parseFloat(value).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+    }
+    function formatNumber(value) {
+        if (value === null || typeof value === 'undefined') return '0';
+        return parseInt(value).toLocaleString('es-ES');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const generarBtn = document.getElementById('generarBtn');
+        const contentContainer = document.getElementById('dashboard-content');
+        const intervaloSelect = document.getElementById('intervalo_crecimiento');
+        
+        async function generarDashboardCompleto() {
+            const fechaInicio = document.getElementById('fecha_inicio').value;
+            const fechaFin = document.getElementById('fecha_fin').value;
+            const intervalo = intervaloSelect.value;
+
+            if (!fechaInicio || !fechaFin) {
+                alert('Por favor, seleccione ambas fechas.');
+                return;
+            }
+            contentContainer.innerHTML = '<div class="alert alert-info">Cargando datos...</div>';
+
+            try {
+                const [ventasResponse, crecimientoResponse, ticketResponse, volumenResponse, estiloResponse] = await Promise.all([
+                    fetch(`/empleados/api/kpi/ventas-totales/?inicio=${fechaInicio}&fin=${fechaFin}`),
+                    fetch(`/empleados/api/kpi/crecimiento-ventas/?inicio=${fechaInicio}&fin=${fechaFin}&intervalo=${intervalo}`),
+                    fetch(`/empleados/api/kpi/ticket-promedio/?inicio=${fechaInicio}&fin=${fechaFin}`),
+                    fetch(`/empleados/api/kpi/volumen-unidades/?inicio=${fechaInicio}&fin=${fechaFin}`),
+                    fetch(`/empleados/api/kpi/ventas-por-estilo/?inicio=${fechaInicio}&fin=${fechaFin}`)
+                ]);
+
+                if (![ventasResponse, crecimientoResponse, ticketResponse, volumenResponse, estiloResponse].every(res => res.ok)) {
+                    throw new Error('No se pudieron cargar todos los datos del dashboard.');
+                }
+
+                const ventasData = await ventasResponse.json();
+                const crecimientoData = await crecimientoResponse.json();
+                const ticketData = await ticketResponse.json();
+                const volumenData = await volumenResponse.json();
+                const estiloData = await estiloResponse.json();
+
+                renderizarDashboard(ventasData, crecimientoData, ticketData, volumenData, estiloData, intervalo);
+
+            } catch (error) {
+                console.error('Error al generar el dashboard:', error);
+                contentContainer.innerHTML = `<div class="alert alert-danger">${error.message}</div>`;
+            }
+        }
+
+        function renderizarDashboard(ventas, crecimiento, ticket, volumen, estilos, intervalo) {
+            const crecimientoMonto = crecimiento.crecimiento_monto || 0;
+            const crecimientoPorcentaje = crecimiento.crecimiento_porcentaje || 0;
+            const esPositivo = crecimientoMonto >= 0;
+            const textoIntervalo = { 'mes': 'mes anterior', 'ano': 'año anterior' };
+
+            const html = `
+                <div class="kpi-grid">
+                    <div class="kpi-card"><h3>Ventas Tienda Física</h3><p class="kpi-value">${formatCurrency(ventas.total_fisica)}</p></div>
+                    <div class="kpi-card"><h3>Ventas Tienda Online</h3><p class="kpi-value">${formatCurrency(ventas.total_online)}</p></div>
+                    <div class="kpi-card" style="background-color: #1a237e; color: white;"><h3 style="color: #e8eaf6;">Total General de Ventas</h3><p class="kpi-value" style="color: white;">${formatCurrency(ventas.total_general)}</p></div>
+                    <div class="kpi-card"><h3>Crecimiento de Ventas</h3><p class="kpi-value">${formatCurrency(crecimientoMonto)}</p><div class="kpi-growth ${esPositivo ? 'positive' : 'negative'}"><i class="fas fa-arrow-${esPositivo ? 'up' : 'down'}"></i><span>${crecimientoPorcentaje.toFixed(2)}% vs. ${textoIntervalo[intervalo]}</span></div></div>
+                    <div class="kpi-card"><h3>Ticket Promedio (VMP)</h3><p class="kpi-value">${formatCurrency(ticket.ticket_promedio)}</p></div>
+                    <div class="kpi-card"><h3>Volumen de Unidades Vendidas</h3><p class="kpi-value">${formatNumber(volumen.total_unidades)}</p></div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-lg-5"><div class="chart-container"><div id="ventas-por-canal-chart"></div></div></div>
+                    <div class="col-lg-7"><div class="chart-container"><div id="ventas-por-estilo-chart"></div></div></div>
+                </div>
+            `;
+            contentContainer.innerHTML = html;
+
+            // Gráfico de Pie: Ventas por Canal
+            const optionsPie = {
+                series: [parseFloat(ventas.total_fisica) || 0, parseFloat(ventas.total_online) || 0],
+                chart: { type: 'pie', height: 350 },
+                labels: ['Tienda Física', 'Tienda Online'],
+                title: { text: 'Ventas por Canal de Distribución' }
+            };
+            new ApexCharts(document.querySelector("#ventas-por-canal-chart"), optionsPie).render();
+            
+            // Gráfico de Barras: Ventas por Estilo
+            const optionsBar = {
+                series: [{
+                    name: 'Ingresos',
+                    data: estilos.map(e => e.total_ingresos)
+                }],
+                chart: { type: 'bar', height: 350 },
+                plotOptions: { bar: { borderRadius: 4, horizontal: true, } },
+                dataLabels: { enabled: false },
+                xaxis: {
+                    categories: estilos.map(e => e.estilo),
+                    labels: { formatter: (val) => formatCurrency(val) }
+                },
+                title: { text: 'Ingresos por Estilo de Cerveza' }
+            };
+            new ApexCharts(document.querySelector("#ventas-por-estilo-chart"), optionsBar).render();
+        }
+
+        generarBtn.addEventListener('click', generarDashboardCompleto);
+    });
+</script>
+
+{% endblock %}

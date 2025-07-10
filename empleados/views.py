@@ -1290,3 +1290,206 @@ def gestionar_existencias_evento(request, evento_id, eve_pro_id):
     }
     
     return render(request, 'empleados/eventos/gestionar_existencias_evento.html', context)
+
+
+#indicadores
+@login_required
+def empleado_dashboard_indicadores(request):
+    if not hasattr(request.user, 'fk_emp_car') or not request.user.fk_emp_car:
+        messages.error(request, 'Acceso denegado. Solo empleados pueden acceder a este módulo.')
+        return redirect('login')
+    
+    empleado = request.user.fk_emp_car.fk_empleado
+
+    # ⬇️ NUEVO: traer los privilegios desde la sesión
+    privilegios = request.session.get('privilegios', [])
+
+    context = {
+        'empleado': empleado,
+        'usuario': request.user,
+        'privilegios': privilegios  # ⬅️ PASA ESTO AL TEMPLATE
+    }
+
+    return render(request, 'empleados/dashboard_indicadores.html', context)
+
+
+#indicadores ventas
+@login_required
+def vista_indicadores_ventas(request):
+    if not hasattr(request.user, 'fk_emp_car') or not request.user.fk_emp_car:
+        messages.error(request, 'Acceso denegado. Solo empleados pueden acceder a este módulo.')
+        return redirect('login')
+    
+    empleado = request.user.fk_emp_car.fk_empleado
+
+    # ⬇️ NUEVO: traer los privilegios desde la sesión
+    privilegios = request.session.get('privilegios', [])
+
+    context = {
+        'empleado': empleado,
+        'usuario': request.user,
+        'privilegios': privilegios  # ⬅️ PASA ESTO AL TEMPLATE
+    }
+
+    return render(request, 'empleados/indicadores_ventas.html', context)
+
+
+#ventas totales
+@login_required
+def vista_ventas_totales(request):
+    """Vista para mostrar el indicador de ventas totales"""
+    if not hasattr(request.user, 'fk_emp_car') or not request.user.fk_emp_car:
+        messages.error(request, 'Acceso denegado.')
+        return redirect('login')
+    
+    return render(request, 'empleados/ventas_totales.html')
+
+@login_required
+def ventas_totales_api(request):
+    """
+    API endpoint que devuelve el KPI de ventas totales por canal.
+    """
+    try:
+        # Obtener fechas desde los parámetros de la URL
+        fecha_inicio_str = request.GET.get('inicio')
+        fecha_fin_str = request.GET.get('fin')
+        
+        if not fecha_inicio_str or not fecha_fin_str:
+            return JsonResponse({'error': 'Fechas de inicio y fin son requeridas'}, status=400)
+        
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT public.kpi_ventas_totales_por_tienda(%s::DATE, %s::DATE);",
+                [fecha_inicio_str, fecha_fin_str]
+            )
+            result = cursor.fetchone()
+            
+            if result is None or result[0] is None:
+                return JsonResponse({'error': 'No se pudieron calcular los datos.'}, status=404)
+
+            report_data = result[0]
+            return JsonResponse(report_data, encoder=DjangoJSONEncoder, safe=False)
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+# crecimiento de ventas
+@login_required
+def crecimiento_ventas_api(request):
+    """
+    API endpoint que devuelve el KPI de crecimiento de ventas.
+    """
+    try:
+        fecha_inicio_str = request.GET.get('inicio')
+        fecha_fin_str = request.GET.get('fin')
+        # ✅ Obtiene el nuevo parámetro 'intervalo' de la URL. Si no existe, usa 'periodo' por defecto.
+        intervalo = request.GET.get('intervalo', 'periodo') 
+        
+        if not fecha_inicio_str or not fecha_fin_str:
+            return JsonResponse({'error': 'Fechas de inicio y fin son requeridas'}, status=400)
+        
+        with connection.cursor() as cursor:
+            # ✅ Pasa el parámetro 'intervalo' a la función de la base de datos.
+            cursor.execute(
+                "SELECT public.kpi_crecimiento_ventas(%s::DATE, %s::DATE, %s);",
+                [fecha_inicio_str, fecha_fin_str, intervalo]
+            )
+            result = cursor.fetchone()
+            
+            if result is None or result[0] is None:
+                return JsonResponse({'error': 'No se pudieron calcular los datos de crecimiento.'}, status=404)
+
+            report_data = result[0]
+            return JsonResponse(report_data, encoder=DjangoJSONEncoder, safe=False)
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+#ticket promedio
+@login_required
+def kpi_ticket_promedio_api(request):
+    """
+    API endpoint que devuelve el KPI de Ticket Promedio (VMP).
+    """
+    try:
+        fecha_inicio_str = request.GET.get('inicio')
+        fecha_fin_str = request.GET.get('fin')
+        
+        if not fecha_inicio_str or not fecha_fin_str:
+            return JsonResponse({'error': 'Fechas de inicio y fin son requeridas'}, status=400)
+        
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT public.kpi_ticket_promedio(%s::DATE, %s::DATE);",
+                [fecha_inicio_str, fecha_fin_str]
+            )
+            result = cursor.fetchone()
+            
+            if result is None or result[0] is None:
+                return JsonResponse({'error': 'No se pudo calcular el ticket promedio.'}, status=404)
+
+            report_data = result[0]
+            return JsonResponse(report_data, encoder=DjangoJSONEncoder, safe=False)
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+    
+#volumen de ventas
+@login_required
+def kpi_volumen_unidades_api(request):
+    """
+    API endpoint que devuelve el KPI de Volumen de Unidades Vendidas.
+    """
+    try:
+        fecha_inicio_str = request.GET.get('inicio')
+        fecha_fin_str = request.GET.get('fin')
+        
+        if not fecha_inicio_str or not fecha_fin_str:
+            return JsonResponse({'error': 'Fechas de inicio y fin son requeridas'}, status=400)
+        
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT public.kpi_volumen_unidades_vendidas(%s::DATE, %s::DATE);",
+                [fecha_inicio_str, fecha_fin_str]
+            )
+            result = cursor.fetchone()
+            
+            if result is None or result[0] is None:
+                return JsonResponse({'error': 'No se pudo calcular el volumen de unidades.'}, status=404)
+
+            report_data = result[0]
+            return JsonResponse(report_data, encoder=DjangoJSONEncoder, safe=False)
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+#ventas por estilo de cerveza
+@login_required
+def kpi_ventas_por_estilo_api(request):
+    """
+    API endpoint que devuelve el KPI de Ventas por Estilo de Cerveza.
+    """
+    try:
+        fecha_inicio_str = request.GET.get('inicio')
+        fecha_fin_str = request.GET.get('fin')
+        
+        if not fecha_inicio_str or not fecha_fin_str:
+            return JsonResponse({'error': 'Fechas de inicio y fin son requeridas'}, status=400)
+        
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT public.kpi_ventas_por_estilo(%s::DATE, %s::DATE);",
+                [fecha_inicio_str, fecha_fin_str]
+            )
+            result = cursor.fetchone()
+            
+            if result is None or result[0] is None:
+                return JsonResponse({'error': 'No se pudo calcular las ventas por estilo.'}, status=404)
+
+            report_data = result[0]
+            return JsonResponse(report_data, encoder=DjangoJSONEncoder, safe=False)
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+

@@ -87,6 +87,18 @@ urlpatterns = [
     # path('actualizar-fecha-ven-onl-est/', views.actualizar_fecha_ven_onl_est, name='actualizar_fecha_ven_onl_est'),
     # path('cargar-presentaciones/', views.cargar_presentaciones, name='cargar_presentaciones'),
     
+     # ========== indicadores de ventas ==========
+    path('', views.empleado_dashboard_indicadores, name='dashboard_indicadores'),
+    path('dashboard_indicadores/', views.empleado_dashboard_indicadores, name='dashboard_indicadores'),
+    path('dashboard_indicadores/indicadores_ventas', views.vista_indicadores_ventas, name='indicadores_ventas'),
+    path('api/kpi/ventas-totales/',views.ventas_totales_api, name='api_kpi_ventas_totales'),
+    path('dashboard_indicadores/ventas_totales', views.vista_ventas_totales, name='ventas_totales'),
+    path('api/kpi/crecimiento-ventas/', views.crecimiento_ventas_api, name='api_kpi_crecimiento_ventas'),
+    path('api/kpi/ticket-promedio/', views.kpi_ticket_promedio_api, name='api_kpi_ticket_promedio'),
+    path('api/kpi/volumen-unidades/', views.kpi_volumen_unidades_api, name='api_kpi_volumen_unidades'),
+    path('api/kpi/ventas-por-estilo/', views.kpi_ventas_por_estilo_api, name='api_kpi_ventas_por_estilo'),
+
+
     # URLs del módulo de Eventos
     path('eventos/', views.lista_eventos, name='lista_eventos'),
     path('eventos/crear/', views.crear_evento, name='crear_evento'),
