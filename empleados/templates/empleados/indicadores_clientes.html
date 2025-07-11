@@ -1,0 +1,131 @@
+{% extends "main.html" %}
+{% load static %}
+
+{% block content %}
+<!-- Incluir la librería de gráficos ApexCharts -->
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+<style>
+    .dashboard-container { padding: 25px; }
+    .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
+    .dashboard-header h1 { color: #1a237e; margin: 0; }
+    .filters { display: flex; gap: 15px; align-items: center; background-color: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; }
+    .kpi-card { background-color: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); text-align: center; }
+    .kpi-card h3 { margin: 0 0 10px; color: #6c757d; font-size: 1rem; text-transform: uppercase; }
+    .kpi-value { font-size: 2.5rem; font-weight: 700; color: #1a237e; }
+    .kpi-subtext { font-size: 0.9rem; color: #6c757d; }
+    .chart-container { background-color: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-top: 25px; }
+
+    #generarBtn {
+    width: 250px; /* Ajusta este valor en píxeles como necesites */
+    flex-grow: 1; /* Permite que el botón se expanda */
+    text-align: center; /* Mantiene el texto centrado */
+
+    #espacio {
+    height: 10px;
+}
+}
+</style>
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <a href="{% url 'empleados:dashboard_indicadores' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Regresar</a>
+        <h1>Indicadores de Clientes</h1>
+    </div>
+    <div class="filters">
+            <label for="fecha_inicio">Desde:</label>
+            <input type="date" id="fecha_inicio" class="form-control">
+            <label for="fecha_fin">Hasta:</label>
+            <input type="date" id="fecha_fin" class="form-control">
+            <button id="generarBtn" class="btn btn-primary">Generar</button>
+        </div>
+        <div id="espacio"> </div>
+</div>
+<div id="dashboard-content">
+        <div class="alert alert-info">Seleccione un rango de fechas para generar los indicadores.</div>
+    </div>
+
+<script>
+    function formatNumber(value) {
+        if (value === null || typeof value === 'undefined') return '0';
+        return parseInt(value).toLocaleString('es-ES');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const generarBtn = document.getElementById('generarBtn');
+        const contentContainer = document.getElementById('dashboard-content');
+        
+        async function generarDashboardClientes() {
+            const fechaInicio = document.getElementById('fecha_inicio').value;
+            const fechaFin = document.getElementById('fecha_fin').value;
+
+            if (!fechaInicio || !fechaFin) {
+                alert('Por favor, seleccione ambas fechas.');
+                return;
+            }
+            contentContainer.innerHTML = '<div class="alert alert-info">Cargando datos...</div>';
+
+            try {
+                const [nuevosRecurrentesResponse, retencionResponse] = await Promise.all([
+                    fetch(`/empleados/api/kpi/clientes-nuevos-recurrentes/?inicio=${fechaInicio}&fin=${fechaFin}`),
+                    fetch(`/empleados/api/kpi/tasa-retencion/?inicio=${fechaInicio}&fin=${fechaFin}`)
+                ]);
+
+                if (!nuevosRecurrentesResponse.ok || !retencionResponse.ok) {
+                    throw new Error('No se pudieron cargar todos los datos de clientes.');
+                }
+                const nuevosRecurrentesData = await nuevosRecurrentesResponse.json();
+                const retencionData = await retencionResponse.json();
+
+                renderizarDashboard(nuevosRecurrentesData, retencionData);
+
+            } catch (error) {
+                console.error('Error al generar el dashboard:', error);
+                contentContainer.innerHTML = `<div class="alert alert-danger">${error.message}</div>`;
+            }
+        }
+
+        function renderizarDashboard(clientes, retencion) {
+            const clientesNuevos = clientes.clientes_nuevos || 0;
+            const clientesRecurrentes = clientes.clientes_recurrentes || 0;
+            const totalClientes = clientesNuevos + clientesRecurrentes;
+            const tasaRetencion = retencion.tasa_retencion || 0;
+
+            const html = `
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <h3>Clientes Nuevos</h3>
+                        <p class="kpi-value">${formatNumber(clientesNuevos)}</p>
+                    </div>
+                    <div class="kpi-card">
+                        <h3>Clientes Recurrentes</h3>
+                        <p class="kpi-value">${formatNumber(clientesRecurrentes)}</p>
+                    </div>
+                    <div class="kpi-card">
+                        <h3>Tasa de Retención</h3>
+                        <p class="kpi-value">${tasaRetencion.toFixed(2)}%</p>
+                        <p class="kpi-subtext">${formatNumber(retencion.clientes_retenidos)} de ${formatNumber(retencion.clientes_periodo_anterior)} clientes compraron de nuevo en el periodo actual en comparación con el anterior</p>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div id="clientes-chart"></div>
+                </div>
+            `;
+            contentContainer.innerHTML = html;
+
+            const optionsDonut = {
+                series: [clientesNuevos, clientesRecurrentes],
+                chart: { type: 'donut', height: 350 },
+                labels: ['Clientes Nuevos', 'Clientes Recurrentes'],
+                title: { text: 'Proporción de Clientes Nuevos vs. Recurrentes' },
+                legend: { position: 'bottom' }
+            };
+            new ApexCharts(document.querySelector("#clientes-chart"), optionsDonut).render();
+        }
+
+        generarBtn.addEventListener('click', generarDashboardClientes);
+    });
+</script>
+
+{% endblock %}
