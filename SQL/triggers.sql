@@ -322,6 +322,67 @@ CREATE TRIGGER tr_descuento_stock_venta_online
     FOR EACH ROW
     EXECUTE FUNCTION fn_descuento_stock_venta_online();
 
+
+CREATE OR REPLACE FUNCTION fn_descuento_stock_venta_online()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_cantidad_disponible INTEGER;
+    v_producto_nombre VARCHAR(255);
+BEGIN
+    -- Validar que la cantidad a vender sea positiva
+    IF NEW.det_ven_onl_cantidad <= 0 THEN
+        RAISE EXCEPTION 'La cantidad vendida debe ser mayor a cero. Cantidad recibida: %', NEW.det_ven_onl_cantidad;
+    END IF;
+
+    -- Obtener la cantidad disponible actual en pre_alm
+    SELECT pre_alm_cantidad 
+    INTO v_cantidad_disponible
+    FROM pre_alm 
+    WHERE pre_alm_id = NEW.fk_pre_alm;
+    
+    -- Verificar que el registro de pre_alm existe
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'No se encontró el registro de pre_alm con ID: %', NEW.fk_pre_alm;
+    END IF;
+    
+    -- Obtener nombre del producto para mensajes más descriptivos
+    SELECT p.prese_nombre
+    INTO v_producto_nombre
+    FROM pre_alm pa
+    INNER JOIN presentacion p ON pa.fk_presentacion = p.prese_id
+    WHERE pa.pre_alm_id = NEW.fk_pre_alm;
+    
+    -- Verificar que hay suficiente stock disponible
+    IF v_cantidad_disponible < NEW.det_ven_onl_cantidad THEN
+        RAISE EXCEPTION 'Stock insuficiente para el producto "%" (ID: %). Disponible: %, Solicitado: %', 
+            COALESCE(v_producto_nombre, 'Producto'), 
+            NEW.fk_pre_alm, 
+            v_cantidad_disponible, 
+            NEW.det_ven_onl_cantidad;
+    END IF;
+    
+    -- Descontar la cantidad vendida del stock de pre_alm
+    UPDATE pre_alm 
+    SET pre_alm_cantidad = pre_alm_cantidad - NEW.det_ven_onl_cantidad
+    WHERE pre_alm_id = NEW.fk_pre_alm;
+    
+    -- Verificar que el update fue exitoso
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Error al actualizar el stock de pre_alm con ID: %', NEW.fk_pre_alm;
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Crear el trigger que se ejecuta después de cada INSERT en detalle_venta_online
+DROP TRIGGER IF EXISTS tr_descuento_stock_venta_online ON detalle_venta_online;
+
+CREATE TRIGGER tr_descuento_stock_venta_online
+    AFTER INSERT ON detalle_venta_online
+    FOR EACH ROW
+    EXECUTE FUNCTION fn_descuento_stock_venta_online();
+
 -- Trigger para crear solicitud de compra cuando stock baja de 100
 CREATE OR REPLACE FUNCTION crear_solicitud_compra()
 RETURNS TRIGGER AS $$
