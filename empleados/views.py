@@ -976,12 +976,23 @@ def crear_evento(request):
             lugar_id = request.POST.get('fk_lugar')
             tipo_evento_id = request.POST.get('fk_tip_eve')
             
+            # Obtener precio del boleto con valor por defecto de 5
+            precio_boleto = request.POST.get('eve_precio_boleto')
+            if not precio_boleto or precio_boleto.strip() == '':
+                precio_boleto = 5.0
+            else:
+                try:
+                    precio_boleto = float(precio_boleto)
+                except (ValueError, TypeError):
+                    precio_boleto = 5.0
+            
             # Crear el evento
             nuevo_evento = evento.objects.create(
                 eve_nombre=nombre,
                 eve_descripcion=descripcion,
                 eve_fecha_hora=fecha_hora,
                 eve_nro_boletos=nro_boletos,
+                eve_precio_boleto=precio_boleto,
                 fk_lugar_id=lugar_id,
                 fk_tip_eve_id=tipo_evento_id
             )
@@ -1018,6 +1029,17 @@ def editar_evento(request, evento_id):
             evento_obj.eve_nro_boletos = request.POST.get('eve_nro_boletos')
             evento_obj.fk_lugar_id = request.POST.get('fk_lugar')
             evento_obj.fk_tip_eve_id = request.POST.get('fk_tip_eve')
+            
+            # Actualizar precio del boleto con valor por defecto de 5
+            precio_boleto = request.POST.get('eve_precio_boleto')
+            if not precio_boleto or precio_boleto.strip() == '':
+                evento_obj.eve_precio_boleto = 5.0
+            else:
+                try:
+                    evento_obj.eve_precio_boleto = float(precio_boleto)
+                except (ValueError, TypeError):
+                    evento_obj.eve_precio_boleto = 5.0
+            
             evento_obj.save()
             
             messages.success(request, 'Evento actualizado exitosamente.')

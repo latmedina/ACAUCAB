@@ -49,13 +49,13 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <div class="mb-3">
                             <label for="eve_fecha_hora" class="form-label">Fecha y Hora <span class="text-danger">*</span></label>
                             <input type="datetime-local" class="form-control" id="eve_fecha_hora" name="eve_fecha_hora" required>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <div class="mb-3">
                             <label for="fk_lugar" class="form-label">Lugar <span class="text-danger">*</span></label>
                             <select class="form-select" id="fk_lugar" name="fk_lugar" required>
@@ -66,12 +66,26 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
                         <div class="mb-3">
                             <label for="eve_nro_boletos" class="form-label">Número de Boletos <span class="text-danger">*</span></label>
                             <input type="number" class="form-control" id="eve_nro_boletos" name="eve_nro_boletos" 
                                    min="1" required>
                             <div class="form-text">Capacidad máxima del evento</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="eve_precio_boleto" class="form-label">Precio del Boleto (USD)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="eve_precio_boleto" name="eve_precio_boleto" 
+                                       step="0.01" min="0" placeholder="5.00" value="5.00">
+                            </div>
+                            <div class="form-text">Precio por boleto en dólares (valor por defecto: $5.00)</div>
                         </div>
                     </div>
                 </div>

@@ -2357,7 +2357,7 @@ def create_sale_from_order_data(order_data, user):
                     det_ven_onl_precio=detalle['precio_unitario']
                 )
         
-        return venta_fisica_obj, venta_online_obj, venta_evento_obj
+        return venta_fisica_obj, venta_online_obj
         
     except Exception as e:
         raise Exception(f'Error creando venta: {str(e)}')
