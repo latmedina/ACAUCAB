@@ -1,0 +1,95 @@
+{% extends 'empleados/eventos/base_eventos.html' %}
+
+{% block titulo %}Asignar Proveedor y Cervezas al Evento{% endblock %}
+
+{% block eventos_content %}
+<div class="container">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'empleados:lista_eventos' %}">Eventos</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'empleados:detalle_evento' evento.eve_id %}">{{ evento.eve_nombre }}</a></li>
+            <li class="breadcrumb-item active">Asignar Proveedor</li>
+        </ol>
+    </nav>
+
+    <div class="card mb-4">
+        <div class="card-header bg-warning text-dark">
+            <h4 class="mb-0"><i class="fas fa-handshake me-2"></i> Asignar Proveedor y Cervezas</h4>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="mb-4">
+                    <label for="proveedor" class="form-label">Seleccione el proveedor:</label>
+                    <select class="form-select" id="proveedor" name="proveedor_id" required>
+                        <option value="" disabled selected>Seleccione un proveedor</option>
+                        {% for proveedor in proveedores_disponibles %}
+                            <option value="{{ proveedor.pro_id }}">
+                                {{ proveedor.pro_razon_social|default:proveedor.pro_denominacion_comercial }} - {{ proveedor.pro_rif }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <h5>Cervezas que aportará</h5>
+                {% for presentacion in presentaciones %}
+                    <div class="row align-items-end mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ presentacion.prese_nombre }} ({{ presentacion.prese_volumen }} ml)</label>
+                        </div>
+                        <div class="col-md-6">
+                            <input type="number" name="cantidad_{{ presentacion.prese_id }}" class="form-control" min="0" placeholder="Cantidad (opcional)">
+                        </div>
+                    </div>
+                {% endfor %}
+
+                <div class="d-flex justify-content-end mt-4 gap-2">
+                    <a href="{% url 'empleados:detalle_evento' evento.eve_id %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i> Volver
+                    </a>
+                    <button type="submit" class="btn btn-warning text-dark">
+                        <i class="fas fa-check me-2"></i> Asignar Proveedor
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <h5 class="mb-3">Proveedores Asignados</h5>
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Proveedor</th>
+                    <th>RIF</th>
+                    <th>Dirección</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for asignado in proveedores_evento %}
+                    <tr>
+                        <td>{{ asignado.fk_proveedor.pro_razon_social|default:asignado.fk_proveedor.pro_denominacion_comercial }}</td>
+                        <td>{{ asignado.fk_proveedor.pro_rif }}</td>
+                        <td>{{ asignado.fk_proveedor.pro_direccion_fiscal }}</td>
+                        <td class="text-end">
+                            <form method="post" action="{% url 'empleados:eliminar_proveedor_evento' evento.eve_id asignado.eve_pro_id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-danger"
+                                    onclick="return confirm('¿Está seguro de eliminar este proveedor del evento?');">
+                                    <i class="fas fa-trash-alt"></i> Eliminar
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted">No hay proveedores asignados aún.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

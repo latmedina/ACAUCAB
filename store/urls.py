@@ -55,12 +55,8 @@ urlpatterns = [
     path('api/historial/usuario/<int:id_usuario>/', views.historial_compras_api, name='api_historial_compras'),
     path('factura/<str:tipo>/<int:venta_id>/', views.vista_factura_directa, name='vista_factura_directa'),
 
-
-
-
-
-
-
+    #Compra de boleto para evento
+    path('eventos/', views.eventos_disponibles_view, name='eventos_disponibles'),
 
     # AJAX para selector jerárquico de lugar
     path('ajax/load-municipios/', views.load_municipios, name='ajax_load_municipios'),

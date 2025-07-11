@@ -58,6 +58,10 @@
     <a class="mx-auto text-white fw-bold text-decoration-none" style="font-size: 1.5rem;" href="{% url 'store_view' 'fisica' %}">
         <i class="fas fa-store me-2"></i>ACAUCAB
     </a>
+
+        <a href="{% url 'eventos_disponibles' %}" class="btn btn-success">
+            Comprar Boletos
+        </a>
     
         <!-- Toggle Switch para cambiar tipo de tienda -->
         <div class="store-toggle-container me-4">
@@ -157,14 +161,27 @@
     <script>
         // Detectar tipo de tienda basándose en la URL actual
         function detectStoreType() {
-            const currentPath = window.location.pathname;
-            if (currentPath.includes('/store/online/') || currentPath.includes('/cart/online/') || currentPath.includes('/checkout/online/')) {
+        const currentPath = window.location.pathname;
+            if (
+                currentPath.includes('/store/online/') ||
+                currentPath.includes('/cart/online/') ||
+                currentPath.includes('/checkout/online/')
+            ) {
                 return 'online';
-            } else if (currentPath.includes('/store/fisica/') || currentPath.includes('/cart/fisica/') || currentPath.includes('/checkout/fisica/')) {
+            } else if (
+                currentPath.includes('/store/fisica/') ||
+                currentPath.includes('/cart/fisica/') ||
+                currentPath.includes('/checkout/fisica/')
+            ) {
                 return 'fisica';
+            } else if (
+                currentPath.includes('/eventos') ||
+                currentPath.includes('/cart/evento/') ||
+                currentPath.includes('/checkout/evento/')
+            ) {
+                return 'evento';
             } else {
-                // Default para otras páginas
-                return 'fisica';
+                return 'fisica'; // default
             }
         }
 
