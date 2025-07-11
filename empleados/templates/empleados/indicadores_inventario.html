@@ -1,0 +1,166 @@
+{% extends "main.html" %}
+{% load static %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+<style>
+    .dashboard-container { padding: 25px; }
+    .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
+    .dashboard-header h1 { color: #1a237e; margin: 0; }
+    .filters { display: flex; gap: 15px; align-items: center; background-color: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; }
+    .kpi-card { background-color: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); text-align: center; }
+    .kpi-card h3 { margin: 0 0 10px; color: #6c757d; font-size: 1rem; text-transform: uppercase; }
+    .kpi-value { font-size: 2.5rem; font-weight: 700; color: #1a237e; }
+    .kpi-subtext { font-size: 0.9rem; color: #6c757d; margin-top: 5px; }
+    .chart-container { background-color: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-top: 25px; }
+
+        #generarBtn {
+    width: 250px; /* Ajusta este valor en píxeles como necesites */
+    flex-grow: 1; /* Permite que el botón se expanda */
+    text-align: center; /* Mantiene el texto centrado */
+        }
+
+    #espacio {
+    height: 10px;
+    }
+</style>
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <a href="{% url 'empleados:dashboard_indicadores' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Regresar</a>
+        <h1>Indicadores de Inventario y Operaciones</h1>
+    </div>
+        <div class="filters">
+            <label for="fecha_inicio">Desde:</label>
+            <input type="date" id="fecha_inicio" class="form-control">
+            <label for="fecha_fin">Hasta:</label>
+            <input type="date" id="fecha_fin" class="form-control">
+            <button id="generarBtn" class="btn btn-primary">Generar</button>
+        </div>
+
+    </div>
+
+    <div id="dashboard-content">
+        <div class="alert alert-info">Seleccione un rango de fechas para generar los indicadores.</div>
+    </div>
+</div>
+
+<script>
+    function formatCurrency(value) {
+        if (value === null || typeof value === 'undefined') return '$0.00';
+        return '$' + parseFloat(value).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+    }
+    function formatRatio(value) {
+        if (value === null || typeof value === 'undefined') return 'N/A';
+        return parseFloat(value).toFixed(2);
+    }
+    function formatNumber(value) {
+        if (value === null || typeof value === 'undefined') return '0';
+        return parseInt(value).toLocaleString('es-ES');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const generarBtn = document.getElementById('generarBtn');
+        const contentContainer = document.getElementById('dashboard-content');
+        
+        async function generarDashboardInventario() {
+            const fechaInicio = document.getElementById('fecha_inicio').value;
+            const fechaFin = document.getElementById('fecha_fin').value;
+
+            if (!fechaInicio || !fechaFin) {
+                alert('Por favor, seleccione ambas fechas.');
+                return;
+            }
+            contentContainer.innerHTML = '<div class="alert alert-info">Cargando datos...</div>';
+
+            try {
+                const [rotacionResponse, rupturaResponse] = await Promise.all([
+                    fetch(`/empleados/api/kpi/rotacion-inventario/?inicio=${fechaInicio}&fin=${fechaFin}`),
+                    fetch(`/empleados/api/kpi/ruptura-stock/`) // Este no necesita fechas
+                ]);
+
+                if (!rotacionResponse.ok || !rupturaResponse.ok) {
+                    throw new Error('No se pudieron cargar todos los datos del dashboard.');
+                }
+                const rotacionData = await rotacionResponse.json();
+                const rupturaData = await rupturaResponse.json();
+
+                renderizarDashboard(rotacionData, rupturaData);
+
+            } catch (error) {
+                console.error('Error al generar el dashboard:', error);
+                contentContainer.innerHTML = `<div class="alert alert-danger">${error.message}</div>`;
+            }
+        }
+
+        function renderizarDashboard(rotacion, ruptura) {
+            const tasaRuptura = ruptura.tasa_ruptura || 0;
+            const html = `
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <h3>Rotación de Inventario</h3>
+                        <p class="kpi-value">${formatRatio(rotacion.tasa_rotacion)}</p>
+                        <p class="kpi-subtext">El inventario ha rotado ${formatRatio(rotacion.tasa_rotacion)} veces en el período.</p>
+                    </div>
+                    <div class="kpi-card">
+                        <h3>Costo de Productos Vendidos</h3>
+                        <p class="kpi-value">${formatCurrency(rotacion.costo_productos_vendidos)}</p>
+                    </div>
+                    <div class="kpi-card">
+                        <h3>Valor del Inventario Actual</h3>
+                        <p class="kpi-value">${formatCurrency(rotacion.valor_inventario_actual)}</p>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3>Tasa de Ruptura de Stock (Actual)</h3>
+                    <div id="ruptura-stock-chart"></div>
+                    <p class="text-center mt-2">${formatNumber(ruptura.productos_sin_stock)} de ${formatNumber(ruptura.total_productos)} productos están sin stock.</p>
+                </div>
+            `;
+            contentContainer.innerHTML = html;
+
+            // Gráfico de Medidor (Gauge) para Tasa de Ruptura
+            const optionsGauge = {
+                series: [tasaRuptura.toFixed(2)],
+                chart: { type: 'radialBar', height: 350 },
+                plotOptions: {
+                    radialBar: {
+                        startAngle: -135,
+                        endAngle: 135,
+                        hollow: { size: '70%' },
+                        dataLabels: {
+                            name: { show: false },
+                            value: {
+                                fontSize: "30px",
+                                show: true,
+                                formatter: (val) => val + "%"
+                            }
+                        }
+                    }
+                },
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        shade: 'dark',
+                        type: 'horizontal',
+                        shadeIntensity: 0.5,
+                        gradientToColors: ['#ABE5A1'],
+                        inverseColors: true,
+                        opacityFrom: 1,
+                        opacityTo: 1,
+                        stops: [0, 100]
+                    }
+                },
+                stroke: { lineCap: 'round' },
+                labels: ['Tasa de Ruptura'],
+            };
+            new ApexCharts(document.querySelector("#ruptura-stock-chart"), optionsGauge).render();
+        }
+
+        generarBtn.addEventListener('click', generarDashboardInventario);
+    });
+</script>
+
+{% endblock %}
