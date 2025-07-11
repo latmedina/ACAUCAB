@@ -12,6 +12,7 @@
 @import url('search.css');
 @import url('payment.css');
 @import url('ui-enhancements.css');
+@import url('eventos.css');
 
 /* ==========================================================================
    NOTAS SOBRE LA ORGANIZACIÓN:
@@ -24,6 +25,7 @@
    - buttons.css: Botones y sus diferentes estados
    - search.css: Barra de búsqueda y funcionalidad de búsqueda
    - payment.css: Formularios de método de pago y procesamiento
+   - eventos.css: Estilos específicos para la tienda de eventos
    
    Para agregar nuevos estilos, considera crear un nuevo módulo si
    es una funcionalidad completamente nueva, o agregar al módulo

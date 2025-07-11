@@ -113,12 +113,13 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql;
 
--- Función para registrar un pago completo venta física o online
+-- Función para registrar un pago completo venta física, online o evento
 CREATE OR REPLACE FUNCTION public.registrar_pago(
     p_monto DECIMAL(12,2),
     p_metodo_pago_id INTEGER,
     p_venta_fisica_id INTEGER DEFAULT NULL,
     p_venta_online_id INTEGER DEFAULT NULL,
+    p_venta_evento_id INTEGER DEFAULT NULL,
     p_moneda_id INTEGER DEFAULT 1
 ) RETURNS INTEGER AS $$
 DECLARE
@@ -131,6 +132,7 @@ BEGIN
         fk_metodo_pago,
         fk_venta_fisica,
         fk_venta_online,
+        fk_venta_evento,
         fk_moneda
     ) VALUES (
         p_monto,
@@ -138,6 +140,7 @@ BEGIN
         p_metodo_pago_id,
         p_venta_fisica_id,
         p_venta_online_id,
+        p_venta_evento_id,
         p_moneda_id
     ) RETURNING pag_id INTO nuevo_pago_id;
     
@@ -210,7 +213,8 @@ CREATE OR REPLACE FUNCTION public.procesar_pago_puntos(
     p_usuario_id INTEGER,
     p_puntos_necesarios INTEGER,
     p_venta_fisica_id INTEGER DEFAULT NULL,
-    p_venta_online_id INTEGER DEFAULT NULL
+    p_venta_online_id INTEGER DEFAULT NULL,
+    p_venta_evento_id INTEGER DEFAULT NULL
 ) RETURNS RECORD AS $$
 DECLARE
     resultado RECORD;
@@ -259,6 +263,7 @@ BEGIN
         metodo_pago_id,
         p_venta_fisica_id,
         p_venta_online_id,
+        p_venta_evento_id,
         moneda_bolivares_id
     ) INTO pago_id;
     
@@ -328,5 +333,234 @@ BEGIN
     ) h;
 
     RETURN resultado;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ============================================================================
+-- FUNCIONES PARA GESTIÓN DE BOLETOS DE EVENTOS
+-- ============================================================================
+
+-- Función para calcular boletos vendidos por evento
+CREATE OR REPLACE FUNCTION obtener_boletos_vendidos_evento(p_evento_id INTEGER)
+RETURNS INTEGER AS $$
+DECLARE
+    v_boletos_vendidos INTEGER := 0;
+BEGIN
+    -- Sumar boletos vendidos desde venta_boleto_evento usando el campo de cantidad
+    SELECT COALESCE(SUM(ven_bol_eve_cantidad), 0)
+    INTO v_boletos_vendidos
+    FROM venta_boleto_evento
+    WHERE fk_evento = p_evento_id;
+    
+    RETURN v_boletos_vendidos;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Función para obtener información completa de disponibilidad de evento
+CREATE OR REPLACE FUNCTION obtener_info_disponibilidad_evento(p_evento_id INTEGER)
+RETURNS JSON AS $$
+DECLARE
+    v_evento_record RECORD;
+    v_boletos_vendidos INTEGER := 0;
+    v_boletos_disponibles INTEGER := 0;
+    v_porcentaje_vendido DECIMAL := 0;
+    v_result JSON;
+BEGIN
+    -- Obtener información del evento
+    SELECT eve_id, eve_nombre, eve_nro_boletos
+    INTO v_evento_record
+    FROM evento
+    WHERE eve_id = p_evento_id;
+    
+    -- Si el evento no existe, retornar error
+    IF NOT FOUND THEN
+        v_result := json_build_object(
+            'error', 'Evento no encontrado',
+            'evento_id', p_evento_id
+        );
+        RETURN v_result;
+    END IF;
+    
+    -- Calcular boletos vendidos usando la función actualizada
+    v_boletos_vendidos := obtener_boletos_vendidos_evento(p_evento_id);
+    
+    -- Calcular boletos disponibles
+    v_boletos_disponibles := v_evento_record.eve_nro_boletos - v_boletos_vendidos;
+    
+    -- Calcular porcentaje vendido
+    IF v_evento_record.eve_nro_boletos > 0 THEN
+        v_porcentaje_vendido := ROUND((v_boletos_vendidos::DECIMAL / v_evento_record.eve_nro_boletos::DECIMAL) * 100, 2);
+    END IF;
+    
+    -- Construir JSON de respuesta
+    v_result := json_build_object(
+        'evento_id', v_evento_record.eve_id,
+        'evento_nombre', v_evento_record.eve_nombre,
+        'boletos_totales', v_evento_record.eve_nro_boletos,
+        'boletos_vendidos', v_boletos_vendidos,
+        'boletos_disponibles', v_boletos_disponibles,
+        'porcentaje_vendido', v_porcentaje_vendido,
+        'agotado', CASE WHEN v_boletos_disponibles <= 0 THEN true ELSE false END,
+        'stock_bajo', CASE WHEN v_boletos_disponibles <= 10 AND v_boletos_disponibles > 0 THEN true ELSE false END
+    );
+    
+    RETURN v_result;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Función para validar si se puede comprar una cantidad específica de boletos
+CREATE OR REPLACE FUNCTION validar_compra_boletos(p_evento_id INTEGER, p_cantidad_solicitada INTEGER)
+RETURNS JSON AS $$
+DECLARE
+    v_info_evento JSON;
+    v_boletos_disponibles INTEGER;
+    v_result JSON;
+BEGIN
+    -- Obtener información actual del evento
+    v_info_evento := obtener_info_disponibilidad_evento(p_evento_id);
+    
+    -- Verificar si hay error en la información del evento
+    IF v_info_evento->>'error' IS NOT NULL THEN
+        RETURN v_info_evento;
+    END IF;
+    
+    -- Extraer boletos disponibles
+    v_boletos_disponibles := (v_info_evento->>'boletos_disponibles')::INTEGER;
+    
+    -- Validar si se pueden comprar los boletos solicitados
+    IF p_cantidad_solicitada <= 0 THEN
+        v_result := json_build_object(
+            'valido', false,
+            'mensaje', 'La cantidad debe ser mayor a 0'
+        );
+    ELSIF p_cantidad_solicitada > v_boletos_disponibles THEN
+        v_result := json_build_object(
+            'valido', false,
+            'mensaje', format('Solo hay %s boletos disponibles. No se pueden comprar %s boletos.', 
+                             v_boletos_disponibles, p_cantidad_solicitada),
+            'boletos_disponibles', v_boletos_disponibles,
+            'cantidad_solicitada', p_cantidad_solicitada
+        );
+    ELSE
+        v_result := json_build_object(
+            'valido', true,
+            'mensaje', 'Compra válida',
+            'boletos_disponibles', v_boletos_disponibles,
+            'cantidad_solicitada', p_cantidad_solicitada,
+            'boletos_restantes_despues', v_boletos_disponibles - p_cantidad_solicitada
+        );
+    END IF;
+    
+    RETURN v_result;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Función para obtener estadísticas de boletos de todos los eventos
+CREATE OR REPLACE FUNCTION obtener_estadisticas_boletos_eventos()
+RETURNS JSON AS $$
+DECLARE
+    v_evento RECORD;
+    v_estadisticas JSON[] := ARRAY[]::JSON[];
+    v_info_evento JSON;
+    v_result JSON;
+BEGIN
+    -- Iterar por todos los eventos
+    FOR v_evento IN 
+        SELECT eve_id, eve_nombre, eve_fecha_hora, eve_nro_boletos
+        FROM evento 
+        ORDER BY eve_fecha_hora DESC
+    LOOP
+        -- Obtener información de disponibilidad para cada evento
+        v_info_evento := obtener_info_disponibilidad_evento(v_evento.eve_id);
+        
+        -- Agregar información adicional del evento
+        v_info_evento := v_info_evento || json_build_object(
+            'fecha_hora', v_evento.eve_fecha_hora
+        );
+        
+        -- Agregar a la array de estadísticas
+        v_estadisticas := v_estadisticas || v_info_evento;
+    END LOOP;
+    
+    -- Construir resultado final
+    v_result := json_build_object(
+        'eventos', v_estadisticas,
+        'total_eventos', array_length(v_estadisticas, 1)
+    );
+    
+    RETURN v_result;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Función para actualizar disponibilidad después de una venta
+CREATE OR REPLACE FUNCTION procesar_venta_boletos_evento(
+    p_evento_id INTEGER,
+    p_usuario_id INTEGER,
+    p_cantidad_boletos INTEGER DEFAULT 1,
+    p_precio_total DECIMAL DEFAULT NULL
+)
+RETURNS JSON AS $$
+DECLARE
+    v_validacion JSON;
+    v_evento_obj RECORD;
+    v_venta_id INTEGER;
+    v_precio_boleto DECIMAL;
+    v_precio_total DECIMAL;
+    v_resultado JSON;
+BEGIN
+    -- Validar disponibilidad
+    v_validacion := validar_compra_boletos(p_evento_id, p_cantidad_boletos);
+    
+    IF NOT (v_validacion->>'valido')::BOOLEAN THEN
+        RETURN json_build_object(
+            'exito', false,
+            'mensaje', v_validacion->>'mensaje',
+            'error_tipo', 'sin_disponibilidad'
+        );
+    END IF;
+    
+    -- Obtener información del evento
+    SELECT * INTO v_evento_obj FROM evento WHERE eve_id = p_evento_id;
+    
+    -- Calcular precio si no se proporciona
+    IF p_precio_total IS NULL THEN
+        v_precio_boleto := COALESCE(v_evento_obj.eve_precio_boleto, 0);
+        v_precio_total := v_precio_boleto * p_cantidad_boletos;
+    ELSE
+        v_precio_total := p_precio_total;
+    END IF;
+    
+    -- Crear venta de boletos
+    INSERT INTO venta_boleto_evento (
+        ven_bol_eve_fecha_hora,
+        ven_bol_eve_monto_total,
+        ven_bol_eve_descripcion,
+        fk_evento,
+        fk_usuario
+    ) VALUES (
+        NOW(),
+        v_precio_total,
+        format('Compra de %s boleto(s) para %s', p_cantidad_boletos, v_evento_obj.eve_nombre),
+        p_evento_id,
+        p_usuario_id
+    ) RETURNING ven_bol_eve_id INTO v_venta_id;
+    
+    -- Actualizar número de boletos disponibles del evento
+    UPDATE evento 
+    SET eve_nro_boletos = eve_nro_boletos - p_cantidad_boletos
+    WHERE eve_id = p_evento_id;
+    
+    -- Retornar resultado
+    v_resultado := json_build_object(
+        'exito', true,
+        'mensaje', 'Venta procesada exitosamente',
+        'venta_id', v_venta_id,
+        'cantidad_boletos', p_cantidad_boletos,
+        'precio_total', v_precio_total,
+        'evento_id', p_evento_id,
+        'boletos_restantes', v_evento_obj.eve_nro_boletos - p_cantidad_boletos
+    );
+    
+    RETURN v_resultado;
 END;
 $$ LANGUAGE plpgsql;

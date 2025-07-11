@@ -33,7 +33,7 @@ from .models import (
     metodo_pago, pago, moneda, historico_moneda, historico_precio_punto,
     tienda, inventario, venta_fisica, detalle_venta_fisica,
     cliente, proveedor, empleado, emp_car, usuario, lugar, estatus as Estatus,
-    evento, venta_boleto_evento
+    evento, venta_boleto_evento, existencia_evento, eve_pro, venta_evento, detalle_venta_evento
 )
 
 def validate_expiration_date(exp_date_str):
@@ -128,60 +128,6 @@ def convert_price_to_bolivars(price_usd):
     dollar_rate = get_dollar_exchange_rate()
     return price_usd * dollar_rate
 
-# FUNCIÓN AUXILIAR PARA DATOS DEL CARRITO (VERSIÓN ORIGINAL)
-def cartData(request):
-    """Función original para carrito básico"""
-    cart = request.session.get('cart', {})
-    items = []
-    total_usd = 0  # Total en dólares (base)
-    total_items = 0
-    dollar_rate = get_dollar_exchange_rate()
-
-    for product_id, quantity in cart.items():
-        try:
-            product = presentacion.objects.get(prese_id=int(product_id))
-            prealm = pre_alm.objects.filter(fk_presentacion=product).first()
-            if not prealm:
-                continue
-
-            precio_usd = prealm.pre_alm_precio  # Precio en dólares (base en BD)
-            precio_bs = convert_price_to_bolivars(precio_usd)  # Precio en bolívares para mostrar
-            subtotal_usd = precio_usd * quantity  # Subtotal en dólares (para cálculos internos)
-            subtotal_bs = precio_bs * quantity  # Subtotal en bolívares (para mostrar)
-
-            item = {
-                'product': product,
-                'quantity': quantity,
-                'get_total': subtotal_usd,  # Total en dólares (base)
-                'get_total_bs': subtotal_bs,  # Total en bolívares para mostrar
-                'precio_unitario': precio_usd,  # Precio unitario en dólares
-                'precio_unitario_bs': precio_bs,  # Precio unitario en bolívares
-                'precio_unitario_usd': precio_usd,  # Para compatibilidad con templates
-            }
-            items.append(item)
-            total_usd += subtotal_usd  # Total en dólares para cálculos internos
-            total_items += quantity
-        except presentacion.DoesNotExist:
-            continue
-
-    # Convertir el total de dólares a bolívares
-    total_bs = convert_price_to_bolivars(total_usd)
-
-    order = {
-        'get_cart_total': total_usd,  # Total en dólares (base)
-        'get_cart_total_usd': total_usd,  # Total en dólares
-        'get_cart_total_bs': total_bs,  # Total en bolívares para mostrar
-        'get_cart_items': total_items,
-        'shipping': False,
-        'dollar_rate': dollar_rate
-    }
-
-    return {
-        'items': items,
-        'order': order,
-        'cartItems': total_items,
-    }
-
 # FUNCIÓN AUXILIAR GENERALIZADA PARA CARRITO (NUEVA VERSIÓN)
 def cart_data(request, tipo='fisica'):
     """Función generalizada para carrito físico, online y de eventos"""
@@ -189,6 +135,9 @@ def cart_data(request, tipo='fisica'):
         cart_key = 'cart_fisica'
     elif tipo == 'evento':
         cart_key = 'cart_evento'
+    elif tipo == 'venta_evento':
+        # Para la nueva tienda de eventos con productos
+        return cart_data_evento(request)
     else:
         cart_key = 'cart'  # para tienda online
 
@@ -479,6 +428,8 @@ def cart_dropdown_data(request):
             tipo = 'online'
         elif '/store/fisica/' in referer:
             tipo = 'fisica'
+        elif '/tienda-eventos/' in referer:
+            tipo = 'venta_evento'
         
         # También verificar el path actual
         current_path = request.path
@@ -486,6 +437,8 @@ def cart_dropdown_data(request):
             tipo = 'online'
         elif '/fisica/' in current_path:
             tipo = 'fisica'
+        elif '/eventos/' in current_path:
+            tipo = 'venta_evento'
             
         # Si hay parámetro en la petición, usarlo
         if request.GET.get('tipo'):
@@ -494,17 +447,34 @@ def cart_dropdown_data(request):
         data = cart_data(request, tipo=tipo)
         
         cart_items = []
-        for item in data['items']:
-            cart_items.append({
-                'product_id': item['product'].prese_id,
-                'name': item['product'].prese_nombre,
-                'quantity': item['quantity'],
-                'price_usd': float(item['precio_unitario_usd']),
-                'price_bs': float(item['precio_unitario_bs']),
-                'subtotal_usd': float(item['get_total']),
-                'subtotal_bs': float(item['get_total_bs']),
-                'image': item['product'].get_imagen_url() if item['product'].prese_imagen else None,
-            })
+        
+        if tipo == 'venta_evento':
+            # Manejar items de eventos - usar los campos correctos de cart_data_evento
+            for item in data['items']:
+                cart_items.append({
+                    'product_id': item['id'],  # cart_data_evento devuelve 'id'
+                    'name': item['nombre'],   # cart_data_evento devuelve 'nombre'
+                    'quantity': item['quantity'],
+                    'price_usd': float(item['precio_unitario']),
+                    'price_bs': float(item['precio_unitario_bs']),
+                    'subtotal_usd': float(item['get_total']),
+                    'subtotal_bs': float(item['get_total_bs']),
+                    'image': item.get('imagen'),  # cart_data_evento devuelve 'imagen'
+                    'is_ticket': item.get('es_entrada', False)
+                })
+        else:
+            # Manejar items normales
+            for item in data['items']:
+                cart_items.append({
+                    'product_id': item['product'].prese_id,
+                    'name': item['product'].prese_nombre,
+                    'quantity': item['quantity'],
+                    'price_usd': float(item['precio_unitario_usd']),
+                    'price_bs': float(item['precio_unitario_bs']),
+                    'subtotal_usd': float(item['get_total']),
+                    'subtotal_bs': float(item['get_total_bs']),
+                    'image': item['product'].get_imagen_url() if item['product'].prese_imagen else None,
+                })
         
         response_data = {
             'items': cart_items,
@@ -654,13 +624,23 @@ def autopago_logout(request):
 
 def cart_view(request, tipo='fisica'):
     """Vista de carrito generalizada"""
-    data = cart_data(request, tipo)
-    return render(request, 'cart.html', {
-        'items': data['items'],
-        'order': data['order'],
-        'cartItems': data['cartItems'],
-        'tipo': tipo,
-    })
+    if tipo == 'venta_evento':
+        data = cart_data_evento(request)
+        return render(request, 'cart.html', {
+            'items': data['items'],
+            'order': data['order'],
+            'cartItems': data['cartItems'],
+            'tipo': tipo,
+            'is_evento': True,
+        })
+    else:
+        data = cart_data(request, tipo)
+        return render(request, 'cart.html', {
+            'items': data['items'],
+            'order': data['order'],
+            'cartItems': data['cartItems'],
+            'tipo': tipo,
+        })
 
 # CHECKOUT
 def checkout(request):
@@ -674,7 +654,11 @@ def checkout(request):
 
 def checkout_view(request, tipo='fisica'):
     """Vista de checkout generalizada"""
-    data = cart_data(request, tipo)
+    if tipo == 'venta_evento':
+        data = cart_data_evento(request)
+    else:
+        data = cart_data(request, tipo)
+    
     return render(request, 'checkout.html', {
         'items': data['items'],
         'order': data['order'],
@@ -828,7 +812,11 @@ def process_order_view(request, tipo):
     tipo = data.get('tipo', tipo)
 
     # Determinar clave de carrito según tipo
-    cart_key = 'cart_evento' if tipo == 'evento' else 'cart_fisica' if tipo == 'fisica' else 'cart'
+    if tipo == 'venta_evento':
+        cart_key = 'cart_venta_evento'
+    else:
+        cart_key = 'cart_evento' if tipo == 'evento' else 'cart_fisica' if tipo == 'fisica' else 'cart'
+    
     cart = request.session.get(cart_key, {})
 
     if not cart:
@@ -836,16 +824,99 @@ def process_order_view(request, tipo):
 
     detalles_validados, total_venta = [], 0
 
-    if tipo == 'evento':
+    if tipo == 'venta_evento':
+        # Manejo especial para venta de eventos (productos + boletos)
+        errores_items = []
+        
+        for item_id, cantidad in cart.items():
+            try:
+                if item_id.startswith('boleto_'):
+                    # Es un boleto
+                    evento_id = int(item_id.replace('boleto_', ''))
+                    evento_obj = evento.objects.get(eve_id=evento_id)
+                    
+                    # Usar función SQL para obtener disponibilidad real
+                    with connection.cursor() as cursor:
+                        cursor.execute("SELECT obtener_info_disponibilidad_evento(%s);", [evento_id])
+                        result = cursor.fetchone()
+                        if result and result[0]:
+                            info_boletos = result[0]
+                            boletos_disponibles = info_boletos.get('boletos_disponibles', 0)
+                        else:
+                            boletos_disponibles = 0
+                    
+                    if boletos_disponibles < cantidad:
+                        errores_items.append(
+                            f'No hay suficientes boletos para "{evento_obj.eve_nombre}". '
+                            f'Disponibles: {boletos_disponibles}, Solicitados: {cantidad}'
+                        )
+                        continue
+                    
+                    detalles_validados.append({
+                        'tipo': 'boleto',
+                        'evento_id': evento_obj.eve_id,
+                        'cantidad': cantidad,
+                        'precio_unitario': float(evento_obj.eve_precio_boleto),
+                        'nombre': f'Entrada - {evento_obj.eve_nombre}'
+                    })
+                    total_venta += float(evento_obj.eve_precio_boleto) * cantidad
+                    
+                elif item_id.startswith('producto_'):
+                    # Es un producto del evento
+                    existencia_id = int(item_id.replace('producto_', ''))
+                    existencia = existencia_evento.objects.select_related(
+                        'fk_presentacion',
+                        'fk_evento_proveedor__fk_evento'
+                    ).get(exi_eve_id=existencia_id)
+                    
+                    if existencia.exi_eve_cantidad < cantidad:
+                        errores_items.append(
+                            f'No hay suficiente stock de "{existencia.fk_presentacion.prese_nombre}". '
+                            f'Disponible: {existencia.exi_eve_cantidad}, Solicitado: {cantidad}'
+                        )
+                        continue
+                    
+                    detalles_validados.append({
+                        'tipo': 'producto',
+                        'existencia_id': existencia.exi_eve_id,
+                        'cantidad': cantidad,
+                        'precio_unitario': float(existencia.fk_presentacion.prese_precio),
+                        'nombre': existencia.fk_presentacion.prese_nombre,
+                        'evento_id': existencia.fk_evento_proveedor.fk_evento.eve_id
+                    })
+                    total_venta += float(existencia.fk_presentacion.prese_precio) * cantidad
+                    
+            except (evento.DoesNotExist, existencia_evento.DoesNotExist):
+                errores_items.append(f'Producto con ID {item_id} no encontrado')
+                continue
+        
+        if errores_items:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Errores con los productos:',
+                'errores': errores_items
+            }, status=400)
+            
+    elif tipo == 'evento':
         errores_boletos = []
         for eid, cantidad in cart.items():
             try:
                 ev = evento.objects.get(pk=int(eid))
 
-                if ev.eve_nro_boletos < cantidad:
+                # Usar función SQL para obtener disponibilidad real
+                with connection.cursor() as cursor:
+                    cursor.execute("SELECT obtener_info_disponibilidad_evento(%s);", [ev.eve_id])
+                    result = cursor.fetchone()
+                    if result and result[0]:
+                        info_boletos = result[0]
+                        boletos_disponibles = info_boletos.get('boletos_disponibles', 0)
+                    else:
+                        boletos_disponibles = 0
+
+                if boletos_disponibles < cantidad:
                     errores_boletos.append(
                         f'No hay suficientes boletos para "{ev.eve_nombre}". '
-                        f'Disponibles: {ev.eve_nro_boletos}, Solicitados: {cantidad}'
+                        f'Disponibles: {boletos_disponibles}, Solicitados: {cantidad}'
                     )
                     continue
 
@@ -887,6 +958,7 @@ def process_order_view(request, tipo):
 
                 detalles_validados.append({
                     'presentacion_id': producto.prese_id,
+                    'inventario_id': invent.inv_id,  # Agregar inventario_id
                     'cantidad': cantidad,
                     'precio_unitario': float(invent.inv_precio_unitario)
                 })
@@ -1290,22 +1362,116 @@ def finalize_multiple_payment_purchase(request):
             venta_id = None
             venta_fisica_obj = venta_online_obj = venta_evento_obj = None
 
-            if tipo == 'evento':
-                print("Creando venta de evento...")
-                venta_evento_obj = venta_boleto_evento.objects.create(
-                    ven_bol_eve_fecha_hora=timezone.now(),
-                    ven_bol_eve_monto_total=order_data['total'],
-                    ven_bol_eve_descripcion=f'Compra de {sum(d["cantidad"] for d in detalles)} boletos',
-                    fk_evento_id=detalles[0]['evento_id'] if detalles else None,
-                    fk_usuario=request.user  # ✅ AGREGA ESTA LÍNEA
-                )
-
-                for d in detalles:
-                    ev = evento.objects.get(pk=d['evento_id'])
-                    ev.eve_nro_boletos -= d['cantidad']
-                    ev.save()
-
-                venta_id = venta_evento_obj.ven_bol_eve_id
+            if tipo in ['evento', 'venta_evento']:
+                print("Creando ventas de evento...")
+                # Separar boletos y productos
+                boletos = [d for d in detalles if d['tipo'] == 'boleto']
+                productos = [d for d in detalles if d['tipo'] == 'producto']
+                
+                print(f"=== DEBUGGING SEPARACIÓN ===")
+                print(f"Detalles originales: {detalles}")
+                print(f"Boletos detectados: {boletos}")
+                print(f"Productos detectados: {productos}")
+                print(f"Cantidad de boletos: {len(boletos)}")
+                print(f"Cantidad de productos: {len(productos)}")
+                
+                venta_boleto_obj = None
+                venta_evento_obj = None
+                venta_id = None
+                
+                # Crear venta de boletos si hay boletos
+                if boletos:
+                    print(f"=== CREANDO VENTA DE BOLETOS ===")
+                    evento_obj = evento.objects.get(pk=boletos[0]['evento_id'])
+                    total_boletos = sum(d['precio_unitario'] * d['cantidad'] for d in boletos)
+                    cantidad_total_boletos = sum(d['cantidad'] for d in boletos)
+                    
+                    venta_boleto_obj = venta_boleto_evento.objects.create(
+                        ven_bol_eve_fecha_hora=timezone.now(),
+                        ven_bol_eve_monto_total=total_boletos,
+                        ven_bol_eve_cantidad=cantidad_total_boletos,
+                        ven_bol_eve_descripcion=f'Compra de {cantidad_total_boletos} boletos',
+                        fk_evento=evento_obj,
+                        fk_usuario=request.user
+                    )
+                    
+                    # NO reducir stock de boletos - se maneja por funciones SQL de suma
+                    # evento_obj.eve_nro_boletos -= cantidad_total_boletos
+                    # evento_obj.save()
+                    
+                    venta_id = venta_boleto_obj.ven_bol_eve_id
+                    print(f"Venta de boletos creada con ID: {venta_id}")
+                else:
+                    print(f"=== NO HAY BOLETOS - SALTANDO CREACIÓN DE VENTA DE BOLETOS ===")
+                
+                # Crear venta de productos si hay productos
+                if productos:
+                    print(f"=== CREANDO VENTA DE PRODUCTOS ===")
+                    # Obtener cliente del usuario
+                    cliente_obj = None
+                    if hasattr(request.user, 'fk_cliente') and request.user.fk_cliente:
+                        cliente_obj = request.user.fk_cliente
+                    else:
+                        # Buscar cliente por username/CI si no está asociado directamente
+                        try:
+                            cliente_obj = cliente.objects.get(cli_nat_ci=request.user.username)
+                        except cliente.DoesNotExist:
+                            print(f"Cliente no encontrado para usuario {request.user.username}")
+                            # Crear un cliente temporal o usar uno por defecto
+                            cliente_obj = cliente.objects.first()  # Usar el primer cliente como fallback
+                    
+                    if cliente_obj:
+                        evento_obj = evento.objects.get(pk=productos[0]['evento_id'])
+                        total_productos = sum(d['precio_unitario'] * d['cantidad'] for d in productos)
+                        
+                        venta_evento_obj = venta_evento.objects.create(
+                            ven_eve_fecha_hora=timezone.now(),
+                            ven_eve_monto_total=total_productos,
+                            fk_evento=evento_obj,
+                            fk_cliente=cliente_obj
+                        )
+                        
+                        # Crear detalles de venta de productos
+                        for d in productos:
+                            existencia = existencia_evento.objects.get(pk=d['existencia_id'])
+                            detalle_venta_evento.objects.create(
+                                det_ven_eve_cantidad=d['cantidad'],
+                                det_ven_eve_precio_unitario=d['precio_unitario'],
+                                fk_venta_evento=venta_evento_obj,
+                                fk_exi_eve=existencia
+                            )
+                            # Actualizar stock
+                            existencia.exi_eve_cantidad -= d['cantidad']
+                            existencia.save()
+                        
+                        # Si no hay boletos, usar el ID de venta de productos
+                        if not venta_id:
+                            venta_id = venta_evento_obj.ven_eve_id
+                            print(f"=== ASIGNANDO venta_id PRINCIPAL: {venta_id} (productos) ===")
+                        else:
+                            print(f"=== venta_id YA ASIGNADO: {venta_id} (boletos), productos ID: {venta_evento_obj.ven_eve_id} ===")
+                        
+                        print(f"Venta de productos creada con ID: {venta_evento_obj.ven_eve_id}")
+                    else:
+                        print(f"=== ERROR: NO SE PUDO OBTENER CLIENTE ===")
+                else:
+                    print(f"=== NO HAY PRODUCTOS - SALTANDO CREACIÓN DE VENTA DE PRODUCTOS ===")
+                
+                print(f"=== RESUMEN FINAL ===")
+                print(f"venta_boleto_obj: {venta_boleto_obj}")
+                print(f"venta_evento_obj: {venta_evento_obj}")
+                print(f"venta_id final: {venta_id}")
+                
+                if not venta_id:
+                    raise Exception('No se pudo crear ninguna venta')
+                
+                # Para compras mixtas, devolver información de ambas ventas
+                venta_info = {
+                    'venta_boleto_id': venta_boleto_obj.ven_bol_eve_id if venta_boleto_obj else None,
+                    'venta_producto_id': venta_evento_obj.ven_eve_id if venta_evento_obj else None,
+                    'es_mixta': bool(venta_boleto_obj and venta_evento_obj)
+                }
+                print(f"venta_info: {venta_info}")
 
             else:
                 # Para ventas físicas u online
@@ -1325,7 +1491,8 @@ def finalize_multiple_payment_purchase(request):
 
                 venta_fisica_id = venta_fisica_obj.ven_fis_id if venta_fisica_obj else None
                 venta_online_id = venta_online_obj.ven_onl_id if venta_online_obj else None
-                venta_evento_id = venta_evento_obj.ven_bol_eve_id if venta_evento_obj else None
+                # Para pagos de eventos: solo productos tienen referencia en tabla pago
+                venta_evento_id = venta_evento_obj.ven_eve_id if venta_evento_obj else None
 
                 try:
                     moneda_obj = moneda.objects.get(mon_id=payment_data['moneda_id'])
@@ -1342,8 +1509,7 @@ def finalize_multiple_payment_purchase(request):
                             payment_data['puntos_utilizados'],
                             venta_fisica_id,
                             venta_online_id,
-                            venta_evento_id,
-                            moneda_obj.mon_id
+                            venta_evento_id
                         ])
                         resultado = cursor.fetchone()
                         if not resultado:
@@ -1351,8 +1517,7 @@ def finalize_multiple_payment_purchase(request):
                         pago_id = resultado[0]
                 else:
                     with connection.cursor() as cursor:
-                        cursor.execute("""SELECT public.registrar_pago(CAST(%s AS numeric), CAST(%s AS integer), CAST(%s AS integer), CAST(%s AS integer), CAST(%s AS integer), CAST(%s AS integer)
-        )                        """, [
+                        cursor.execute("""SELECT public.registrar_pago(%s, %s, %s, %s, %s, %s)""", [
                             float(payment_data['monto_original']),
                             metodo_pago_obj.met_pag_id,
                             venta_fisica_id,
@@ -1377,19 +1542,31 @@ def finalize_multiple_payment_purchase(request):
         request.session.pop('pending_order_data', None)
         request.session.pop('partial_payments', None)
         request.session[order_data['cart_key']] = {}
+        
+        # Guardar información de venta mixta en sesión para la página de éxito
+        if tipo in ['evento', 'venta_evento'] and 'venta_info' in locals():
+            request.session['venta_info'] = venta_info
 
-        if tipo not in ['fisica', 'online', 'evento']:
+        if tipo not in ['fisica', 'online', 'evento', 'venta_evento']:
             return JsonResponse({'status': 'error', 'message': 'Tipo de venta inválido'}, status=400)
 
-        tipo_venta = tipo
-        return JsonResponse({
+        # Normalizar tipo para URL
+        tipo_venta = 'evento' if tipo in ['evento', 'venta_evento'] else tipo
+        
+        response_data = {
             'status': 'success',
             'message': 'Compra finalizada exitosamente',
             'venta_id': venta_id,
             'total_pagos': len(created_payments),
             'pagos_creados': created_payments,
             'redirect_url': f'/compra-exitosa/{tipo_venta}/{venta_id}/'
-        })
+        }
+        
+        # Agregar información adicional para ventas de eventos
+        if tipo in ['evento', 'venta_evento'] and 'venta_info' in locals():
+            response_data['venta_info'] = venta_info
+        
+        return JsonResponse(response_data)
 
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': f'Error finalizando compra: {str(e)}'}, status=500)
@@ -1399,7 +1576,7 @@ def purchase_success_view(request, tipo, venta_id):
     """Vista para mostrar la página de éxito después de completar una compra"""
     try:
         # Validar tipo de venta
-        if tipo not in ['fisica', 'online', 'evento']:
+        if tipo not in ['fisica', 'online', 'evento', 'venta_evento']:
             return HttpResponseNotFound("Tipo de venta inválido.")
         
         venta_fisica_obj = venta_online_obj = venta_evento_obj = None
@@ -1420,12 +1597,71 @@ def purchase_success_view(request, tipo, venta_id):
             except venta_online.DoesNotExist:
                 return HttpResponseNotFound("No se encontró la venta online especificada.")
         
-        elif tipo == 'evento':
-            try:
-                venta_evento_obj = venta_boleto_evento.objects.get(ven_bol_eve_id=venta_id)
-                # Aquí no hay verificación de cliente porque es general
-            except venta_boleto_evento.DoesNotExist:
-                return HttpResponseNotFound("No se encontró la venta de evento especificada.")
+        elif tipo in ['evento', 'venta_evento']:
+            # Para eventos, primero verificar si hay información de venta mixta en la sesión
+            venta_mixta_info = request.session.get('venta_info', {})
+            
+            if venta_mixta_info and venta_mixta_info.get('es_mixta', False):
+                # Es una venta mixta, usar la información guardada
+                venta_evento_obj = None  # No necesitamos el objeto específico
+                print(f"🔄 VENTA MIXTA detectada: {venta_mixta_info}")
+            else:
+                # Verificar si tenemos información específica del tipo en la sesión
+                if venta_mixta_info:
+                    print(f"📋 INFO DE SESIÓN disponible: {venta_mixta_info}")
+                    
+                    # Usar la información de sesión para determinar el tipo correcto
+                    if venta_mixta_info.get('venta_boleto_id') and not venta_mixta_info.get('venta_producto_id'):
+                        # Solo boletos
+                        print(f"🎫 SESIÓN indica: SOLO BOLETOS - ID: {venta_mixta_info['venta_boleto_id']}")
+                        try:
+                            venta_evento_obj = venta_boleto_evento.objects.get(ven_bol_eve_id=venta_mixta_info['venta_boleto_id'])
+                            request.session['venta_info']['tipo_especifico'] = 'boleto'
+                        except venta_boleto_evento.DoesNotExist:
+                            return HttpResponseNotFound("No se encontró la venta de boletos especificada.")
+                            
+                    elif venta_mixta_info.get('venta_producto_id') and not venta_mixta_info.get('venta_boleto_id'):
+                        # Solo productos
+                        print(f"🛍️ SESIÓN indica: SOLO PRODUCTOS - ID: {venta_mixta_info['venta_producto_id']}")
+                        try:
+                            venta_evento_obj = venta_evento.objects.get(ven_eve_id=venta_mixta_info['venta_producto_id'])
+                            request.session['venta_info']['tipo_especifico'] = 'producto'
+                            # Importante: actualizar el venta_id para que coincida con el producto
+                            venta_id = venta_mixta_info['venta_producto_id']
+                        except venta_evento.DoesNotExist:
+                            return HttpResponseNotFound("No se encontró la venta de productos especificada.")
+                    else:
+                        print(f"⚠️ INFO DE SESIÓN ambigua, usando detección tradicional")
+                        # Fallback a detección tradicional
+                        try:
+                            venta_evento_obj = venta_boleto_evento.objects.get(ven_bol_eve_id=venta_id)
+                            request.session['venta_info']['tipo_especifico'] = 'boleto'
+                            print(f"🎫 Identificado como venta de BOLETOS - ID: {venta_id}")
+                        except venta_boleto_evento.DoesNotExist:
+                            try:
+                                venta_evento_obj = venta_evento.objects.get(ven_eve_id=venta_id)
+                                request.session['venta_info']['tipo_especifico'] = 'producto'
+                                print(f"🛍️ Identificado como venta de PRODUCTOS - ID: {venta_id}")
+                            except venta_evento.DoesNotExist:
+                                return HttpResponseNotFound("No se encontró la venta de evento especificada.")
+                else:
+                    # No hay información de sesión, usar detección tradicional
+                    print(f"⚠️ SIN INFO DE SESIÓN, usando detección tradicional para ID: {venta_id}")
+                    try:
+                        venta_evento_obj = venta_boleto_evento.objects.get(ven_bol_eve_id=venta_id)
+                        if 'venta_info' not in request.session:
+                            request.session['venta_info'] = {}
+                        request.session['venta_info']['tipo_especifico'] = 'boleto'
+                        print(f"🎫 Identificado como venta de BOLETOS - ID: {venta_id}")
+                    except venta_boleto_evento.DoesNotExist:
+                        try:
+                            venta_evento_obj = venta_evento.objects.get(ven_eve_id=venta_id)
+                            if 'venta_info' not in request.session:
+                                request.session['venta_info'] = {}
+                            request.session['venta_info']['tipo_especifico'] = 'producto'
+                            print(f"🛍️ Identificado como venta de PRODUCTOS - ID: {venta_id}")
+                        except venta_evento.DoesNotExist:
+                            return HttpResponseNotFound("No se encontró la venta de evento especificada.")
 
         # Determinar la información de la venta
         if venta_fisica_obj:
@@ -1447,19 +1683,67 @@ def purchase_success_view(request, tipo, venta_id):
                 'tienda': venta_online_obj.fk_tienda.tie_nombre if venta_online_obj.fk_tienda else 'N/A'
             }
         else:  # evento
-            venta_info = {
-                'id': venta_evento_obj.ven_bol_eve_id,
-                'fecha': venta_evento_obj.ven_bol_eve_fecha_hora.strftime('%d/%m/%Y %H:%M'),
-                'total': venta_evento_obj.ven_bol_eve_monto_total,
-                'tipo': 'Venta de Evento',
-                'tipo_url': 'evento',
-                'tienda': venta_evento_obj.fk_evento.eve_nombre if venta_evento_obj.fk_evento else 'N/A'
-            }
+            # Verificar si es venta mixta
+            venta_mixta_info = request.session.get('venta_info', {})
+            
+            if venta_mixta_info and venta_mixta_info.get('es_mixta', False):
+                # Es una venta mixta - calcular total de ambas ventas
+                total_mixto = 0
+                
+                # Sumar total de boletos si existe
+                if venta_mixta_info.get('venta_boleto_id'):
+                    try:
+                        boleto_venta = venta_boleto_evento.objects.get(ven_bol_eve_id=venta_mixta_info['venta_boleto_id'])
+                        total_mixto += float(boleto_venta.ven_bol_eve_monto_total)
+                    except venta_boleto_evento.DoesNotExist:
+                        pass
+                
+                # Sumar total de productos si existe
+                if venta_mixta_info.get('venta_producto_id'):
+                    try:
+                        producto_venta = venta_evento.objects.get(ven_eve_id=venta_mixta_info['venta_producto_id'])
+                        total_mixto += float(producto_venta.ven_eve_monto_total)
+                    except venta_evento.DoesNotExist:
+                        pass
+                
+                venta_info = {
+                    'id': venta_id,  # ID principal (puede ser cualquiera de las dos ventas)
+                    'fecha': timezone.now().strftime('%d/%m/%Y %H:%M'),
+                    'total': total_mixto,  # Total calculado de ambas ventas
+                    'tipo': 'Venta de Evento (Mixta)',
+                    'tipo_url': 'evento',
+                    'tienda': 'Evento Mixto'
+                }
+            elif hasattr(venta_evento_obj, 'ven_bol_eve_id'):
+                # Es venta de boletos
+                venta_info = {
+                    'id': venta_evento_obj.ven_bol_eve_id,
+                    'fecha': venta_evento_obj.ven_bol_eve_fecha_hora.strftime('%d/%m/%Y %H:%M'),
+                    'total': venta_evento_obj.ven_bol_eve_monto_total,
+                    'tipo': 'Venta de Boletos',
+                    'tipo_url': 'evento',
+                    'tienda': venta_evento_obj.fk_evento.eve_nombre if venta_evento_obj.fk_evento else 'N/A'
+                }
+            else:
+                # Es venta de productos de evento
+                venta_info = {
+                    'id': venta_evento_obj.ven_eve_id,
+                    'fecha': venta_evento_obj.ven_eve_fecha_hora.strftime('%d/%m/%Y %H:%M'),
+                    'total': venta_evento_obj.ven_eve_monto_total,
+                    'tipo': 'Venta de Productos de Evento',
+                    'tipo_url': 'evento',
+                    'tienda': 'Evento' # Podríamos mejorar esto con el nombre del evento
+                }
 
         context = {
             'venta_info': venta_info,
-            'venta_id': venta_id
+            'venta_id': venta_id,
+            'venta_mixta_info': request.session.get('venta_info', {})  # Agregar info mixta al contexto
         }
+
+        # NO limpiar información de venta mixta aún - se necesita en el template
+        # if 'venta_info' in request.session:
+        #     del request.session['venta_info']
 
         return render(request, 'purchase_success.html', context)
 
@@ -1946,9 +2230,97 @@ def create_sale_from_order_data(order_data, user):
     tienda_obj = tienda.objects.first()
     venta_fisica_obj = None
     venta_online_obj = None
+    venta_evento_obj = None
     
     try:
-        if tipo == 'fisica':
+        if tipo == 'venta_evento':
+            # Manejar venta de eventos con productos y boletos
+            # Primero agrupar por evento
+            eventos_involucrados = {}
+            for detalle in detalles:
+                evento_id = detalle.get('evento_id')
+                if evento_id:
+                    if evento_id not in eventos_involucrados:
+                        eventos_involucrados[evento_id] = []
+                    eventos_involucrados[evento_id].append(detalle)
+            
+            # Si solo hay un evento, crear una venta_evento normal
+            if len(eventos_involucrados) == 1:
+                evento_id = list(eventos_involucrados.keys())[0]
+                evento_obj = evento.objects.get(eve_id=evento_id)
+                
+                # Crear venta_evento
+                venta_evento_obj = venta_evento.objects.create(
+                    ven_eve_fecha_hora=timezone.now(),
+                    ven_eve_monto_total=float(total_bolivares),
+                    fk_evento=evento_obj,
+                    fk_cliente=user.fk_cliente if user.fk_cliente else None
+                )
+                
+                # Crear detalles de venta
+                for detalle in detalles:
+                    if detalle['tipo'] == 'boleto':
+                        # Actualizar número de boletos del evento - YA SE HACE EN finalize_multiple_payment_purchase
+                        # evento_obj.eve_nro_boletos -= detalle['cantidad']
+                        # evento_obj.save()
+                        
+                        # Crear registro de venta de boleto si es necesario
+                        # (podría ser en detalle_venta_evento o venta_boleto_evento)
+                        pass
+                        
+                    elif detalle['tipo'] == 'producto':
+                        # Crear detalle de venta de producto
+                        existencia = existencia_evento.objects.get(exi_eve_id=detalle['existencia_id'])
+                        
+                        detalle_venta_evento.objects.create(
+                            fk_venta_evento=venta_evento_obj,
+                            fk_exi_eve=existencia,
+                            det_ven_eve_cantidad=detalle['cantidad'],
+                            det_ven_eve_precio_unitario=detalle['precio_unitario']
+                        )
+                        
+                        # Actualizar stock de existencia_evento
+                        existencia.exi_eve_cantidad -= detalle['cantidad']
+                        existencia.save()
+            
+            else:
+                # Si hay múltiples eventos, manejar de manera especial
+                # Por ahora, crear una venta por el primer evento
+                # (esto podría mejorar en el futuro)
+                evento_id = list(eventos_involucrados.keys())[0]
+                evento_obj = evento.objects.get(eve_id=evento_id)
+                
+                venta_evento_obj = venta_evento.objects.create(
+                    ven_eve_fecha_hora=timezone.now(),
+                    ven_eve_monto_total=float(total_bolivares),
+                    fk_evento=evento_obj,
+                    fk_cliente=user.fk_cliente if user.fk_cliente else None
+                )
+                
+                # Procesar todos los detalles
+                for detalle in detalles:
+                    if detalle['tipo'] == 'boleto':
+                        # Actualizar número de boletos del evento - YA SE HACE EN finalize_multiple_payment_purchase
+                        # evento_temp = evento.objects.get(eve_id=detalle['evento_id'])
+                        # evento_temp.eve_nro_boletos -= detalle['cantidad']
+                        # evento_temp.save()
+                        pass
+                    elif detalle['tipo'] == 'producto':
+                        existencia = existencia_evento.objects.get(exi_eve_id=detalle['existencia_id'])
+                        
+                        # Solo crear detalle si pertenece al evento principal
+                        if existencia.fk_evento_proveedor.fk_evento.eve_id == evento_id:
+                            detalle_venta_evento.objects.create(
+                                fk_venta_evento=venta_evento_obj,
+                                fk_exi_eve=existencia,
+                                det_ven_eve_cantidad=detalle['cantidad'],
+                                det_ven_eve_precio_unitario=detalle['precio_unitario']
+                            )
+                        
+                        existencia.exi_eve_cantidad -= detalle['cantidad']
+                        existencia.save()
+        
+        elif tipo == 'fisica':
             # Crear venta física con total en bolívares
             venta_id = ejecutar_registro_venta_fisica(
                 cliente_id=user.fk_cliente.cli_id,
@@ -1985,7 +2357,7 @@ def create_sale_from_order_data(order_data, user):
                     det_ven_onl_precio=detalle['precio_unitario']
                 )
         
-        return venta_fisica_obj, venta_online_obj
+        return venta_fisica_obj, venta_online_obj, venta_evento_obj
         
     except Exception as e:
         raise Exception(f'Error creando venta: {str(e)}')
@@ -2381,92 +2753,245 @@ def vista_historial_compras(request, id_usuario):
 
 @login_required
 def vista_factura_directa(request, tipo, venta_id):
-    """
-    Renderiza la factura para una venta específica.
-    """
+    """Vista para mostrar factura directamente especificando el tipo de venta y el ID."""
     try:
+        # Validar tipo
         if tipo not in ['fisica', 'online', 'evento']:
-            return HttpResponseNotFound("<h1>Tipo de venta inválido</h1><p>El tipo debe ser 'fisica', 'online' o 'evento'.</p>")
+            return HttpResponseNotFound("<h1>Tipo de venta inválido</h1>")
 
-        # ---------------------------
-        # FACTURA DE VENTA FÍSICA
-        # ---------------------------
-        if tipo == 'fisica':
-            if not venta_fisica.objects.filter(ven_fis_id=venta_id).exists():
-                return HttpResponseNotFound("<h1>Venta física no encontrada</h1>")
-            with connection.cursor() as cursor:
-                cursor.execute("SELECT public.obtener_datos_reporte_venta(%s, %s);", [venta_id, tipo])
-                result = cursor.fetchone()
-            if result is None or result[0] is None:
-                return HttpResponseNotFound("<h1>Factura no encontrada</h1>")
-            report_data = result[0]
-            report_data['dollar_rate'] = float(get_dollar_exchange_rate())
-            return render(request, 'factura_template.html', {'report_data': report_data})
+        if tipo in ['fisica', 'online']:
+            try:
+                with connection.cursor() as cursor:
+                    cursor.execute("SELECT public.obtener_datos_reporte_venta(%s, %s);", [venta_id, tipo])
+                    result = cursor.fetchone()
+                if result is None or result[0] is None:
+                    return HttpResponseNotFound(f"<h1>Factura {tipo} no encontrada</h1>")
+                
+                report_data = result[0]
+                report_data['dollar_rate'] = float(get_dollar_exchange_rate())
+                return render(request, 'factura_template.html', {'report_data': report_data})
+            except Exception as e:
+                print(f"Error obteniendo factura {tipo}: {e}")
+                return HttpResponse(f"<h1>Error</h1><p>Error al obtener la factura: {str(e)}</p>", status=500)
 
-        # ---------------------------
-        # FACTURA DE VENTA ONLINE
-        # ---------------------------
-        elif tipo == 'online':
-            if not venta_online.objects.filter(ven_onl_id=venta_id).exists():
-                return HttpResponseNotFound("<h1>Venta online no encontrada</h1>")
-            with connection.cursor() as cursor:
-                cursor.execute("SELECT public.obtener_datos_reporte_venta(%s, %s);", [venta_id, tipo])
-                result = cursor.fetchone()
-            if result is None or result[0] is None:
-                return HttpResponseNotFound("<h1>Factura no encontrada</h1>")
-            report_data = result[0]
-            report_data['dollar_rate'] = float(get_dollar_exchange_rate())
-            return render(request, 'factura_template.html', {'report_data': report_data})
-
-        # ---------------------------
-        # FACTURA DE EVENTO
-        # ---------------------------
         elif tipo == 'evento':
-            from .models import venta_boleto_evento
-            venta = venta_boleto_evento.objects.select_related('fk_evento', 'fk_usuario__fk_cliente').get(ven_bol_eve_id=venta_id)
-
-            cliente = venta.fk_usuario.fk_cliente
-            cantidad = int(venta.ven_bol_eve_descripcion.split()[2])  # Ej. "Compra de 3 boletos"
-            total = float(venta.ven_bol_eve_monto_total)
-
-            # Calcular sin redondear primero
-            raw_subtotal = total / 1.16
-            raw_iva = total - raw_subtotal
-
-            precio_unitario = total / cantidad
-            dollar_rate = float(get_dollar_exchange_rate())
-
-            report_data = {
-                "venta": {
-                    "fecha": venta.ven_bol_eve_fecha_hora.strftime('%d/%m/%Y %H:%M'),
-                    "id": venta.ven_bol_eve_id,
-                    "subtotal": round(raw_subtotal, 2),
-                    "iva": round(raw_iva, 2),
-                    "total": round(total, 2)
-                },
-                "cliente": {
-                    "nombre": str(cliente),
-                    "telefono": "",  # Puedes ajustar esto si lo tienes
-                    "direccion": cliente.cli_direccion_fisica
-                },
-                "detalles": [
-                    {
-                        "id": venta.ven_bol_eve_id,
-                        "producto": venta.fk_evento.eve_nombre,
-                        "cantidad": cantidad,
-                        "precio_unitario": round(precio_unitario, 2),
-                        "total_linea": round(total, 2)
-                    }
-                ],
-                "dollar_rate": dollar_rate
-            }
-
-            return render(request, 'factura_evento.html', {'report_data': report_data})
+            # Detectar automáticamente si es venta de boletos o productos
+            # Verificar ambas tablas para determinar el tipo correcto
+            tiene_boletos = False
+            tiene_productos = False
+            
+            # Verificar si existe en venta_boleto_evento
+            try:
+                venta_boleto_obj = venta_boleto_evento.objects.get(ven_bol_eve_id=venta_id)
+                tiene_boletos = True
+                print(f"ENCONTRADO en venta_boleto_evento - ID: {venta_id}")
+            except venta_boleto_evento.DoesNotExist:
+                print(f"NO encontrado en venta_boleto_evento - ID: {venta_id}")
+            
+            # Verificar si existe en venta_evento
+            try:
+                venta_evento_obj = venta_evento.objects.get(ven_eve_id=venta_id)
+                tiene_productos = True
+                print(f"ENCONTRADO en venta_evento - ID: {venta_id}")
+            except venta_evento.DoesNotExist:
+                print(f"NO encontrado en venta_evento - ID: {venta_id}")
+            
+            # Determinar el tipo basándose en lo que se encontró
+            if tiene_boletos and tiene_productos:
+                # Esto NO debería pasar - mismo ID en ambas tablas
+                print(f"ERROR: ID {venta_id} encontrado en AMBAS tablas - esto es incorrecto")
+                return HttpResponseNotFound("<h1>Error: Venta duplicada en base de datos</h1>")
+            elif tiene_boletos:
+                print(f"Detectado como venta de BOLETOS para ID: {venta_id}")
+            elif tiene_productos:
+                print(f"Detectado como venta de PRODUCTOS para ID: {venta_id}")
+            else:
+                # No se encontró en ninguna tabla
+                print(f"ERROR: ID {venta_id} NO encontrado en ninguna tabla")
+                return HttpResponseNotFound("<h1>Venta de evento no encontrada</h1>")
+            
+            if tiene_boletos:
+                # Es una venta de boletos
+                try:
+                    with connection.cursor() as cursor:
+                        cursor.execute("SELECT public.obtener_datos_reporte_evento(%s, %s);", [venta_id, 'boleto'])
+                        result = cursor.fetchone()
+                    if result is None or result[0] is None:
+                        raise Exception("Función SQL no devolvió datos")
+                    report_data = result[0]
+                    report_data['dollar_rate'] = float(get_dollar_exchange_rate())
+                    return render(request, 'factura_evento.html', {'report_data': report_data})
+                except Exception as e:
+                    print(f"Error con función SQL, usando datos directos: {e}")
+                    # Fallback: usar datos directos de la base de datos
+                    return generar_factura_boleto_manual(request, venta_id)
+                
+            elif tiene_productos:
+                # Es una venta de productos de evento
+                try:
+                    with connection.cursor() as cursor:
+                        cursor.execute("SELECT public.obtener_datos_reporte_evento(%s, %s);", [venta_id, 'producto'])
+                        result = cursor.fetchone()
+                    if result is None or result[0] is None:
+                        raise Exception("Función SQL no devolvió datos")
+                    report_data = result[0]
+                    report_data['dollar_rate'] = float(get_dollar_exchange_rate())
+                    return render(request, 'factura_evento.html', {'report_data': report_data})
+                except Exception as e:
+                    print(f"Error con función SQL, usando datos directos: {e}")
+                    # Fallback: usar datos directos de la base de datos
+                    return generar_factura_producto_manual(request, venta_id)
 
     except Exception as e:
-        print(f"Error al generar factura directa: {e}")
-        return HttpResponse(f"<h1>Error al generar la factura</h1><p>{e}</p>", status=500)
-    
+        print(f"Error en vista_factura_directa: {e}")
+        return HttpResponse(f"<h1>Error</h1><p>Error interno del servidor: {str(e)}</p>", status=500)
+
+@login_required
+def vista_factura_evento_especifica(request, subtipo, venta_id):
+    """Vista específica para facturas de eventos que usa el subtipo para determinar la tabla correcta."""
+    try:
+        # Validar subtipo
+        if subtipo not in ['boleto', 'producto']:
+            return HttpResponseNotFound("<h1>Subtipo de evento inválido. Use 'boleto' o 'producto'</h1>")
+
+        print(f"=== FACTURA EVENTO ESPECÍFICA ===")
+        print(f"Subtipo: {subtipo}")
+        print(f"Venta ID: {venta_id}")
+
+        # Verificar que el registro existe en la tabla correcta
+        if subtipo == 'boleto':
+            try:
+                venta_boleto_evento.objects.get(ven_bol_eve_id=venta_id)
+                print(f"✅ Confirmado: ID {venta_id} existe en venta_boleto_evento")
+            except venta_boleto_evento.DoesNotExist:
+                print(f"❌ ERROR: ID {venta_id} NO existe en venta_boleto_evento")
+                return HttpResponseNotFound("<h1>Venta de boletos no encontrada</h1>")
+        else:  # subtipo == 'producto'
+            try:
+                venta_evento.objects.get(ven_eve_id=venta_id)
+                print(f"✅ Confirmado: ID {venta_id} existe en venta_evento")
+            except venta_evento.DoesNotExist:
+                print(f"❌ ERROR: ID {venta_id} NO existe en venta_evento")
+                return HttpResponseNotFound("<h1>Venta de productos no encontrada</h1>")
+
+        # Usar la función SQL con el tipo correcto
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT public.obtener_datos_reporte_evento(%s, %s);", [venta_id, subtipo])
+                result = cursor.fetchone()
+            
+            if result is None or result[0] is None:
+                raise Exception("Función SQL no devolvió datos")
+            
+            report_data = result[0]
+            report_data['dollar_rate'] = float(get_dollar_exchange_rate())
+            print(f"✅ Datos obtenidos correctamente de la función SQL")
+            return render(request, 'factura_evento.html', {'report_data': report_data})
+            
+        except Exception as e:
+            print(f"❌ Error con función SQL: {e}")
+            # Fallback: usar datos directos de la base de datos
+            if subtipo == 'boleto':
+                return generar_factura_boleto_manual(request, venta_id)
+            else:
+                return generar_factura_producto_manual(request, venta_id)
+
+    except Exception as e:
+        print(f"ERROR en vista_factura_evento_especifica: {e}")
+        return HttpResponse(f"<h1>Error</h1><p>Error interno del servidor: {str(e)}</p>", status=500)
+
+def generar_factura_boleto_manual(request, venta_id):
+    """Función auxiliar para generar factura de boletos sin función SQL"""
+    try:
+        venta = venta_boleto_evento.objects.select_related('fk_evento', 'fk_usuario__fk_cliente').get(ven_bol_eve_id=venta_id)
+        
+        # Obtener cliente
+        if venta.fk_usuario and venta.fk_usuario.fk_cliente:
+            cliente = venta.fk_usuario.fk_cliente
+            cliente_nombre = f"{cliente.cli_nat_pnombre} {cliente.cli_nat_papellido}" if cliente.cli_nat_pnombre else cliente.cli_jur_razon_social
+        else:
+            cliente_nombre = "Usuario Evento"
+        
+        # Construir datos para la factura
+        report_data = {
+            "venta": {
+                "id": venta.ven_bol_eve_id,
+                "fecha": venta.ven_bol_eve_fecha_hora.strftime('%d/%m/%Y %H:%M'),
+                "tipo_venta": "Venta de Boletos de Evento",
+                "subtotal": float(venta.ven_bol_eve_monto_total) / 1.16,
+                "iva": float(venta.ven_bol_eve_monto_total) - (float(venta.ven_bol_eve_monto_total) / 1.16),
+                "total": float(venta.ven_bol_eve_monto_total)
+            },
+            "cliente": {
+                "nombre": cliente_nombre,
+                "rif": getattr(cliente, 'cli_rif', 'N/A') if venta.fk_usuario and venta.fk_usuario.fk_cliente else 'N/A',
+                "direccion": getattr(cliente, 'cli_direccion_fisica', 'N/A') if venta.fk_usuario and venta.fk_usuario.fk_cliente else 'N/A',
+                "telefono": "N/A"
+            },
+            "detalles": [{
+                "id": venta.ven_bol_eve_id,
+                "producto": f"Entrada - {venta.fk_evento.eve_nombre}",
+                "cantidad": venta.ven_bol_eve_cantidad,
+                "precio_unitario": float(venta.ven_bol_eve_monto_total) / venta.ven_bol_eve_cantidad if venta.ven_bol_eve_cantidad > 0 else float(venta.ven_bol_eve_monto_total),
+                "total_linea": float(venta.ven_bol_eve_monto_total)
+            }],
+            "dollar_rate": float(get_dollar_exchange_rate())
+        }
+        
+        return render(request, 'factura_evento.html', {'report_data': report_data})
+        
+    except Exception as e:
+        return HttpResponseNotFound(f"<h1>Error al generar factura de boletos</h1><p>{e}</p>")
+
+def generar_factura_producto_manual(request, venta_id):
+    """Función auxiliar para generar factura de productos sin función SQL"""
+    try:
+        venta = venta_evento.objects.select_related('fk_cliente', 'fk_evento').get(ven_eve_id=venta_id)
+        
+        # Obtener cliente
+        cliente = venta.fk_cliente
+        cliente_nombre = f"{cliente.cli_nat_pnombre} {cliente.cli_nat_papellido}" if cliente.cli_nat_pnombre else cliente.cli_jur_razon_social
+        
+        # Obtener detalles de productos
+        detalles = detalle_venta_evento.objects.filter(fk_venta_evento=venta).select_related(
+            'fk_exi_eve__fk_presentacion'
+        )
+        
+        detalles_list = []
+        for detalle in detalles:
+            detalles_list.append({
+                "id": detalle.fk_exi_eve.fk_presentacion.prese_id,
+                "producto": f"{detalle.fk_exi_eve.fk_presentacion.prese_nombre} ({venta.fk_evento.eve_nombre})",
+                "cantidad": detalle.det_ven_eve_cantidad,
+                "precio_unitario": float(detalle.det_ven_eve_precio_unitario),
+                "total_linea": float(detalle.det_ven_eve_cantidad * detalle.det_ven_eve_precio_unitario)
+            })
+        
+        # Construir datos para la factura
+        report_data = {
+            "venta": {
+                "id": venta.ven_eve_id,
+                "fecha": venta.ven_eve_fecha_hora.strftime('%d/%m/%Y %H:%M'),
+                "tipo_venta": "Venta de Productos de Evento",
+                "subtotal": float(venta.ven_eve_monto_total) / 1.16,
+                "iva": float(venta.ven_eve_monto_total) - (float(venta.ven_eve_monto_total) / 1.16),
+                "total": float(venta.ven_eve_monto_total)
+            },
+            "cliente": {
+                "nombre": cliente_nombre,
+                "rif": cliente.cli_rif or 'N/A',
+                "direccion": cliente.cli_direccion_fisica or 'N/A',
+                "telefono": "N/A"
+            },
+            "detalles": detalles_list,
+            "dollar_rate": float(get_dollar_exchange_rate())
+        }
+        
+        return render(request, 'factura_evento.html', {'report_data': report_data})
+        
+    except Exception as e:
+        return HttpResponseNotFound(f"<h1>Error al generar factura de productos</h1><p>{e}</p>")
+
 def eventos_disponibles_view(request):
     """Mostrar todos los eventos disponibles para comprar boletos"""
     eventos = evento.objects.filter(eve_fecha_hora__gte=now()).order_by('eve_fecha_hora')
@@ -2475,3 +3000,423 @@ def eventos_disponibles_view(request):
         'eventos': eventos
     }
     return render(request, 'eventos_disponibles.html', context)
+
+def tienda_evento_view(request, evento_id=None):
+    """Vista principal de la tienda de eventos con selector y productos"""
+    # Si no hay evento seleccionado, mostrar el selector
+    if not evento_id:
+        # Obtener eventos disponibles (con fecha futura)
+        eventos = evento.objects.filter(eve_fecha_hora__gte=timezone.now()).order_by('eve_fecha_hora')
+        
+        # Agregar información adicional a cada evento
+        for ev in eventos:
+            ev.precio_bs = convert_price_to_bolivars(ev.eve_precio_boleto)
+            
+            # Usar función SQL para obtener disponibilidad real
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT obtener_info_disponibilidad_evento(%s);", [ev.eve_id])
+                result = cursor.fetchone()
+                if result and result[0]:
+                    info_boletos = result[0]
+                    ev.boletos_disponibles = info_boletos.get('boletos_disponibles', 0)
+                    ev.low_stock = info_boletos.get('stock_bajo', False)
+                else:
+                    ev.boletos_disponibles = 0
+                    ev.low_stock = False
+            
+            # Contar productos disponibles para este evento
+            productos_count = existencia_evento.objects.filter(
+                fk_evento_proveedor__fk_evento=ev
+            ).count()
+            ev.productos_disponibles = productos_count
+        
+        context = {
+            'eventos': eventos,
+            'selector_mode': True,
+            'cartItems': 0  # Por defecto
+        }
+        return render(request, 'tienda_evento.html', context)
+    
+    # Si hay evento seleccionado, mostrar productos
+    try:
+        evento_obj = evento.objects.get(pk=evento_id)
+    except evento.DoesNotExist:
+        messages.error(request, 'El evento solicitado no existe.')
+        return redirect('tienda_evento')
+    
+    # Verificar que el evento esté disponible
+    if evento_obj.eve_fecha_hora < timezone.now():
+        messages.warning(request, 'Este evento ya ha pasado.')
+        return redirect('tienda_evento')
+    
+    # Obtener datos del carrito
+    data = cart_data(request, tipo='venta_evento')
+    
+    # Obtener productos del evento
+    productos = []
+    
+    # 1. Agregar las entradas/boletos como un producto especial
+    # Obtener información actualizada de disponibilidad usando SQL
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT obtener_info_disponibilidad_evento(%s);", [evento_obj.eve_id])
+        result = cursor.fetchone()
+        
+        if result and result[0]:
+            info_boletos = result[0]
+            boletos_disponibles = info_boletos.get('boletos_disponibles', 0)
+            boletos_vendidos = info_boletos.get('boletos_vendidos', 0)
+            boletos_totales = info_boletos.get('boletos_totales', evento_obj.eve_nro_boletos)
+        else:
+            boletos_disponibles = 0
+            boletos_vendidos = 0
+            boletos_totales = evento_obj.eve_nro_boletos
+    
+    if boletos_disponibles > 0:
+        entrada_producto = {
+            'id': f'boleto_{evento_obj.eve_id}',
+            'nombre': f'Entrada - {evento_obj.eve_nombre}',
+            'tipo': 'boleto',
+            'precio_usd': evento_obj.eve_precio_boleto,
+            'precio_bs': convert_price_to_bolivars(evento_obj.eve_precio_boleto),
+            'cantidad_disponible': boletos_disponibles,
+            'imagen': None,  # Usar imagen por defecto
+            'es_entrada': True,
+            'evento_id': evento_obj.eve_id,
+            'boletos_vendidos': boletos_vendidos,
+            'boletos_totales': boletos_totales
+        }
+        productos.append(entrada_producto)
+    
+    # 2. Obtener productos del evento desde existencia_evento
+    existencias = existencia_evento.objects.filter(
+        fk_evento_proveedor__fk_evento=evento_obj
+    ).select_related('fk_presentacion', 'fk_evento_proveedor__fk_proveedor')
+    
+    for existencia in existencias:
+        presentacion_obj = existencia.fk_presentacion
+        
+        # Usar el precio base del producto
+        precio_usd = presentacion_obj.prese_precio
+        precio_bs = convert_price_to_bolivars(precio_usd)
+        
+        producto_data = {
+            'id': f'producto_{existencia.exi_eve_id}',
+            'existencia_id': existencia.exi_eve_id,
+            'presentacion': presentacion_obj,
+            'nombre': presentacion_obj.prese_nombre,
+            'tipo': 'producto',
+            'precio_usd': precio_usd,
+            'precio_bs': precio_bs,
+            'cantidad_disponible': existencia.exi_eve_cantidad,
+            'imagen': presentacion_obj.get_imagen_url() if presentacion_obj.prese_imagen else None,
+            'es_entrada': False,
+            'proveedor': existencia.fk_evento_proveedor.fk_proveedor.pro_razon_social
+        }
+        productos.append(producto_data)
+    
+    # Información del evento para el header
+    evento_info = {
+        'id': evento_obj.eve_id,
+        'nombre': evento_obj.eve_nombre,
+        'descripcion': evento_obj.eve_descripcion,
+        'fecha': evento_obj.eve_fecha_hora,
+        'lugar': evento_obj.fk_lugar.lug_nombre if evento_obj.fk_lugar else 'Por definir',
+        'total_productos': len(productos),
+        'boletos_disponibles': boletos_disponibles,
+        'boletos_vendidos': boletos_vendidos,
+        'boletos_totales': boletos_totales
+    }
+    
+    context = {
+        'evento': evento_info,
+        'productos': productos,
+        'cartItems': data['cartItems'],
+        'selector_mode': False,
+        'dollar_rate': get_dollar_exchange_rate()
+    }
+    
+    return render(request, 'tienda_evento.html', context)
+
+@csrf_exempt
+def update_cart_evento(request):
+    """Actualizar carrito específico para eventos (productos y boletos)"""
+    try:
+        data = json.loads(request.body)
+        item_id = data.get('itemId', '').strip()
+        action = data.get('action')
+        force_clear = data.get('forceClear', False)  # Para limpiar carrito cuando se cambie de evento
+        
+        if not item_id:
+            return JsonResponse({'status': 'error', 'message': 'ID de producto inválido'}, status=400)
+        
+        cart = request.session.get('cart_venta_evento', {})
+        
+        # Si se solicita limpiar el carrito
+        if force_clear:
+            cart = {}
+            request.session['cart_venta_evento'] = cart
+            request.session.modified = True
+            return JsonResponse({
+                'status': 'cleared',
+                'message': 'Carrito limpiado',
+                'cartItems': 0
+            })
+        
+        # Verificar restricción de un evento por carrito
+        if action == 'add' and cart:
+            evento_actual = None
+            
+            # Obtener el evento del producto que se quiere agregar
+            if item_id.startswith('boleto_'):
+                evento_actual = int(item_id.replace('boleto_', ''))
+            elif item_id.startswith('producto_'):
+                existencia_id = int(item_id.replace('producto_', ''))
+                existencia = existencia_evento.objects.select_related('fk_evento_proveedor__fk_evento').get(exi_eve_id=existencia_id)
+                evento_actual = existencia.fk_evento_proveedor.fk_evento.eve_id
+            
+            # Verificar si hay productos de otros eventos en el carrito
+            for existing_item_id in cart.keys():
+                evento_en_carrito = None
+                
+                if existing_item_id.startswith('boleto_'):
+                    evento_en_carrito = int(existing_item_id.replace('boleto_', ''))
+                elif existing_item_id.startswith('producto_'):
+                    try:
+                        existing_existencia_id = int(existing_item_id.replace('producto_', ''))
+                        existing_existencia = existencia_evento.objects.select_related('fk_evento_proveedor__fk_evento').get(exi_eve_id=existing_existencia_id)
+                        evento_en_carrito = existing_existencia.fk_evento_proveedor.fk_evento.eve_id
+                    except existencia_evento.DoesNotExist:
+                        continue
+                
+                # Si hay productos de otro evento, devolver aviso
+                if evento_en_carrito and evento_en_carrito != evento_actual:
+                    evento_en_carrito_obj = evento.objects.get(eve_id=evento_en_carrito)
+                    evento_actual_obj = evento.objects.get(eve_id=evento_actual)
+                    
+                    return JsonResponse({
+                        'status': 'confirm_required',
+                        'message': f'Ya tienes productos del evento "{evento_en_carrito_obj.eve_nombre}" en tu carrito. ¿Deseas vaciar el carrito y agregar productos de "{evento_actual_obj.eve_nombre}"?',
+                        'current_event': evento_en_carrito_obj.eve_nombre,
+                        'new_event': evento_actual_obj.eve_nombre
+                    })
+        
+        if action == 'clear':
+            # Limpiar todo el carrito
+            cart = {}
+            request.session['cart_venta_evento'] = cart
+            request.session.modified = True
+            return JsonResponse({
+                'status': 'cleared',
+                'message': 'Carrito limpiado',
+                'cartItems': 0
+            })
+            
+        elif action == 'add':
+            # Verificar disponibilidad según el tipo
+            if item_id.startswith('boleto_'):
+                # Es una entrada/boleto
+                evento_id = int(item_id.replace('boleto_', ''))
+                
+                current_quantity = cart.get(item_id, 0)
+                nueva_cantidad = current_quantity + 1
+                
+                # Validar disponibilidad usando función SQL
+                with connection.cursor() as cursor:
+                    cursor.execute("SELECT validar_compra_boletos(%s, %s);", [evento_id, nueva_cantidad])
+                    result = cursor.fetchone()
+                    
+                    if result and result[0]:
+                        validacion = result[0]
+                        if not validacion.get('valido', False):
+                            return JsonResponse({
+                                'status': 'error',
+                                'message': validacion.get('mensaje', 'No hay suficientes boletos disponibles')
+                            }, status=400)
+                    else:
+                        return JsonResponse({
+                            'status': 'error',
+                            'message': 'Error al validar disponibilidad'
+                        }, status=500)
+                
+                cart[item_id] = nueva_cantidad
+                
+            elif item_id.startswith('producto_'):
+                # Es un producto del evento
+                existencia_id = int(item_id.replace('producto_', ''))
+                existencia = existencia_evento.objects.get(exi_eve_id=existencia_id)
+                
+                current_quantity = cart.get(item_id, 0)
+                if current_quantity + 1 > existencia.exi_eve_cantidad:
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': f'No hay suficiente stock. Disponible: {existencia.exi_eve_cantidad}'
+                    }, status=400)
+                
+                cart[item_id] = current_quantity + 1
+                
+        elif action == 'remove':
+            if item_id in cart:
+                cart[item_id] -= 1
+                if cart[item_id] <= 0:
+                    del cart[item_id]
+        
+        request.session['cart_venta_evento'] = cart
+        request.session.modified = True
+        
+        # Calcular total de items
+        total_items = sum(cart.values())
+        
+        return JsonResponse({
+            'status': 'ok',
+            'cartItems': total_items,
+            'message': 'Carrito actualizado correctamente'
+        })
+        
+    except evento.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Evento no encontrado'}, status=404)
+    except existencia_evento.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Producto no encontrado'}, status=404)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': f'Error: {str(e)}'}, status=500)
+
+def cart_data_evento(request):
+    """Función especializada para el carrito de eventos"""
+    cart = request.session.get('cart_venta_evento', {})
+    items = []
+    total_usd = 0
+    total_items = 0
+    dollar_rate = get_dollar_exchange_rate()
+    
+    for item_id, quantity in cart.items():
+        try:
+            if item_id.startswith('boleto_'):
+                # Es una entrada/boleto
+                evento_id = int(item_id.replace('boleto_', ''))
+                evento_obj = evento.objects.get(eve_id=evento_id)
+                
+                precio_usd = evento_obj.eve_precio_boleto
+                precio_bs = convert_price_to_bolivars(precio_usd)
+                subtotal_usd = precio_usd * quantity
+                subtotal_bs = precio_bs * quantity
+                
+                item_data = {
+                    'id': item_id,  # Usar el item_id completo (boleto_X)
+                    'tipo': 'boleto',
+                    'nombre': f'Entrada - {evento_obj.eve_nombre}',
+                    'evento': evento_obj,
+                    'quantity': quantity,
+                    'precio_unitario': float(precio_usd),
+                    'precio_unitario_bs': float(precio_bs),
+                    'get_total': float(subtotal_usd),
+                    'get_total_bs': float(subtotal_bs),
+                    'imagen': None,
+                    'es_entrada': True
+                }
+                items.append(item_data)
+                
+            elif item_id.startswith('producto_'):
+                # Es un producto del evento
+                existencia_id = int(item_id.replace('producto_', ''))
+                existencia = existencia_evento.objects.select_related(
+                    'fk_presentacion',
+                    'fk_evento_proveedor__fk_evento'
+                ).get(exi_eve_id=existencia_id)
+                
+                presentacion_obj = existencia.fk_presentacion
+                precio_usd = presentacion_obj.prese_precio
+                precio_bs = convert_price_to_bolivars(precio_usd)
+                subtotal_usd = precio_usd * quantity
+                subtotal_bs = precio_bs * quantity
+                
+                item_data = {
+                    'id': item_id,  # Usar el item_id completo (producto_X)
+                    'tipo': 'producto',
+                    'nombre': presentacion_obj.prese_nombre,
+                    'presentacion': presentacion_obj,
+                    'existencia': existencia,
+                    'quantity': quantity,
+                    'precio_unitario': float(precio_usd),
+                    'precio_unitario_bs': float(precio_bs),
+                    'get_total': float(subtotal_usd),
+                    'get_total_bs': float(subtotal_bs),
+                    'imagen': presentacion_obj.get_imagen_url() if presentacion_obj.prese_imagen else None,
+                    'es_entrada': False
+                }
+                items.append(item_data)
+            
+            total_usd += subtotal_usd
+            total_items += quantity
+            
+        except (evento.DoesNotExist, existencia_evento.DoesNotExist):
+            continue
+    
+    total_bs = convert_price_to_bolivars(total_usd)
+    
+    order = {
+        'get_cart_total': float(total_usd),
+        'get_cart_total_usd': float(total_usd),
+        'get_cart_total_bs': float(total_bs),
+        'get_cart_items': total_items,
+        'shipping': False,
+        'dollar_rate': float(dollar_rate)
+    }
+    
+    return {
+        'items': items,
+        'order': order,
+        'cartItems': total_items
+    }
+
+# FUNCIÓN AUXILIAR PARA DATOS DEL CARRITO (VERSIÓN ORIGINAL)
+def cartData(request):
+    """Función original para carrito básico"""
+    cart = request.session.get('cart', {})
+    items = []
+    total_usd = 0  # Total en dólares (base)
+    total_items = 0
+    dollar_rate = get_dollar_exchange_rate()
+
+    for product_id, quantity in cart.items():
+        try:
+            product = presentacion.objects.get(prese_id=int(product_id))
+            prealm = pre_alm.objects.filter(fk_presentacion=product).first()
+            if not prealm:
+                continue
+
+            precio_usd = prealm.pre_alm_precio  # Precio en dólares (base en BD)
+            precio_bs = convert_price_to_bolivars(precio_usd)  # Precio en bolívares para mostrar
+            subtotal_usd = precio_usd * quantity  # Subtotal en dólares (para cálculos internos)
+            subtotal_bs = precio_bs * quantity  # Subtotal en bolívares (para mostrar)
+
+            item = {
+                'product': product,
+                'quantity': quantity,
+                'get_total': subtotal_usd,  # Total en dólares (base)
+                'get_total_bs': subtotal_bs,  # Total en bolívares para mostrar
+                'precio_unitario': precio_usd,  # Precio unitario en dólares
+                'precio_unitario_bs': precio_bs,  # Precio unitario en bolívares
+                'precio_unitario_usd': precio_usd,  # Para compatibilidad con templates
+            }
+            items.append(item)
+            total_usd += subtotal_usd  # Total en dólares para cálculos internos
+            total_items += quantity
+        except presentacion.DoesNotExist:
+            continue
+
+    # Convertir el total de dólares a bolívares
+    total_bs = convert_price_to_bolivars(total_usd)
+
+    order = {
+        'get_cart_total': total_usd,  # Total en dólares (base)
+        'get_cart_total_usd': total_usd,  # Total en dólares
+        'get_cart_total_bs': total_bs,  # Total en bolívares para mostrar
+        'get_cart_items': total_items,
+        'shipping': False,
+        'dollar_rate': dollar_rate
+    }
+
+    return {
+        'items': items,
+        'order': order,
+        'cartItems': total_items,
+    }

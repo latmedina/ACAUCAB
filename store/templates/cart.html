@@ -6,11 +6,20 @@
         <div class="col-lg-12">
             <div class="box-element">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <a class="btn btn-outline-dark" href="{% url 'store_view' tipo %}">
-                        <i class="fas fa-arrow-left me-2"></i>Continue Shopping
-                    </a>
+                    {% if tipo == 'venta_evento' %}
+                        <a class="btn btn-outline-dark" href="{% url 'tienda_evento' %}">
+                            <i class="fas fa-arrow-left me-2"></i>Continue Shopping
+                        </a>
+                    {% else %}
+                        <a class="btn btn-outline-dark" href="{% url 'store_view' tipo %}">
+                            <i class="fas fa-arrow-left me-2"></i>Continue Shopping
+                        </a>
+                    {% endif %}
                     <h4 class="text-gradient mb-0">
                         <i class="fas fa-shopping-cart me-2"></i>Tu Carrito
+                        {% if tipo == 'venta_evento' %}
+                            <span class="badge evento-cart-badge" style="color: #ffffff !important; background-color: #ec4899 !important; text-shadow: none !important;">Eventos</span>
+                        {% endif %}
                     </h4>
                 </div>
                 
@@ -42,32 +51,80 @@
                 {% for item in items %}
                 <div class="cart-row">
                     <div style="flex:2">
-                                            {% if item.product.prese_imagen %}
-                        <img class="row-image" src="{{ item.product.get_imagen_url }}" alt="{{ item.product.prese_nombre }}">
+                        {% if tipo == 'venta_evento' %}
+                            <!-- Productos de eventos -->
+                            {% if item.imagen %}
+                                <img class="row-image" src="{{ item.imagen }}" alt="{{ item.nombre }}">
+                            {% else %}
+                                <div class="placeholder-image d-flex align-items-center justify-content-center" 
+                                     style="width: 50px; height: 50px; background: #f8f9fa; border-radius: 8px;">
+                                    {% if item.es_entrada %}
+                                        <i class="fas fa-ticket-alt text-purple"></i>
+                                    {% else %}
+                                        <i class="fas fa-beer text-muted"></i>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
                         {% else %}
-                            <div class="placeholder-image d-flex align-items-center justify-content-center" 
-                                 style="width: 50px; height: 50px; background: #f8f9fa; border-radius: 8px;">
-                                <i class="fas fa-image text-muted"></i>
-                            </div>
+                            <!-- Productos normales -->
+                            {% if item.product.prese_imagen %}
+                                <img class="row-image" src="{{ item.product.get_imagen_url }}" alt="{{ item.product.prese_nombre }}">
+                            {% else %}
+                                <div class="placeholder-image d-flex align-items-center justify-content-center" 
+                                     style="width: 50px; height: 50px; background: #f8f9fa; border-radius: 8px;">
+                                    <i class="fas fa-image text-muted"></i>
+                                </div>
+                            {% endif %}
                         {% endif %}
                     </div>
                     <div style="flex:2">
-                        <h6 class="mb-1">{{ item.product.prese_nombre }}</h6>
-                        <small class="text-muted">Producto ID: {{ item.product.prese_id }}</small>
+                        {% if tipo == 'venta_evento' %}
+                            <!-- Productos de eventos -->
+                            <h6 class="mb-1">
+                                {{ item.nombre }}
+                                {% if item.es_entrada %}
+                                    <span class="badge bg-pink ms-1">Entrada</span>
+                                {% endif %}
+                            </h6>
+                            <small class="text-muted">Producto ID: {{ item.id }}</small>
+                        {% else %}
+                            <!-- Productos normales -->
+                            <h6 class="mb-1">{{ item.product.prese_nombre }}</h6>
+                            <small class="text-muted">Producto ID: {{ item.product.prese_id }}</small>
+                        {% endif %}
                     </div>
                     <div style="flex:1">
-                        <strong class="text-success">${{ item.precio_unitario_usd|floatformat:2 }} USD</strong>
-                        <br><small class="text-muted">{{ item.precio_unitario_bs|floatformat:2 }} Bs</small>
+                        {% if tipo == 'venta_evento' %}
+                            <strong class="text-success">${{ item.precio_unitario|floatformat:2 }} USD</strong>
+                            <br><small class="text-muted">{{ item.precio_unitario_bs|floatformat:2 }} Bs</small>
+                        {% else %}
+                            <strong class="text-success">${{ item.precio_unitario_usd|floatformat:2 }} USD</strong>
+                            <br><small class="text-muted">{{ item.precio_unitario_bs|floatformat:2 }} Bs</small>
+                        {% endif %}
                     </div>
                     <div style="flex:1">
                         <div class="d-flex align-items-center">
-                            <img data-product="{{ item.product.prese_id }}" data-action="remove" data-tipo="{{ tipo }}" 
-                                 class="chg-quantity update-cart me-2" src="{% static 'images/arrow-down.png' %}"
-                                 title="Disminuir cantidad">
-                            <span class="quantity mx-2 fw-bold">{{ item.quantity }}</span>
-                            <img data-product="{{ item.product.prese_id }}" data-action="add" data-tipo="{{ tipo }}" 
-                                 class="chg-quantity update-cart ms-2" src="{% static 'images/arrow-up.png' %}"
-                                 title="Aumentar cantidad">
+                            {% if tipo == 'venta_evento' %}
+                                <!-- Botones para eventos -->
+                                <button class="btn btn-sm btn-outline-danger me-2 update-cart-evento-btn" 
+                                        data-item="{{ item.id }}" data-action="remove">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <span class="quantity mx-2 fw-bold">{{ item.quantity }}</span>
+                                <button class="btn btn-sm btn-outline-success ms-2 update-cart-evento-btn" 
+                                        data-item="{{ item.id }}" data-action="add">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            {% else %}
+                                <!-- Botones para productos normales -->
+                                <img data-product="{{ item.product.prese_id }}" data-action="remove" data-tipo="{{ tipo }}" 
+                                     class="chg-quantity update-cart me-2" src="{% static 'images/arrow-down.png' %}"
+                                     title="Disminuir cantidad">
+                                <span class="quantity mx-2 fw-bold">{{ item.quantity }}</span>
+                                <img data-product="{{ item.product.prese_id }}" data-action="add" data-tipo="{{ tipo }}" 
+                                     class="chg-quantity update-cart ms-2" src="{% static 'images/arrow-up.png' %}"
+                                     title="Aumentar cantidad">
+                            {% endif %}
                         </div>
                     </div>
                     <div style="flex:1">
@@ -81,9 +138,15 @@
                         <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
                         <h5 class="text-muted">Tu carrito está vacío</h5>
                         <p class="text-muted">Agrega algunos productos para comenzar</p>
-                        <a href="{% url 'store_view' tipo %}" class="btn btn-primary">
-                            <i class="fas fa-shopping-bag me-2"></i>Ir de Compras
-                        </a>
+                        {% if tipo == 'venta_evento' %}
+                            <a href="{% url 'tienda_evento' %}" class="btn btn-primary">
+                                <i class="fas fa-calendar-star me-2"></i>Ir a Eventos
+                            </a>
+                        {% else %}
+                            <a href="{% url 'store_view' tipo %}" class="btn btn-primary">
+                                <i class="fas fa-shopping-bag me-2"></i>Ir de Compras
+                            </a>
+                        {% endif %}
                     </div>
                 </div>
                 {% endfor %}
@@ -91,4 +154,102 @@
         </div>
     </div>
 </div>
+
+{% if tipo == 'venta_evento' %}
+<script>
+// JavaScript específico para carrito de eventos
+document.addEventListener('DOMContentLoaded', function() {
+    // Vincular botones de carrito de eventos
+    const cartEventButtons = document.querySelectorAll('.update-cart-evento-btn');
+    cartEventButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const itemId = this.getAttribute('data-item');
+            const action = this.getAttribute('data-action');
+            
+            // Deshabilitar botón temporalmente
+            this.disabled = true;
+            const originalHTML = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            // Llamar función para actualizar carrito
+            updateCartEventoFromCart(itemId, action, this, originalHTML);
+        });
+    });
+});
+
+function updateCartEventoFromCart(itemId, action, buttonElement, originalHTML) {
+    fetch('{% url "update_cart_evento" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            'itemId': itemId,
+            'action': action
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'ok') {
+            // Recargar la página del carrito para mostrar cambios
+            location.reload();
+        } else {
+            alert(data.message || 'Error al actualizar carrito');
+            // Rehabilitar botón
+            buttonElement.disabled = false;
+            buttonElement.innerHTML = originalHTML;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error de conexión');
+        // Rehabilitar botón
+        buttonElement.disabled = false;
+        buttonElement.innerHTML = originalHTML;
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endif %}
+
+<style>
+/* DEBUG: Estilos específicos para badges de eventos - MÁXIMA PRIORIDAD */
+.badge.evento-cart-badge {
+    background-color: #ec4899 !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    border: none !important;
+    font-size: 0.75em !important;
+    padding: 0.35em 0.65em !important;
+    border-radius: 0.375rem !important;
+    display: inline-block !important;
+    text-decoration: none !important;
+}
+
+/* Regla adicional con mayor especificidad */
+h4 .badge.evento-cart-badge {
+    background-color: #ec4899 !important;
+    color: #ffffff !important;
+}
+
+/* Otras utilidades */
+.text-purple { color: #7c3aed !important; }
+.bg-purple { background-color: #7c3aed !important; color: #ffffff !important; }
+.bg-pink { background-color: #ec4899 !important; color: #ffffff !important; }
+</style>
 {% endblock %}

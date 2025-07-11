@@ -1161,4 +1161,96 @@ BEGIN
     RETURN v_reporte_data;
 END;
 $$ LANGUAGE plpgsql;
+-- ===========================================
+-- CORRECCIÓN FUNCIÓN: obtener_datos_reporte_evento
+-- Aplicar en pgAdmin para corregir la función con errores de sintaxis
+-- ===========================================
+CREATE OR REPLACE FUNCTION public.obtener_datos_reporte_evento(p_venta_id INT, p_tipo_evento TEXT)
+RETURNS JSON AS $$
+DECLARE
+    v_reporte_data JSON;
+BEGIN
+    IF p_tipo_evento = 'boleto' THEN
+        -- VENTA DE BOLETOS
+        SELECT
+            json_build_object(
+                'venta', json_build_object(
+                    'id', vbe.ven_bol_eve_id,
+                    'fecha', TO_CHAR(vbe.ven_bol_eve_fecha_hora, 'DD/MM/YYYY HH24:MI'),
+                    'tipo_venta', 'Venta de Boletos de Evento',
+                    'subtotal', vbe.ven_bol_eve_monto_total / 1.16,
+                    'iva', vbe.ven_bol_eve_monto_total - (vbe.ven_bol_eve_monto_total / 1.16),
+                    'total', vbe.ven_bol_eve_monto_total
+                ),
+                'cliente', json_build_object(
+                    'nombre', COALESCE(c.cli_nat_pnombre || ' ' || c.cli_nat_papellido, c.cli_jur_razon_social, COALESCE(u.first_name || ' ' || u.last_name, 'No disponible'), 'Usuario Evento'),
+                    'rif', COALESCE(c.cli_rif, 'N/A'),
+                    'direccion', COALESCE(c.cli_direccion_fisica, 'N/A'),
+                    'telefono', COALESCE((SELECT tel_numero::text FROM public.telefono WHERE fk_cliente = c.cli_id LIMIT 1), 'N/A')
+                ),
+                'detalles', json_build_array(
+                    json_build_object(
+                        'id', vbe.ven_bol_eve_id,
+                        'producto', CONCAT('Entrada - ', e.eve_nombre),
+                        'cantidad', vbe.ven_bol_eve_cantidad,
+                        'precio_unitario', CASE WHEN vbe.ven_bol_eve_cantidad > 0 THEN vbe.ven_bol_eve_monto_total / vbe.ven_bol_eve_cantidad ELSE vbe.ven_bol_eve_monto_total END,
+                        'total_linea', vbe.ven_bol_eve_monto_total
+                    )
+                )
+            )
+        INTO v_reporte_data
+        FROM public.venta_boleto_evento vbe
+        LEFT JOIN public.evento e ON vbe.fk_evento = e.eve_id
+        LEFT JOIN public.usuario u ON vbe.fk_usuario_id = u.id
+        LEFT JOIN public.cliente c ON u.fk_cliente = c.cli_id
+        WHERE vbe.ven_bol_eve_id = p_venta_id;
+        
+    ELSIF p_tipo_evento = 'producto' THEN
+        -- VENTA DE PRODUCTOS DE EVENTO
+        SELECT
+            json_build_object(
+                'venta', json_build_object(
+                    'id', ve.ven_eve_id,
+                    'fecha', TO_CHAR(ve.ven_eve_fecha_hora, 'DD/MM/YYYY HH24:MI'),
+                    'tipo_venta', 'Venta de Productos de Evento',
+                    'subtotal', ve.ven_eve_monto_total / 1.16,
+                    'iva', ve.ven_eve_monto_total - (ve.ven_eve_monto_total / 1.16),
+                    'total', ve.ven_eve_monto_total
+                ),
+                'cliente', json_build_object(
+                    'nombre', COALESCE(c.cli_nat_pnombre || ' ' || c.cli_nat_papellido, c.cli_jur_razon_social, 'Cliente Evento'),
+                    'rif', COALESCE(c.cli_rif, 'N/A'),
+                    'direccion', COALESCE(c.cli_direccion_fisica, 'N/A'),
+                    'telefono', COALESCE((SELECT tel_numero::text FROM public.telefono WHERE fk_cliente = c.cli_id LIMIT 1), 'N/A')
+                ),
+                'detalles', (
+                    SELECT COALESCE(json_agg(
+                        json_build_object(
+                            'id', p.prese_id,
+                            'producto', p.prese_nombre || ' (' || e.eve_nombre || ')',
+                            'cantidad', dve.det_ven_eve_cantidad,
+                            'precio_unitario', dve.det_ven_eve_precio_unitario,
+                            'total_linea', dve.det_ven_eve_cantidad * dve.det_ven_eve_precio_unitario
+                        )
+                    ), '[]'::json)
+                    FROM public.detalle_venta_evento dve
+                    JOIN public.existencia_evento ee ON dve.fk_exi_eve = ee.exi_eve_id
+                    JOIN public.presentacion p ON ee.fk_presentacion = p.prese_id
+                    WHERE dve.fk_venta_evento = ve.ven_eve_id
+                )
+            )
+        INTO v_reporte_data
+        FROM public.venta_evento ve
+        LEFT JOIN public.cliente c ON ve.fk_cliente = c.cli_id
+        LEFT JOIN public.evento e ON ve.fk_evento = e.eve_id
+        WHERE ve.ven_eve_id = p_venta_id;
+        
+    ELSE
+        -- Tipo no válido
+        v_reporte_data := NULL;
+    END IF;
+
+    RETURN v_reporte_data;
+END;
+$$ LANGUAGE plpgsql; 
 

@@ -103,6 +103,11 @@
                                 <div class="stat-item">
                                     <div class="stat-value">{{ evento.boletos_vendidos }}/{{ evento.eve_nro_boletos }}</div>
                                     <div class="stat-label">Boletos</div>
+                                    {% if evento.porcentaje_vendido > 80 %}
+                                        <div class="text-warning small">{{ evento.porcentaje_vendido|floatformat:0 }}% vendido</div>
+                                    {% elif evento.porcentaje_vendido > 95 %}
+                                        <div class="text-danger small">{{ evento.porcentaje_vendido|floatformat:0 }}% vendido</div>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>

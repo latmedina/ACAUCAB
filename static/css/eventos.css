@@ -1,0 +1,573 @@
+/* ==========================================================================
+   EVENTOS CSS - Estilos para la tienda de eventos
+   Tema con colores distintivos para diferenciarse de otras tiendas
+   ========================================================================== */
+
+/* ==========================================
+   1. VARIABLES DE TEMA EVENTOS
+   ========================================== */
+:root {
+    /* Colores principales - Púrpura/Morado para eventos */
+    --evento-primary: #7c3aed;
+    --evento-primary-dark: #6d28d9;
+    --evento-primary-light: #a78bfa;
+    --evento-primary-lighter: #ddd6fe;
+    --evento-primary-lightest: #f3f0ff;
+    
+    /* Colores secundarios - Rosa/Fucsia */
+    --evento-secondary: #ec4899;
+    --evento-secondary-dark: #db2777;
+    --evento-secondary-light: #f472b6;
+    --evento-secondary-lighter: #fbcfe8;
+    
+    /* Colores de acento - Índigo */
+    --evento-accent: #4f46e5;
+    --evento-accent-light: #6366f1;
+    --evento-accent-lighter: #c7d2fe;
+    
+    /* Estados */
+    --evento-success: #10b981;
+    --evento-warning: #f59e0b;
+    --evento-danger: #ef4444;
+    --evento-info: #06b6d4;
+    
+    /* Neutros */
+    --evento-gray-50: #f9fafb;
+    --evento-gray-100: #f3f4f6;
+    --evento-gray-200: #e5e7eb;
+    --evento-gray-300: #d1d5db;
+    --evento-gray-400: #9ca3af;
+    --evento-gray-500: #6b7280;
+    --evento-gray-600: #4b5563;
+    --evento-gray-700: #374151;
+    --evento-gray-800: #1f2937;
+    --evento-gray-900: #111827;
+    
+    /* Sombras */
+    --evento-shadow-sm: 0 1px 2px 0 rgba(124, 58, 237, 0.05);
+    --evento-shadow: 0 4px 6px -1px rgba(124, 58, 237, 0.1), 0 2px 4px -1px rgba(124, 58, 237, 0.06);
+    --evento-shadow-md: 0 10px 15px -3px rgba(124, 58, 237, 0.1), 0 4px 6px -2px rgba(124, 58, 237, 0.05);
+    --evento-shadow-lg: 0 20px 25px -5px rgba(124, 58, 237, 0.1), 0 10px 10px -5px rgba(124, 58, 237, 0.04);
+    
+    /* Bordes y radios */
+    --evento-border-radius: 12px;
+    --evento-border-radius-lg: 16px;
+    --evento-border-radius-xl: 20px;
+    
+    /* Transiciones */
+    --evento-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==========================================
+   2. SELECTOR DE EVENTOS
+   ========================================== */
+.evento-selector-container {
+    background: linear-gradient(135deg, var(--evento-primary-lightest) 0%, #ffffff 100%);
+    border-radius: var(--evento-border-radius-lg);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--evento-shadow-md);
+    border: 1px solid var(--evento-primary-lighter);
+}
+
+.evento-selector-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.evento-selector-header h2 {
+    color: var(--evento-primary-dark);
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.evento-selector-header h2 i {
+    font-size: 2.5rem;
+    color: var(--evento-secondary);
+}
+
+.evento-selector-header p {
+    color: var(--evento-gray-600);
+    font-size: 1.1rem;
+}
+
+/* Buscador de eventos */
+.evento-search-wrapper {
+    max-width: 600px;
+    margin: 0 auto 2rem;
+    position: relative;
+}
+
+.evento-search-input {
+    width: 100%;
+    padding: 1rem 3rem 1rem 1.5rem;
+    border: 2px solid var(--evento-primary-lighter);
+    border-radius: var(--evento-border-radius);
+    font-size: 1rem;
+    transition: var(--evento-transition);
+    background: white;
+}
+
+.evento-search-input:focus {
+    outline: none;
+    border-color: var(--evento-primary);
+    box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+}
+
+.evento-search-icon {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--evento-primary);
+    font-size: 1.2rem;
+}
+
+/* Lista de eventos */
+.eventos-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.evento-card {
+    background: white;
+    border-radius: var(--evento-border-radius);
+    border: 2px solid transparent;
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: var(--evento-transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.evento-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--evento-primary) 0%, var(--evento-secondary) 100%);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.evento-card:hover {
+    border-color: var(--evento-primary-light);
+    box-shadow: var(--evento-shadow-md);
+    transform: translateY(-2px);
+}
+
+.evento-card:hover::before {
+    transform: scaleX(1);
+}
+
+.evento-card.selected {
+    border-color: var(--evento-primary);
+    background: var(--evento-primary-lightest);
+    box-shadow: var(--evento-shadow-lg);
+}
+
+.evento-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 1rem;
+}
+
+.evento-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--evento-gray-800);
+    margin: 0;
+}
+
+.evento-card-date {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--evento-secondary);
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.evento-card-description {
+    color: var(--evento-gray-600);
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.evento-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid var(--evento-gray-200);
+}
+
+.evento-card-price {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--evento-primary);
+}
+
+.evento-card-boletos {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--evento-gray-500);
+    font-size: 0.9rem;
+}
+
+.evento-card-boletos.low-stock {
+    color: var(--evento-warning);
+    font-weight: 500;
+}
+
+/* ==========================================
+   3. PRODUCTOS DE EVENTO
+   ========================================== */
+.evento-products-container {
+    background: white;
+    border-radius: var(--evento-border-radius-lg);
+    padding: 2rem;
+    box-shadow: var(--evento-shadow);
+    margin-bottom: 2rem;
+}
+
+.evento-info-header {
+    background: linear-gradient(135deg, var(--evento-primary) 0%, var(--evento-secondary) 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: var(--evento-border-radius);
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.evento-info-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+}
+
+.evento-info-content {
+    position: relative;
+    z-index: 1;
+}
+
+.evento-info-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.evento-info-details {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+}
+
+.evento-info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.evento-info-item i {
+    font-size: 1.2rem;
+    opacity: 0.8;
+}
+
+/* Productos especiales de evento */
+.evento-product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.evento-product-card {
+    background: var(--evento-gray-50);
+    border-radius: var(--evento-border-radius);
+    overflow: hidden;
+    transition: var(--evento-transition);
+    border: 1px solid var(--evento-gray-200);
+    position: relative;
+}
+
+.evento-product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--evento-shadow-md);
+    border-color: var(--evento-primary-light);
+}
+
+/* Badge para entrada/boleto */
+.evento-product-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: var(--evento-secondary);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    z-index: 1;
+}
+
+.evento-product-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    background: linear-gradient(135deg, var(--evento-primary-lighter) 0%, var(--evento-secondary-lighter) 100%);
+}
+
+.evento-product-content {
+    padding: 1.5rem;
+}
+
+.evento-product-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--evento-gray-800);
+    margin-bottom: 0.5rem;
+}
+
+.evento-product-price {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.evento-price-usd {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--evento-primary);
+}
+
+.evento-price-bs {
+    font-size: 0.9rem;
+    color: var(--evento-gray-500);
+}
+
+.evento-product-stock {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    color: var(--evento-gray-600);
+}
+
+.evento-product-stock.low {
+    color: var(--evento-warning);
+    font-weight: 500;
+}
+
+.evento-product-stock.out {
+    color: var(--evento-danger);
+    font-weight: 500;
+}
+
+/* Botón especial para eventos */
+.btn-evento {
+    background: linear-gradient(135deg, var(--evento-primary) 0%, var(--evento-primary-dark) 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--evento-border-radius);
+    font-weight: 600;
+    width: 100%;
+    transition: var(--evento-transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-evento::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn-evento:hover::before {
+    left: 100%;
+}
+
+.btn-evento:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--evento-shadow-md);
+}
+
+.btn-evento:active {
+    transform: translateY(0);
+}
+
+.btn-evento:disabled {
+    background: var(--evento-gray-300);
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ==========================================
+   4. NAVBAR ESPECIAL PARA EVENTOS
+   ========================================== */
+.navbar-eventos {
+    background: linear-gradient(135deg, var(--evento-primary-dark) 0%, var(--evento-secondary-dark) 100%) !important;
+    box-shadow: var(--evento-shadow-md);
+}
+
+.navbar-eventos .navbar-brand {
+    color: white !important;
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.navbar-eventos .navbar-brand i {
+    margin-right: 0.5rem;
+    color: var(--evento-secondary-light);
+}
+
+/* ==========================================
+   5. ANIMACIONES Y EFECTOS
+   ========================================== */
+@keyframes eventoPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(124, 58, 237, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(124, 58, 237, 0);
+    }
+}
+
+.evento-highlight {
+    animation: eventoPulse 2s infinite;
+}
+
+/* ==========================================
+   6. RESPONSIVE
+   ========================================== */
+@media (max-width: 768px) {
+    .eventos-list {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .evento-product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+    
+    .evento-info-header {
+        padding: 1.5rem;
+    }
+    
+    .evento-info-title {
+        font-size: 1.5rem;
+    }
+    
+    .evento-info-details {
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .evento-selector-container {
+        padding: 1rem;
+    }
+    
+    .evento-product-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .evento-info-details {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+
+/* ==========================================
+   7. UTILIDADES ESPECÍFICAS
+   ========================================== */
+.evento-empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--evento-gray-500);
+}
+
+.evento-empty-icon {
+    font-size: 4rem;
+    color: var(--evento-primary-lighter);
+    margin-bottom: 1rem;
+}
+
+.evento-empty-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--evento-gray-700);
+    margin-bottom: 0.5rem;
+}
+
+.evento-empty-text {
+    font-size: 1rem;
+    color: var(--evento-gray-600);
+}
+.cart-dropdown-container.evento-theme .cart-btn-add {
+    background-color: rgba(124, 58, 237, 0.1) !important;
+    color: var(--evento-primary) !important;
+    border-color: rgba(124, 58, 237, 0.3) !important;
+}
+.text-purple {
+    color: var(--evento-primary) !important;
+}
+
+/* Integración con sistema de carrito existente */
+
+/* Clases de utilidad para eventos */
+.bg-purple {
+    background-color: var(--evento-primary) !important;
+    color: white !important;
+}
+
+
+.bg-pink {
+    background-color: var(--evento-secondary) !important;
+    color: white !important;
+}
+
+.cart-dropdown-container.evento-theme .cart-dropdown {
+    border-top: 4px solid var(--evento-primary);
+}
+
+
+.cart-dropdown-container.evento-theme .cart-btn-add:hover {
+    background-color: var(--evento-primary) !important;
+    color: white !important;
+} 
+.evento-cart-badge {
+    color: rgb(255, 255, 255) !important;
+    background: var(--evento-primary);
+    font-weight: 600;
+    border: none;
+}

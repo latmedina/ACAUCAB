@@ -929,11 +929,24 @@ def lista_eventos(request):
     tipos_evento = tipo_evento.objects.all()
     lugares = lugar.objects.all()
     
-    # Agregar información adicional a cada evento
+    # Agregar información adicional a cada evento usando SQL
     for evt in eventos:
         evt.num_proveedores = eve_pro.objects.filter(fk_evento=evt).count()
         evt.num_invitados = inv_evento.objects.filter(fk_evento=evt).count()
-        evt.boletos_vendidos = asistencia_evento.objects.filter(fk_evento=evt).count()
+        
+        # Usar función SQL para obtener boletos vendidos
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT obtener_info_disponibilidad_evento(%s);", [evt.eve_id])
+            result = cursor.fetchone()
+            if result and result[0]:
+                info_boletos = result[0]
+                evt.boletos_vendidos = info_boletos.get('boletos_vendidos', 0)
+                evt.boletos_disponibles = info_boletos.get('boletos_disponibles', evt.eve_nro_boletos)
+                evt.porcentaje_vendido = info_boletos.get('porcentaje_vendido', 0)
+            else:
+                evt.boletos_vendidos = 0
+                evt.boletos_disponibles = evt.eve_nro_boletos
+                evt.porcentaje_vendido = 0
     
     context = {
         'eventos': eventos,
@@ -1066,8 +1079,19 @@ def detalle_evento(request, evento_id):
         fk_evento_proveedor__fk_evento=evento_obj
     ).select_related('fk_presentacion', 'fk_evento_proveedor__fk_proveedor')
 
-    boletos_vendidos = asistencia_evento.objects.filter(fk_evento=evento_obj).count()
-    boletos_disponibles = evento_obj.eve_nro_boletos - boletos_vendidos
+    # Usar función SQL para obtener estadísticas precisas de boletos
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT obtener_info_disponibilidad_evento(%s);", [evento_id])
+        result = cursor.fetchone()
+        if result and result[0]:
+            info_boletos = result[0]
+            boletos_vendidos = info_boletos.get('boletos_vendidos', 0)
+            boletos_disponibles = info_boletos.get('boletos_disponibles', evento_obj.eve_nro_boletos)
+            porcentaje_vendido = info_boletos.get('porcentaje_vendido', 0)
+        else:
+            boletos_vendidos = 0
+            boletos_disponibles = evento_obj.eve_nro_boletos
+            porcentaje_vendido = 0
 
     context = {
         'evento': evento_obj,
@@ -1077,8 +1101,7 @@ def detalle_evento(request, evento_id):
         'estadisticas': {
             'boletos_vendidos': boletos_vendidos,
             'boletos_disponibles': boletos_disponibles,
-            'porcentaje_vendido': (boletos_vendidos / evento_obj.eve_nro_boletos * 100)
-            if evento_obj.eve_nro_boletos > 0 else 0
+            'porcentaje_vendido': porcentaje_vendido
         }
     }
 
@@ -1378,3 +1401,58 @@ def gestionar_existencias_evento(request, evento_id, eve_pro_id):
     }
     
     return render(request, 'empleados/eventos/gestionar_existencias_evento.html', context)
+
+# ========== APIS PARA GESTIÓN DE BOLETOS DE EVENTOS ==========
+
+@login_required
+def api_estadisticas_boletos(request):
+    """API para obtener estadísticas de boletos de todos los eventos"""
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT obtener_estadisticas_boletos_eventos();")
+            result = cursor.fetchone()
+            
+            if result and result[0]:
+                return JsonResponse(result[0], safe=False)
+            else:
+                return JsonResponse([], safe=False)
+                
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+def api_disponibilidad_evento(request, evento_id):
+    """API pública para verificar disponibilidad de boletos de un evento específico"""
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT obtener_info_disponibilidad_evento(%s);", [evento_id])
+            result = cursor.fetchone()
+            
+            if result and result[0]:
+                info = result[0]
+                if 'error' in info:
+                    return JsonResponse(info, status=404)
+                return JsonResponse(info)
+            else:
+                return JsonResponse({'error': 'Evento no encontrado'}, status=404)
+                
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+def api_validar_compra_boletos(request, evento_id):
+    """API para validar si se pueden comprar una cantidad específica de boletos"""
+    try:
+        cantidad = int(request.GET.get('cantidad', 1))
+        
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT validar_compra_boletos(%s, %s);", [evento_id, cantidad])
+            result = cursor.fetchone()
+            
+            if result and result[0]:
+                return JsonResponse(result[0])
+            else:
+                return JsonResponse({'valido': False, 'mensaje': 'Error al validar'}, status=500)
+                
+    except (ValueError, TypeError):
+        return JsonResponse({'valido': False, 'mensaje': 'Cantidad inválida'}, status=400)
+    except Exception as e:
+        return JsonResponse({'valido': False, 'mensaje': str(e)}, status=500)

@@ -104,5 +104,10 @@ urlpatterns = [
     path('invitados/crear/<int:evento_id>/', views.crear_invitado, name='crear_invitado'),
     path('invitados/<int:invitado_id>/eliminar/<int:evento_id>/', views.eliminar_invitado, name='eliminar_invitado'),
     path('invitados/<int:invitado_id>/modificar/<int:evento_id>/', views.modificar_invitado, name='modificar_invitado'),
+    
+    # ========== APIs PARA GESTIÓN DE BOLETOS DE EVENTOS ==========
+    path('api/eventos/estadisticas-boletos/', views.api_estadisticas_boletos, name='api_estadisticas_boletos'),
+    path('api/eventos/<int:evento_id>/disponibilidad/', views.api_disponibilidad_evento, name='api_disponibilidad_evento'),
+    path('api/eventos/<int:evento_id>/validar-compra/', views.api_validar_compra_boletos, name='api_validar_compra_boletos'),
 ]
     

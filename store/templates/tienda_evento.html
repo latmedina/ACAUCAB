@@ -1,0 +1,519 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Agregar estilos de eventos -->
+<link rel="stylesheet" type="text/css" href="{% static 'css/eventos.css' %}">
+
+<div class="container">
+    {% if selector_mode %}
+    <!-- Modo selector de eventos -->
+    <div class="evento-selector-container">
+        <div class="evento-selector-header">
+            <h2>
+                <i class="fas fa-calendar-star"></i>
+                Selecciona un Evento
+            </h2>
+            <p>Elige el evento del cual deseas comprar productos y entradas</p>
+        </div>
+
+        <!-- Buscador de eventos -->
+        <div class="evento-search-wrapper">
+            <input type="text" 
+                   class="evento-search-input" 
+                   id="evento-search" 
+                   placeholder="Buscar eventos por nombre..."
+                   autocomplete="off">
+            <i class="fas fa-search evento-search-icon"></i>
+        </div>
+
+        <!-- Lista de eventos -->
+        {% if eventos %}
+        <div class="eventos-list" id="eventos-list">
+            {% for ev in eventos %}
+            <div class="evento-card" data-evento-name="{{ ev.eve_nombre|lower }}" onclick="window.location.href='{% url 'tienda_evento_detalle' ev.eve_id %}'">
+                <div class="evento-card-header">
+                    <h4 class="evento-card-title">{{ ev.eve_nombre }}</h4>
+                    <div class="evento-card-date">
+                        <i class="fas fa-calendar-alt"></i>
+                        {{ ev.eve_fecha_hora|date:"d M Y" }}
+                    </div>
+                </div>
+                
+                <div class="evento-card-description">
+                    {{ ev.eve_descripcion|truncatechars:120 }}
+                </div>
+                
+                <div class="evento-card-footer">
+                    <div class="evento-card-price">
+                        <span class="evento-price-usd">${{ ev.eve_precio_boleto|floatformat:2 }} USD</span>
+                        <span class="evento-price-bs">{{ ev.precio_bs|floatformat:2 }} Bs</span>
+                    </div>
+                    <div class="evento-card-boletos {% if ev.low_stock %}low-stock{% endif %}">
+                        <i class="fas fa-ticket-alt"></i>
+                        {{ ev.boletos_disponibles }} boletos
+                    </div>
+                </div>
+                
+                {% if ev.productos_disponibles > 0 %}
+                <div class="evento-card-productos">
+                    <i class="fas fa-box"></i>
+                    {{ ev.productos_disponibles }} productos disponibles
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="evento-empty-state">
+            <div class="evento-empty-icon">
+                <i class="fas fa-calendar-times"></i>
+            </div>
+            <h3 class="evento-empty-title">No hay eventos disponibles</h3>
+            <p class="evento-empty-text">No existen eventos programados en este momento. Vuelve pronto para ver nuevos eventos.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    {% else %}
+    <!-- Modo productos del evento -->
+    <div class="evento-products-container">
+        <!-- Header del evento -->
+        <div class="evento-info-header">
+            <div class="evento-info-content">
+                <h1 class="evento-info-title">{{ evento.nombre }}</h1>
+                <p>{{ evento.descripcion }}</p>
+                
+                <div class="evento-info-details">
+                    <div class="evento-info-item">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>{{ evento.fecha|date:"d M Y - H:i" }}</span>
+                    </div>
+                    <div class="evento-info-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>{{ evento.lugar }}</span>
+                    </div>
+                    <div class="evento-info-item">
+                        <i class="fas fa-ticket-alt"></i>
+                        <span>{{ evento.boletos_disponibles }}/{{ evento.boletos_totales }} boletos disponibles</span>
+                        {% if evento.boletos_vendidos > 0 %}
+                            <div class="small text-muted">({{ evento.boletos_vendidos }} vendidos)</div>
+                        {% endif %}
+                    </div>
+                    <div class="evento-info-item">
+                        <i class="fas fa-box"></i>
+                        <span>{{ evento.total_productos }} productos</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Barra de navegación del evento -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <a href="{% url 'tienda_evento' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Volver a eventos
+            </a>
+            <div class="text-muted">
+                <i class="fas fa-dollar-sign me-1"></i>Tasa: {{ dollar_rate|floatformat:2 }} Bs/USD
+            </div>
+        </div>
+
+        <!-- Productos del evento -->
+        {% if productos %}
+        <div class="evento-product-grid">
+            {% for producto in productos %}
+            <div class="evento-product-card">
+                {% if producto.es_entrada %}
+                <div class="evento-product-badge">
+                    <i class="fas fa-ticket-alt me-1"></i>Entrada
+                </div>
+                {% endif %}
+                
+                {% if producto.imagen %}
+                <img src="{{ producto.imagen }}" alt="{{ producto.nombre }}" class="evento-product-image">
+                {% else %}
+                <div class="evento-product-image d-flex align-items-center justify-content-center">
+                    {% if producto.es_entrada %}
+                    <i class="fas fa-ticket-alt" style="font-size: 3rem; color: var(--evento-primary-light);"></i>
+                    {% else %}
+                    <i class="fas fa-beer" style="font-size: 3rem; color: var(--evento-primary-light);"></i>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <div class="evento-product-content">
+                    <h5 class="evento-product-name">{{ producto.nombre }}</h5>
+                    
+                    {% if not producto.es_entrada and producto.proveedor %}
+                    <p class="text-muted small mb-2">
+                        <i class="fas fa-store me-1"></i>{{ producto.proveedor }}
+                    </p>
+                    {% endif %}
+                    
+                    <div class="evento-product-price">
+                        <div class="evento-price-usd">${{ producto.precio_usd|floatformat:2 }}</div>
+                        <div class="evento-price-bs">{{ producto.precio_bs|floatformat:2 }} Bs</div>
+                    </div>
+                    
+                    <div class="evento-product-stock {% if producto.cantidad_disponible < 10 %}low{% elif producto.cantidad_disponible == 0 %}out{% endif %}">
+                        <i class="fas fa-cube me-1"></i>
+                        {% if producto.cantidad_disponible > 0 %}
+                        Disponible: {{ producto.cantidad_disponible }}
+                        {% else %}
+                        Agotado
+                        {% endif %}
+                    </div>
+                    
+                    {% if producto.cantidad_disponible > 0 %}
+                    <button class="btn-evento update-cart-evento" 
+                            data-item="{{ producto.id }}" 
+                            data-action="add"
+                            data-name="{{ producto.nombre }}">
+                        <i class="fas fa-cart-plus me-2"></i>Agregar al carrito
+                    </button>
+                    {% else %}
+                    <button class="btn-evento" disabled>
+                        <i class="fas fa-times me-2"></i>No disponible
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="evento-empty-state">
+            <div class="evento-empty-icon">
+                <i class="fas fa-box-open"></i>
+            </div>
+            <h3 class="evento-empty-title">No hay productos disponibles</h3>
+            <p class="evento-empty-text">Este evento no tiene productos o entradas disponibles en este momento.</p>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- JavaScript específico para eventos -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Buscador de eventos
+    const searchInput = document.getElementById('evento-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const eventCards = document.querySelectorAll('.evento-card');
+            
+            eventCards.forEach(card => {
+                const eventName = card.getAttribute('data-evento-name');
+                if (eventName.includes(searchTerm)) {
+                    card.style.display = 'block';
+                    card.classList.add('match');
+                } else {
+                    card.style.display = 'none';
+                    card.classList.remove('match');
+                }
+            });
+        });
+    }
+
+    // Actualizar carrito de eventos
+    const cartButtons = document.querySelectorAll('.update-cart-evento');
+    cartButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const itemId = this.getAttribute('data-item');
+            const action = this.getAttribute('data-action');
+            const itemName = this.getAttribute('data-name');
+            
+            // Deshabilitar botón temporalmente
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Agregando...';
+            
+            updateCartEvento(itemId, action, itemName, this);
+        });
+    });
+});
+
+function updateCartEvento(itemId, action, itemName, buttonElement) {
+    const url = '{% url "update_cart_evento" %}';
+    
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            'itemId': itemId,
+            'action': action
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'ok') {
+            // Actualizar contador del carrito
+            updateCartCounter(data.cartItems);
+            
+            // Si es un boleto, actualizar disponibilidad en tiempo real
+            if (itemId.startsWith('boleto_')) {
+                updateBoletosDisponibilidad(itemId);
+            }
+            
+            // Recargar dropdown del carrito (función global del cart.js)
+            if (typeof loadCartDropdown === 'function') {
+                loadCartDropdown();
+            }
+            
+            // Mostrar mensaje de éxito
+            if (typeof showCartNotification === 'function') {
+                showCartNotification(`${itemName} agregado al carrito`, 'success');
+            } else {
+                showNotification(`${itemName} agregado al carrito`, 'success');
+            }
+            
+            // Efecto visual en el botón
+            buttonElement.classList.add('evento-highlight');
+            setTimeout(() => {
+                buttonElement.classList.remove('evento-highlight');
+            }, 2000);
+            
+        } else if (data.status === 'confirm_required') {
+            // Mostrar confirmación para cambiar de evento
+            const confirmMessage = `${data.message}\n\n¿Estás seguro de que deseas continuar?`;
+            
+            if (confirm(confirmMessage)) {
+                // Usuario confirmó, limpiar carrito y agregar el nuevo producto
+                clearCartAndAddItem(itemId, action, itemName, buttonElement);
+            } else {
+                // Usuario canceló, no hacer nada
+                showNotification('Operación cancelada', 'info');
+            }
+            
+        } else {
+            // Mostrar mensaje de error
+            if (typeof showCartNotification === 'function') {
+                showCartNotification(data.message || 'Error al agregar al carrito', 'error');
+            } else {
+                showNotification(data.message || 'Error al agregar al carrito', 'error');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        if (typeof showCartNotification === 'function') {
+            showCartNotification('Error de conexión', 'error');
+        } else {
+            showNotification('Error de conexión', 'error');
+        }
+    })
+    .finally(() => {
+        // SIEMPRE rehabilitar el botón, sin importar el resultado
+        buttonElement.disabled = false;
+        buttonElement.innerHTML = '<i class="fas fa-cart-plus me-2"></i>Agregar al carrito';
+    });
+}
+
+// Función para actualizar la disponibilidad de boletos en tiempo real
+function updateBoletosDisponibilidad(itemId) {
+    if (!itemId.startsWith('boleto_')) return;
+    
+    const eventoId = itemId.replace('boleto_', '');
+    const url = `/empleados/api/eventos/${eventoId}/disponibilidad/`;
+    
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                console.error('Error obteniendo disponibilidad:', data.error);
+                return;
+            }
+            
+            // Actualizar información del header
+            const boletosInfo = document.querySelector('.evento-info-item:has(.fa-ticket-alt) span');
+            if (boletosInfo) {
+                boletosInfo.textContent = `${data.boletos_disponibles}/${data.boletos_totales} boletos disponibles`;
+            }
+            
+            // Actualizar información del producto de boletos
+            const boletosCard = document.querySelector(`[data-item="${itemId}"]`).closest('.evento-product-card');
+            if (boletosCard) {
+                const stockElement = boletosCard.querySelector('.evento-product-stock');
+                if (stockElement) {
+                    stockElement.innerHTML = `<i class="fas fa-cube me-1"></i>Disponible: ${data.boletos_disponibles}`;
+                    
+                    // Cambiar clase según disponibilidad
+                    stockElement.classList.remove('low', 'out');
+                    if (data.boletos_disponibles === 0) {
+                        stockElement.classList.add('out');
+                        // Deshabilitar botón si no hay más disponibles
+                        const button = boletosCard.querySelector('.update-cart-evento');
+                        if (button) {
+                            button.disabled = true;
+                            button.innerHTML = '<i class="fas fa-times me-2"></i>Agotado';
+                        }
+                    } else if (data.boletos_disponibles < 10) {
+                        stockElement.classList.add('low');
+                    }
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error actualizando disponibilidad:', error);
+        });
+}
+
+function updateCartCounter(newCount) {
+    const cartCounter = document.getElementById('cart-total');
+    if (cartCounter) {
+        cartCounter.textContent = newCount;
+        
+        // Animación del contador
+        cartCounter.style.transform = 'scale(1.3)';
+        cartCounter.style.background = 'var(--evento-secondary)';
+        setTimeout(() => {
+            cartCounter.style.transform = 'scale(1)';
+            cartCounter.style.background = 'red';
+        }, 300);
+    }
+}
+
+function showNotification(message, type) {
+    // Crear notificación toast
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed`;
+    toast.style.cssText = `
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 300px;
+        animation: slideInRight 0.3s ease;
+    `;
+    toast.innerHTML = `
+        <div class="d-flex align-items-center">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
+            ${message}
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Remover después de 3 segundos
+    setTimeout(() => {
+        toast.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 300);
+    }, 3000);
+}
+
+function clearCartAndAddItem(itemId, action, itemName, buttonElement) {
+    const url = '{% url "update_cart_evento" %}';
+    
+    // Primero limpiar el carrito
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            'itemId': 'dummy',
+            'action': 'clear',
+            'forceClear': true
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'cleared') {
+            // Carrito limpiado, ahora agregar el nuevo producto
+            return fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    'itemId': itemId,
+                    'action': action
+                })
+            });
+        } else {
+            throw new Error('No se pudo limpiar el carrito');
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'ok') {
+            // Actualizar contador del carrito
+            updateCartCounter(data.cartItems);
+            
+            // Recargar dropdown del carrito
+            if (typeof loadCartDropdown === 'function') {
+                loadCartDropdown();
+            }
+            
+            // Mostrar mensaje de éxito
+            showNotification(`Carrito actualizado. ${itemName} agregado al carrito`, 'success');
+            
+            // Efecto visual en el botón
+            buttonElement.classList.add('evento-highlight');
+            setTimeout(() => {
+                buttonElement.classList.remove('evento-highlight');
+            }, 2000);
+        } else {
+            throw new Error(data.message || 'Error al agregar producto después de limpiar carrito');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error al actualizar el carrito', 'error');
+    })
+    .finally(() => {
+        buttonElement.disabled = false;
+        buttonElement.innerHTML = '<i class="fas fa-cart-plus me-2"></i>Agregar al carrito';
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+
+<style>
+/* Animaciones para las notificaciones */
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+}
+</style>
+
+{% endblock %} 

@@ -47,7 +47,7 @@
                                     <span class="stat-label">Boletos Vendidos</span>
                                     <div class="stat-value">{{ estadisticas.boletos_vendidos }} / {{ evento.eve_nro_boletos }}</div>
                                     <div class="progress mt-2">
-                                        <div class="progress-bar" role="progressbar" 
+                                        <div class="progress-bar {% if estadisticas.porcentaje_vendido > 80 %}bg-warning{% elif estadisticas.porcentaje_vendido > 95 %}bg-danger{% endif %}" role="progressbar" 
                                             style="width: {{ estadisticas.porcentaje_vendido }}%">
                                             {{ estadisticas.porcentaje_vendido|floatformat:0 }}%
                                         </div>
@@ -55,7 +55,14 @@
                                 </div>
                                 <div class="mb-3">
                                     <span class="stat-label">Boletos Disponibles</span>
-                                    <div class="stat-value text-success">{{ estadisticas.boletos_disponibles }}</div>
+                                    <div class="stat-value {% if estadisticas.boletos_disponibles == 0 %}text-danger{% elif estadisticas.boletos_disponibles < 10 %}text-warning{% else %}text-success{% endif %}">
+                                        {{ estadisticas.boletos_disponibles }}
+                                    </div>
+                                    {% if estadisticas.boletos_disponibles == 0 %}
+                                        <div class="text-danger small">¡Evento agotado!</div>
+                                    {% elif estadisticas.boletos_disponibles < 10 %}
+                                        <div class="text-warning small">¡Pocos boletos!</div>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>

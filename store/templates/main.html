@@ -59,8 +59,8 @@
         <i class="fas fa-store me-2"></i>ACAUCAB
     </a>
 
-        <a href="{% url 'eventos_disponibles' %}" class="btn btn-success">
-            Comprar Boletos
+        <a href="{% url 'tienda_evento' %}" class="btn btn-success">
+            <i class="fas fa-calendar-star me-1"></i>Tienda de Eventos
         </a>
     
         <!-- Toggle Switch para cambiar tipo de tienda -->
@@ -161,7 +161,7 @@
     <script>
         // Detectar tipo de tienda basándose en la URL actual
         function detectStoreType() {
-        const currentPath = window.location.pathname;
+            const currentPath = window.location.pathname;
             if (
                 currentPath.includes('/store/online/') ||
                 currentPath.includes('/cart/online/') ||
@@ -175,7 +175,13 @@
             ) {
                 return 'fisica';
             } else if (
-                currentPath.includes('/eventos') ||
+                currentPath.includes('/tienda-eventos/') ||
+                currentPath.includes('/cart/venta_evento/') ||
+                currentPath.includes('/checkout/venta_evento/') ||
+                currentPath.includes('/eventos')
+            ) {
+                return 'venta_evento';
+            } else if (
                 currentPath.includes('/cart/evento/') ||
                 currentPath.includes('/checkout/evento/')
             ) {
@@ -230,24 +236,36 @@
             // Actualizar apariencia del toggle
             updateToggleAppearance(storeType);
             
-            // Actualizar enlace principal del carrito
+            // Actualizar enlace principal del carrito según el tipo
             const cartLink = document.getElementById('cart-link');
             if (cartLink) {
-                cartLink.href = `/cart/${storeType}/`;
+                if (storeType === 'venta_evento') {
+                    cartLink.href = '/cart/venta_evento/';
+                } else if (storeType === 'evento') {
+                    cartLink.href = '/cart/evento/';
+                } else {
+                    cartLink.href = `/cart/${storeType}/`;
+                }
             }
             
             // Actualizar enlace del dropdown
             const cartFullLink = document.getElementById('cart-full-link');
             if (cartFullLink) {
-                cartFullLink.href = `/cart/${storeType}/`;
+                if (storeType === 'venta_evento') {
+                    cartFullLink.href = '/cart/venta_evento/';
+                } else if (storeType === 'evento') {
+                    cartFullLink.href = '/cart/evento/';
+                } else {
+                    cartFullLink.href = `/cart/${storeType}/`;
+                }
             }
             
             // Guardar tipo en variable global para uso del JavaScript del carrito
             window.currentStoreType = storeType;
             
-            // Agregar event listener al toggle
+            // Agregar event listener al toggle (solo para física/online)
             const toggle = document.getElementById('store-toggle');
-            if (toggle) {
+            if (toggle && storeType !== 'venta_evento' && storeType !== 'evento') {
                 toggle.addEventListener('change', function() {
                     const newType = this.checked ? 'online' : 'fisica';
                     console.log(`Cambiando a tienda ${newType}`);

@@ -54,9 +54,21 @@ urlpatterns = [
     path('historial-compras/<int:id_usuario>/', views.vista_historial_compras, name='historial-compras'),
     path('api/historial/usuario/<int:id_usuario>/', views.historial_compras_api, name='api_historial_compras'),
     path('factura/<str:tipo>/<int:venta_id>/', views.vista_factura_directa, name='vista_factura_directa'),
+    # Nueva URL específica para facturas de eventos con subtipo
+    path('factura/evento/<str:subtipo>/<int:venta_id>/', views.vista_factura_evento_especifica, name='vista_factura_evento_especifica'),
 
-    #Compra de boleto para evento
+    #Compra de boleto para evento (antiguo)
     path('eventos/', views.eventos_disponibles_view, name='eventos_disponibles'),
+    
+    # Nueva tienda de eventos
+    path('tienda-eventos/', views.tienda_evento_view, name='tienda_evento'),
+    path('tienda-eventos/<int:evento_id>/', views.tienda_evento_view, name='tienda_evento_detalle'),
+    path('update-cart-evento/', views.update_cart_evento, name='update_cart_evento'),
+    
+    # URLs para carrito y checkout de eventos
+    path('cart/venta_evento/', views.cart_view, {'tipo': 'venta_evento'}, name='cart_eventos'),
+    path('checkout/venta_evento/', views.checkout_view, {'tipo': 'venta_evento'}, name='checkout_eventos'),
+    path('process_order/venta_evento/', views.process_order_view, {'tipo': 'venta_evento'}, name='process_order_eventos'),
 
     # AJAX para selector jerárquico de lugar
     path('ajax/load-municipios/', views.load_municipios, name='ajax_load_municipios'),

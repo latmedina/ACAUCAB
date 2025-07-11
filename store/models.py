@@ -820,6 +820,7 @@ class venta_boleto_evento(models.Model):
     ven_bol_eve_id = models.AutoField(primary_key=True)
     ven_bol_eve_fecha_hora = models.DateTimeField()
     ven_bol_eve_monto_total = models.DecimalField(max_digits=18, decimal_places=2)
+    ven_bol_eve_cantidad = models.IntegerField(default=1)
     ven_bol_eve_descripcion = models.CharField(max_length=255)
     fk_evento = models.ForeignKey('evento', models.DO_NOTHING, db_column='fk_evento')
     fk_usuario = models.ForeignKey('usuario', on_delete=models.CASCADE, null=True, blank=True)

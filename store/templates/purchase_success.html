@@ -211,11 +211,56 @@
         
         <!-- Botones de acción -->
         <div class="action-buttons">
-            <a href="{% url 'vista_factura_directa' venta_info.tipo_url venta_id %}" 
-               class="btn btn-invoice" 
-               target="_blank">
-                <i class="fas fa-file-invoice"></i> Ver Factura
-            </a>
+            {% if venta_info.tipo_url == 'evento' %}
+                <!-- Detectar si hay múltiples facturas para eventos -->
+                {% if venta_mixta_info.es_mixta %}
+                    <!-- Compra mixta: mostrar ambas facturas -->
+                    {% if venta_mixta_info.venta_boleto_id %}
+                    <a href="{% url 'vista_factura_evento_especifica' 'boleto' venta_mixta_info.venta_boleto_id %}" 
+                       class="btn btn-invoice" 
+                       target="_blank">
+                        <i class="fas fa-ticket-alt"></i> Factura de Boletos
+                    </a>
+                    {% endif %}
+                    
+                    {% if venta_mixta_info.venta_producto_id %}
+                    <a href="{% url 'vista_factura_evento_especifica' 'producto' venta_mixta_info.venta_producto_id %}" 
+                       class="btn btn-invoice" 
+                       target="_blank">
+                        <i class="fas fa-shopping-bag"></i> Factura de Productos
+                    </a>
+                    {% endif %}
+                {% else %}
+                    <!-- Compra simple: determinar si es boleto o producto -->
+                    {% if venta_mixta_info.tipo_especifico == 'boleto' %}
+                    <a href="{% url 'vista_factura_evento_especifica' 'boleto' venta_id %}" 
+                       class="btn btn-invoice" 
+                       target="_blank">
+                        <i class="fas fa-ticket-alt"></i> Factura de Boletos
+                    </a>
+                    {% elif venta_mixta_info.tipo_especifico == 'producto' %}
+                    <a href="{% url 'vista_factura_evento_especifica' 'producto' venta_id %}" 
+                       class="btn btn-invoice" 
+                       target="_blank">
+                        <i class="fas fa-shopping-bag"></i> Factura de Productos
+                    </a>
+                    {% else %}
+                    <!-- Fallback: usar la detección automática anterior -->
+                    <a href="{% url 'vista_factura_directa' venta_info.tipo_url venta_id %}" 
+                       class="btn btn-invoice" 
+                       target="_blank">
+                        <i class="fas fa-file-invoice"></i> Ver Factura
+                    </a>
+                    {% endif %}
+                {% endif %}
+            {% else %}
+                <!-- Facturas normales (física/online) -->
+                <a href="{% url 'vista_factura_directa' venta_info.tipo_url venta_id %}" 
+                   class="btn btn-invoice" 
+                   target="_blank">
+                    <i class="fas fa-file-invoice"></i> Ver Factura
+                </a>
+            {% endif %}
             
             <a href="{% url 'store_view' tipo='fisica' %}" 
                class="btn btn-continue">
