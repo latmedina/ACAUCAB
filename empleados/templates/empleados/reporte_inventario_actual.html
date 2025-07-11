@@ -1,0 +1,162 @@
+{% extends "main.html" %}
+{% load static %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
+
+<style>
+    .report-container { max-width: 1200px; margin: 20px auto; background-color: #fff; padding: 30px; box-shadow: 0 2px 15px rgba(0,0,0,0.1); border-radius: 8px; }
+    .report-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 1rem; }
+    .report-header h1 { color: #1a237e; margin: 0; }
+    .filters { display: flex; gap: 15px; align-items: center; background-color: #f8f9fa; padding: 15px; border-radius: 8px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #dee2e6; padding: 12px; text-align: left; }
+    th { background-color: #343a40; color: white; }
+    tr:nth-child(even) { background-color: #f8f9fa; }
+    td.stock { text-align: right; font-weight: bold; }
+    .btn-back { display: inline-flex; align-items: center; gap: 8px; background-color: #6c757d; color: white; padding: 10px 15px; border-radius: 4px; text-decoration: none; font-weight: bold; }
+    .pagination-controls { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
+    .pagination-info { font-size: 0.9rem; color: #6c757d; }
+    #generarBtn {
+    width: 250px; /* Ajusta este valor en píxeles como necesites */
+    flex-grow: 1; /* Permite que el botón se expanda */
+    text-align: center; /* Mantiene el texto centrado */
+}
+</style>
+
+<div class="report-container">
+    <div class="report-header">
+        <a href="{% url 'empleados:dashboard_indicadores' %}" class="btn-back"><i class="fas fa-arrow-left"></i> Regresar</a>
+        <h1>Reporte de Stock por Presentación</h1>
+    </div>
+        <div class="filters">
+            <label for="tiendaSelect">Filtrar por Tienda:</label>
+            <select id="tiendaSelect" class="form-select">
+                <option value="0" selected>Todas las Tiendas Físicas</option>
+            </select>
+            <button id="generarBtn" class="btn btn-primary mt-3">Generar Reporte</button>
+        </div>
+
+    <div id="reporte-content">
+        <div class="alert alert-info">Seleccione una opción y haga clic en "Generar Reporte" para ver el stock.</div>
+    </div>
+
+    <div id="pagination-container" class="pagination-controls" style="display: none;">
+        <button id="prevBtn" class="btn btn-secondary">Anterior</button>
+        <span id="pageInfo" class="pagination-info"></span>
+        <button id="nextBtn" class="btn btn-secondary">Siguiente</button>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const generarBtn = document.getElementById('generarBtn');
+        const contentContainer = document.getElementById('reporte-content');
+        const paginationContainer = document.getElementById('pagination-container');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const pageInfo = document.getElementById('pageInfo');
+        const tiendaSelect = document.getElementById('tiendaSelect');
+
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let totalItems = 0;
+
+        async function cargarTiendas() {
+            try {
+                const response = await fetch(`{% url 'empleados:api_tiendas' %}`);
+                const tiendas = await response.json();
+                tiendas.forEach(tienda => {
+                    const option = document.createElement('option');
+                    option.value = tienda.id;
+                    option.textContent = tienda.nombre;
+                    tiendaSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error al cargar las tiendas:', error);
+            }
+        }
+
+        async function generarReporte(page = 1) {
+            contentContainer.innerHTML = '<div class="alert alert-info">Cargando datos...</div>';
+            paginationContainer.style.display = 'none';
+            
+            const tiendaId = tiendaSelect.value;
+
+            try {
+                const apiUrl = `{% url 'empleados:api_reporte_stock_presentacion' %}?pagina=${page}&limite=${itemsPerPage}&tienda_id=${tiendaId}`;
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error('No se pudieron cargar los datos del inventario.');
+                
+                const data = await response.json();
+                
+                const templateHtml = document.getElementById('reporte-template').innerHTML;
+                const template = Handlebars.compile(templateHtml);
+                contentContainer.innerHTML = template({ productos: data.productos });
+
+                currentPage = page;
+                totalItems = data.total_count;
+                renderizarPaginacion();
+
+            } catch (error) {
+                console.error('Error al generar el reporte:', error);
+                contentContainer.innerHTML = `<div class="alert alert-danger">${error.message}</div>`;
+            }
+        }
+        
+        function renderizarPaginacion() {
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            if (totalPages > 1) {
+                paginationContainer.style.display = 'flex';
+                pageInfo.textContent = `Página ${currentPage} de ${totalPages}`;
+                prevBtn.disabled = currentPage === 1;
+                nextBtn.disabled = currentPage >= totalPages;
+            } else {
+                paginationContainer.style.display = 'none';
+            }
+        }
+
+        generarBtn.addEventListener('click', () => generarReporte(1));
+        tiendaSelect.addEventListener('change', () => generarReporte(1));
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentPage > 1) generarReporte(currentPage - 1);
+        });
+
+        nextBtn.addEventListener('click', () => {
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            if (currentPage < totalPages) generarReporte(currentPage + 1);
+        });
+
+        cargarTiendas();
+    });
+</script>
+
+{% verbatim %}
+<script id="reporte-template" type="text/x-handlebars-template">
+    {{#if productos.length}}
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Producto (Presentación)</th>
+                    <th>Stock en Tienda Seleccionada</th>
+                    <th>Stock en Almacén Online</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each productos}}
+                <tr>
+                    <td>{{this.prese_nombre}} (ID: {{this.prese_id}})</td>
+                    <td class="stock">{{this.stock_tienda_seleccionada}}</td>
+                    <td class="stock">{{this.stock_almacen}}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    {{else}}
+        <div class="alert alert-warning mt-3">No se encontraron datos de inventario para la selección actual.</div>
+    {{/if}}
+</script>
+{% endverbatim %}
+
+{% endblock %}

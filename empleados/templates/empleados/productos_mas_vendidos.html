@@ -1,0 +1,133 @@
+{% extends "main.html" %}
+{% load static %}
+
+{% block content %}
+<!-- ✅ SOLUCIÓN: Se añade la librería Handlebars.js que faltaba -->
+<script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+<style>
+    .report-container { max-width: 1100px; margin: 20px auto; background-color: #fff; padding: 30px; box-shadow: 0 2px 15px rgba(0,0,0,0.1); border-radius: 8px; }
+    .report-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
+    .report-header h1 { color: #1a237e; margin: 0; }
+    .filters { display: flex; gap: 15px; align-items: center; background-color: #f8f9fa; padding: 15px; border-radius: 8px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #dee2e6; padding: 12px; text-align: left; }
+    th { background-color: #343a40; color: white; }
+    tr:nth-child(even) { background-color: #f8f9fa; }
+    td.rank { font-weight: bold; font-size: 1.2rem; text-align: center; }
+    td.currency, td.units { text-align: right; }
+    .btn-back { display: inline-flex; align-items: center; gap: 8px; background-color: #6c757d; color: white; padding: 10px 15px; border-radius: 4px; text-decoration: none; font-weight: bold; }
+
+    #generarBtn {
+    width:250px; /* Ajusta este valor en píxeles como necesites */
+    flex-grow: 1; /* Permite que el botón se expanda */
+    text-align: center; /* Mantiene el texto centrado */
+}
+</style>
+
+<div class="report-container">
+    <div class="report-header">
+        <a href="{% url 'empleados:dashboard_indicadores' %}" class="btn-back"><i class="fas fa-arrow-left"></i> Regresar</a>
+        <h1>Productos con Mejor Rendimiento</h1>
+    </div>
+        <div class="filters">
+            <label for="fecha_inicio">Desde:</label>
+            <input type="date" id="fecha_inicio" class="form-control">
+            <label for="fecha_fin">Hasta:</label>
+            <input type="date" id="fecha_fin" class="form-control">
+            <button id="generarBtn" class="btn btn-primary">Generar</button>
+        </div>
+    </div>
+
+    <div id="reporte-content">
+        <div class="alert alert-info">Seleccione un rango de fechas para generar el reporte.</div>
+    </div>
+</div>
+
+<script>
+    function formatCurrency(value) {
+        if (value === null || typeof value === 'undefined') return '$0.00';
+        return '$' + parseFloat(value).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+    }
+    function formatNumber(value) {
+        if (value === null || typeof value === 'undefined') return '0';
+        return parseInt(value).toLocaleString('es-ES');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const generarBtn = document.getElementById('generarBtn');
+        const contentContainer = document.getElementById('reporte-content');
+        
+        // Se registra un helper de Handlebars para el ranking (posición en la tabla)
+        Handlebars.registerHelper('inc', function(value) {
+            return parseInt(value) + 1;
+        });
+
+        // Se registra un helper para formatear moneda
+        Handlebars.registerHelper('formatCurrency', function(value) {
+            return formatCurrency(value);
+        });
+
+        async function generarReporte() {
+            const fechaInicio = document.getElementById('fecha_inicio').value;
+            const fechaFin = document.getElementById('fecha_fin').value;
+
+            if (!fechaInicio || !fechaFin) {
+                alert('Por favor, seleccione ambas fechas.');
+                return;
+            }
+            contentContainer.innerHTML = '<div class="alert alert-info">Cargando datos...</div>';
+
+            try {
+                const apiUrl = `/empleados/api/kpi/top-productos/?inicio=${fechaInicio}&fin=${fechaFin}`;
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    throw new Error('No se pudieron cargar los datos.');
+                }
+                const data = await response.json();
+                
+                const templateHtml = document.getElementById('reporte-template').innerHTML;
+                const template = Handlebars.compile(templateHtml);
+                contentContainer.innerHTML = template({ productos: data });
+
+            } catch (error) {
+                console.error('Error al generar el reporte:', error);
+                contentContainer.innerHTML = `<div class="alert alert-danger">${error.message}</div>`;
+            }
+        }
+
+        generarBtn.addEventListener('click', generarReporte);
+    });
+</script>
+
+{% verbatim %}
+<script id="reporte-template" type="text/x-handlebars-template">
+    {{#if productos.length}}
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Producto</th>
+                    <th>Unidades Vendidas</th>
+                    <th>Ingresos Totales</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each productos}}
+                <tr>
+                    <td class="rank">{{inc @index}}</td>
+                    <td>{{this.producto_nombre}} (ID: {{this.producto_id}})</td>
+                    <td class="units">{{this.unidades_vendidas}}</td>
+                    <td class="currency">{{formatCurrency this.ingresos_totales}}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    {{else}}
+        <div class="alert alert-warning mt-3">No se encontraron ventas en el período seleccionado.</div>
+    {{/if}}
+</script>
+{% endverbatim %}
+
+{% endblock %}

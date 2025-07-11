@@ -1162,3 +1162,688 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
+-- indicadores de ventas
+-- Ventas Totales (por tienda)
+CREATE OR REPLACE FUNCTION public.kpi_ventas_totales_por_tienda(
+    p_fecha_inicio DATE,
+    p_fecha_fin DATE
+)
+RETURNS JSON AS $$
+DECLARE
+    v_total_fisica NUMERIC;
+    v_total_online NUMERIC;
+BEGIN
+    -- Calcular total para ventas físicas
+    SELECT COALESCE(SUM(ven_fis_total), 0)
+    INTO v_total_fisica
+    FROM public.venta_fisica
+    WHERE ven_fis_fecha BETWEEN p_fecha_inicio AND p_fecha_fin;
+
+    -- Calcular total para ventas online
+    SELECT COALESCE(SUM(ven_onl_total), 0)
+    INTO v_total_online
+    FROM public.venta_online
+    WHERE ven_onl_fecha BETWEEN p_fecha_inicio AND p_fecha_fin;
+
+    -- Construir el objeto JSON con los resultados
+    RETURN json_build_object(
+        'total_fisica', v_total_fisica,
+        'total_online', v_total_online,
+        'total_general', v_total_fisica + v_total_online
+    );
+END;
+$$ LANGUAGE plpgsql;
+
+--Crecimiento de ventas
+CREATE OR REPLACE FUNCTION public.kpi_ventas_totales_por_tienda(
+    p_fecha_inicio DATE,
+    p_fecha_fin DATE
+)
+RETURNS JSON AS $$
+DECLARE
+    v_total_fisica NUMERIC;
+    v_total_online NUMERIC;
+BEGIN
+    -- Calcular total para ventas físicas
+    SELECT COALESCE(SUM(ven_fis_total), 0)
+    INTO v_total_fisica
+    FROM public.venta_fisica
+    WHERE ven_fis_fecha BETWEEN p_fecha_inicio AND p_fecha_fin;
+
+    -- Calcular total para ventas online
+    SELECT COALESCE(SUM(ven_onl_total), 0)
+    INTO v_total_online
+    FROM public.venta_online
+    WHERE ven_onl_fecha BETWEEN p_fecha_inicio AND p_fecha_fin;
+
+    -- Construir el objeto JSON con los resultados
+    RETURN json_build_object(
+        'total_fisica', v_total_fisica,
+        'total_online', v_total_online,
+        'total_general', v_total_fisica + v_total_online
+    );
+END;
+$$ LANGUAGE plpgsql;
+
+-- crecimiento de ventas
+CREATE OR REPLACE FUNCTION public.kpi_crecimiento_ventas(
+    p_fecha_inicio DATE,
+    p_fecha_fin DATE,
+    p_intervalo TEXT
+)
+RETURNS JSON AS $$
+DECLARE
+    v_ventas_actuales NUMERIC;
+    v_ventas_anteriores NUMERIC;
+    v_duracion_periodo INT;
+    v_fecha_inicio_anterior DATE;
+    v_fecha_fin_anterior DATE;
+    v_crecimiento_monto NUMERIC;
+    v_crecimiento_porcentaje NUMERIC;
+BEGIN
+    -- Determinar el período anterior a comparar
+    IF p_intervalo = 'mes' THEN
+        v_fecha_inicio_anterior := p_fecha_inicio - INTERVAL '1 month';
+        v_fecha_fin_anterior := p_fecha_fin - INTERVAL '1 month';
+    ELSIF p_intervalo = 'ano' THEN
+        v_fecha_inicio_anterior := p_fecha_inicio - INTERVAL '1 year';
+        v_fecha_fin_anterior := p_fecha_fin - INTERVAL '1 year';
+    -- ✅ NUEVA CONDICIÓN: Se añade la lógica para la semana anterior.
+    ELSIF p_intervalo = 'semana' THEN
+        v_fecha_inicio_anterior := p_fecha_inicio - INTERVAL '7 days';
+        v_fecha_fin_anterior := p_fecha_fin - INTERVAL '7 days';
+    ELSE 
+        -- Comportamiento por defecto (período de igual duración anterior)
+        v_duracion_periodo := p_fecha_fin - p_fecha_inicio;
+        v_fecha_inicio_anterior := p_fecha_inicio - (v_duracion_periodo + 1) * INTERVAL '1 day';
+        v_fecha_fin_anterior := p_fecha_fin - (v_duracion_periodo + 1) * INTERVAL '1 day';
+    END IF;
+
+    -- Lógica para sumar ventas del período actual (sin cambios)
+    SELECT COALESCE(SUM(total_venta), 0) INTO v_ventas_actuales
+    FROM (
+        SELECT ven_fis_total AS total_venta FROM public.venta_fisica WHERE ven_fis_fecha BETWEEN p_fecha_inicio AND p_fecha_fin
+        UNION ALL
+        SELECT ven_onl_total AS total_venta FROM public.venta_online WHERE ven_onl_fecha BETWEEN p_fecha_inicio AND p_fecha_fin
+    ) AS ventas;
+
+    -- Lógica para sumar ventas del período anterior (sin cambios)
+    SELECT COALESCE(SUM(total_venta), 0) INTO v_ventas_anteriores
+    FROM (
+        SELECT ven_fis_total AS total_venta FROM public.venta_fisica WHERE ven_fis_fecha BETWEEN v_fecha_inicio_anterior AND v_fecha_fin_anterior
+        UNION ALL
+        SELECT ven_onl_total AS total_venta FROM public.venta_online WHERE ven_onl_fecha BETWEEN v_fecha_inicio_anterior AND v_fecha_fin_anterior
+    ) AS ventas;
+
+    -- Calcular el crecimiento (sin cambios)
+    v_crecimiento_monto := v_ventas_actuales - v_ventas_anteriores;
+    IF v_ventas_anteriores > 0 THEN
+        v_crecimiento_porcentaje := (v_crecimiento_monto / v_ventas_anteriores) * 100;
+    ELSE
+        v_crecimiento_porcentaje := 0;
+    END IF;
+
+    -- Construir el JSON de respuesta (sin cambios)
+    RETURN json_build_object(
+        'periodo_actual_ventas', v_ventas_actuales,
+        'periodo_anterior_ventas', v_ventas_anteriores,
+        'crecimiento_monto', v_crecimiento_monto,
+        'crecimiento_porcentaje', v_crecimiento_porcentaje
+    );
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- ticket promedio
+CREATE OR REPLACE FUNCTION public.kpi_ticket_promedio(
+    p_fecha_inicio DATE,
+    p_fecha_fin DATE
+)
+RETURNS JSON AS $$
+DECLARE
+    v_total_ingresos NUMERIC;
+    v_total_transacciones INT;
+    v_ticket_promedio NUMERIC;
+BEGIN
+    -- 1. Calcular el total de ingresos (físicos + online)
+    SELECT COALESCE(SUM(total_venta), 0) INTO v_total_ingresos
+    FROM (
+        SELECT ven_fis_total AS total_venta FROM public.venta_fisica WHERE ven_fis_fecha BETWEEN p_fecha_inicio AND p_fecha_fin
+        UNION ALL
+        SELECT ven_onl_total AS total_venta FROM public.venta_online WHERE ven_onl_fecha BETWEEN p_fecha_inicio AND p_fecha_fin
+    ) AS ventas;
+
+    -- 2. Contar el número total de transacciones (físicas + online)
+    SELECT COALESCE(SUM(num_transacciones), 0) INTO v_total_transacciones
+    FROM (
+        SELECT COUNT(*) as num_transacciones FROM public.venta_fisica WHERE ven_fis_fecha BETWEEN p_fecha_inicio AND p_fecha_fin
+        UNION ALL
+        SELECT COUNT(*) as num_transacciones FROM public.venta_online WHERE ven_onl_fecha BETWEEN p_fecha_inicio AND p_fecha_fin
+    ) AS transacciones;
+
+    -- 3. Calcular el ticket promedio, evitando la división por cero
+    v_ticket_promedio := v_total_ingresos / NULLIF(v_total_transacciones, 0);
+
+    -- 4. Construir el objeto JSON con el resultado
+    RETURN json_build_object(
+        'ticket_promedio', v_ticket_promedio
+    );
+END;
+$$ LANGUAGE plpgsql;
+
+
+--volumen de ventas
+CREATE OR REPLACE FUNCTION public.kpi_volumen_unidades_vendidas(
+    p_fecha_inicio DATE,
+    p_fecha_fin DATE
+)
+RETURNS JSON AS $$
+DECLARE
+    v_total_unidades INT;
+BEGIN
+    SELECT COALESCE(SUM(cantidad_unidades), 0) INTO v_total_unidades
+    FROM (
+        -- Unidades de ventas físicas
+        SELECT SUM(dvf.det_ven_fis_cantidad) as cantidad_unidades
+        FROM public.detalle_venta_fisica dvf
+        JOIN public.venta_fisica vf ON dvf.fk_venta_fisica = vf.ven_fis_id
+        WHERE vf.ven_fis_fecha BETWEEN p_fecha_inicio AND p_fecha_fin
+        
+        UNION ALL
+        
+        -- Unidades de ventas online
+        SELECT SUM(dvo.det_ven_onl_cantidad) as cantidad_unidades
+        FROM public.detalle_venta_online dvo
+        JOIN public.venta_online vo ON dvo.fk_venta_online = vo.ven_onl_id
+        WHERE vo.ven_onl_fecha BETWEEN p_fecha_inicio AND p_fecha_fin
+    ) AS unidades;
+
+    RETURN json_build_object(
+        'total_unidades', v_total_unidades
+    );
+END;
+$$ LANGUAGE plpgsql;
+
+--venta por estilo de cerveza
+CREATE OR REPLACE FUNCTION public.kpi_ventas_por_estilo(
+    p_fecha_inicio DATE,
+    p_fecha_fin DATE
+)
+RETURNS JSON AS $$
+DECLARE
+    v_reporte_data JSON;
+BEGIN
+    WITH
+    -- Paso 1: Agrupar ventas FÍSICAS por estilo
+    fisicas_por_estilo AS (
+        SELECT
+            ec.est_cer_nombre AS estilo,
+            SUM(d.det_ven_fis_cantidad) AS total_unidades,
+            SUM(d.det_ven_fis_cantidad * d.det_ven_fis_precio_unitario) AS total_ingresos
+        FROM public.detalle_venta_fisica d
+        JOIN public.venta_fisica v ON d.fk_venta_fisica = v.ven_fis_id
+        JOIN public.inventario i ON d.fk_inventario = i.inv_id
+        JOIN public.presentacion p ON i.fk_presentacion = p.prese_id
+        JOIN public.cerveza c ON p.fk_cerveza = c.cer_id
+        -- ✅ CORRECCIÓN DEFINITIVA: Se usa la ruta de unión correcta a través de "tipo_estilo_cerveza"
+        JOIN public.tipo_estilo_cerveza tec ON c.fk_tipo_estilo_cerveza = tec.tip_est_cer_id
+        JOIN public.estilo_cerveza ec ON tec.fk_estilo_cerveza = ec.est_cer_id
+        WHERE v.ven_fis_fecha BETWEEN p_fecha_inicio AND p_fecha_fin
+        GROUP BY ec.est_cer_nombre
+    ),
+    -- Paso 2: Agrupar ventas ONLINE por estilo
+    online_por_estilo AS (
+        SELECT
+            ec.est_cer_nombre AS estilo,
+            SUM(d.det_ven_onl_cantidad) AS total_unidades,
+            SUM(d.det_ven_onl_cantidad * d.det_ven_onl_precio) AS total_ingresos
+        FROM public.detalle_venta_online d
+        JOIN public.venta_online v ON d.fk_venta_online = v.ven_onl_id
+        JOIN public.pre_alm pa ON d.fk_pre_alm = pa.pre_alm_id
+        JOIN public.presentacion p ON pa.fk_presentacion = p.prese_id
+        JOIN public.cerveza c ON p.fk_cerveza = c.cer_id
+        -- ✅ CORRECCIÓN DEFINITIVA: Se usa la ruta de unión correcta a través de "tipo_estilo_cerveza"
+        JOIN public.tipo_estilo_cerveza tec ON c.fk_tipo_estilo_cerveza = tec.tip_est_cer_id
+        JOIN public.estilo_cerveza ec ON tec.fk_estilo_cerveza = ec.est_cer_id
+        WHERE v.ven_onl_fecha BETWEEN p_fecha_inicio AND p_fecha_fin
+        GROUP BY ec.est_cer_nombre
+    )
+    -- Paso 3: Unir los resultados de ambos canales
+    SELECT COALESCE(json_agg(
+        json_build_object(
+            'estilo', final.estilo,
+            'total_unidades', final.total_unidades,
+            'total_ingresos', final.total_ingresos
+        ) ORDER BY final.total_ingresos DESC
+    ), '[]'::json)
+    INTO v_reporte_data
+    FROM (
+        SELECT
+            COALESCE(f.estilo, o.estilo) AS estilo,
+            COALESCE(f.total_unidades, 0) + COALESCE(o.total_unidades, 0) AS total_unidades,
+            COALESCE(f.total_ingresos, 0) + COALESCE(o.total_ingresos, 0) AS total_ingresos
+        FROM fisicas_por_estilo f
+        FULL OUTER JOIN online_por_estilo o ON f.estilo = o.estilo
+    ) AS final;
+
+    RETURN v_reporte_data;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- indicadores de clietes
+-- Clientes Nuevos vs. Recurrentes
+CREATE OR REPLACE FUNCTION public.kpi_clientes_nuevos_recurrentes(
+    p_fecha_inicio DATE,
+    p_fecha_fin DATE
+)
+RETURNS JSON AS $$
+DECLARE
+    v_reporte_data JSON;
+BEGIN
+    WITH
+    -- 1. Se unifican todas las ventas (físicas y online) para obtener un historial completo por cliente.
+    historial_ventas_cliente AS (
+        SELECT fk_cliente, ven_fis_fecha AS fecha FROM public.venta_fisica
+        UNION ALL
+        SELECT u.fk_cliente, vo.ven_onl_fecha AS fecha FROM public.venta_online vo JOIN public.usuario u ON vo.fk_usuario = u.id WHERE u.fk_cliente IS NOT NULL
+    ),
+    -- 2. Se encuentra la fecha de la primera compra de cada cliente en toda la historia.
+    primera_compra_por_cliente AS (
+        SELECT fk_cliente, MIN(fecha) as fecha_primera_compra
+        FROM historial_ventas_cliente
+        GROUP BY fk_cliente
+    ),
+    -- 3. Se obtiene una lista de clientes únicos que compraron en el período seleccionado.
+    clientes_periodo_actual AS (
+        SELECT DISTINCT fk_cliente FROM historial_ventas_cliente
+        WHERE fecha BETWEEN p_fecha_inicio AND p_fecha_fin
+    )
+    -- 4. Se cruza la información para clasificar a los clientes.
+    SELECT
+        json_build_object(
+            -- Clientes nuevos: su primera compra está DENTRO del período seleccionado.
+            'clientes_nuevos', COUNT(*) FILTER (WHERE pcp.fecha_primera_compra BETWEEN p_fecha_inicio AND p_fecha_fin),
+            -- Clientes recurrentes: su primera compra fue ANTES del período seleccionado.
+            'clientes_recurrentes', COUNT(*) FILTER (WHERE pcp.fecha_primera_compra < p_fecha_inicio)
+        )
+    INTO v_reporte_data
+    FROM clientes_periodo_actual cpa
+    JOIN primera_compra_por_cliente pcp ON cpa.fk_cliente = pcp.fk_cliente;
+
+    RETURN v_reporte_data;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- Tasa de Retención de Clientes
+CREATE OR REPLACE FUNCTION public.kpi_tasa_retencion_clientes(
+    p_fecha_inicio DATE,
+    p_fecha_fin DATE
+)
+RETURNS JSON AS $$
+DECLARE
+    v_reporte_data JSON;
+    v_duracion_periodo INT;
+    v_fecha_inicio_anterior DATE;
+    v_fecha_fin_anterior DATE;
+    v_clientes_periodo_anterior INT;
+    v_clientes_retenidos INT;
+    v_tasa_retencion NUMERIC;
+BEGIN
+    -- 1. Calcular duración y fechas del período anterior
+    v_duracion_periodo := p_fecha_fin - p_fecha_inicio;
+    v_fecha_fin_anterior := p_fecha_inicio - INTERVAL '1 day';
+    v_fecha_inicio_anterior := v_fecha_fin_anterior - (v_duracion_periodo || ' days')::INTERVAL;
+
+    -- 2. Unificar todas las ventas para facilitar las consultas
+    WITH historial_ventas_cliente AS (
+        SELECT fk_cliente, ven_fis_fecha AS fecha FROM public.venta_fisica
+        UNION ALL
+        SELECT u.fk_cliente, vo.ven_onl_fecha AS fecha FROM public.venta_online vo JOIN public.usuario u ON vo.fk_usuario = u.id WHERE u.fk_cliente IS NOT NULL
+    ),
+    -- 3. Obtener clientes únicos del período anterior
+    clientes_anteriores AS (
+        SELECT DISTINCT fk_cliente
+        FROM historial_ventas_cliente
+        WHERE fecha BETWEEN v_fecha_inicio_anterior AND v_fecha_fin_anterior
+    ),
+    -- 4. Obtener clientes únicos del período actual
+    clientes_actuales AS (
+        SELECT DISTINCT fk_cliente
+        FROM historial_ventas_cliente
+        WHERE fecha BETWEEN p_fecha_inicio AND p_fecha_fin
+    )
+    -- 5. Calcular la cantidad de clientes del período anterior y cuántos de ellos repitieron compra
+    SELECT
+        COUNT(ca.fk_cliente),
+        COUNT(ca.fk_cliente) FILTER (WHERE ca.fk_cliente IN (SELECT fk_cliente FROM clientes_actuales))
+    INTO
+        v_clientes_periodo_anterior,
+        v_clientes_retenidos
+    FROM clientes_anteriores ca;
+
+    -- 6. Calcular la tasa de retención, evitando la división por cero
+    v_tasa_retencion := (v_clientes_retenidos::NUMERIC / NULLIF(v_clientes_periodo_anterior, 0)) * 100;
+
+    -- 7. Construir el objeto JSON
+    SELECT
+        json_build_object(
+            'clientes_periodo_anterior', v_clientes_periodo_anterior,
+            'clientes_retenidos', v_clientes_retenidos,
+            'tasa_retencion', v_tasa_retencion
+        )
+    INTO v_reporte_data;
+
+    RETURN v_reporte_data;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- rotacion de inventario
+CREATE OR REPLACE FUNCTION public.kpi_rotacion_inventario(
+    p_fecha_inicio DATE,
+    p_fecha_fin DATE
+)
+RETURNS JSON AS $$
+DECLARE
+    v_cogs NUMERIC;
+    v_valor_inventario_actual NUMERIC;
+    v_rotacion NUMERIC;
+BEGIN
+    -- 1. Calcular el Costo de los Productos Vendidos (COGS) en el período
+    SELECT COALESCE(SUM(costo_total), 0) INTO v_cogs
+    FROM (
+        -- Costo de ventas físicas
+        SELECT SUM(d.det_ven_fis_cantidad * i.inv_precio_unitario) as costo_total
+        FROM public.detalle_venta_fisica d
+        JOIN public.venta_fisica v ON d.fk_venta_fisica = v.ven_fis_id
+        JOIN public.inventario i ON d.fk_inventario = i.inv_id
+        WHERE v.ven_fis_fecha BETWEEN p_fecha_inicio AND p_fecha_fin
+        
+        UNION ALL
+        
+        -- Costo de ventas online
+        SELECT SUM(d.det_ven_onl_cantidad * pa.pre_alm_precio) as costo_total
+        FROM public.detalle_venta_online d
+        JOIN public.venta_online v ON d.fk_venta_online = v.ven_onl_id
+        JOIN public.pre_alm pa ON d.fk_pre_alm = pa.pre_alm_id
+        WHERE v.ven_onl_fecha BETWEEN p_fecha_inicio AND p_fecha_fin
+    ) AS costos;
+
+    -- 2. Calcular el Valor Total del Inventario Actual (físico + almacén)
+    SELECT COALESCE(SUM(valor_total), 0) INTO v_valor_inventario_actual
+    FROM (
+        -- Valor en anaqueles
+        SELECT SUM(inv_cantidad * inv_precio_unitario) as valor_total FROM public.inventario
+        UNION ALL
+        -- Valor en almacén principal
+        SELECT SUM(pre_alm_cantidad * pre_alm_precio) as valor_total FROM public.pre_alm
+    ) AS inventario_total;
+
+    -- 3. Calcular la tasa de rotación, evitando la división por cero
+    v_rotacion := v_valor_inventario_actual / NULLIF(v_cogs, 0);
+
+    -- 4. Construir el objeto JSON con los resultados
+    RETURN json_build_object(
+        'costo_productos_vendidos', v_cogs,
+        'valor_inventario_actual', v_valor_inventario_actual,
+        'tasa_rotacion', v_rotacion
+    );
+END;
+$$ LANGUAGE plpgsql;
+
+-- tasa de ruptura
+CREATE OR REPLACE FUNCTION public.kpi_tasa_ruptura_stock()
+RETURNS JSON AS $$
+DECLARE
+    v_total_productos INT;
+    v_productos_sin_stock INT;
+    v_tasa_ruptura NUMERIC;
+BEGIN
+    -- 1. Contar el total de productos únicos en el inventario (anaquel + almacén)
+    SELECT COUNT(DISTINCT fk_presentacion)
+    INTO v_total_productos
+    FROM (
+        SELECT fk_presentacion FROM public.inventario
+        UNION
+        SELECT fk_presentacion FROM public.pre_alm
+    ) as todos_los_productos;
+
+    -- 2. Contar el número de productos únicos con stock <= 0
+    SELECT COUNT(DISTINCT fk_presentacion)
+    INTO v_productos_sin_stock
+    FROM (
+        SELECT fk_presentacion FROM public.inventario WHERE inv_cantidad <= 0
+        UNION
+        SELECT fk_presentacion FROM public.pre_alm WHERE pre_alm_cantidad <= 0
+    ) as productos_agotados;
+
+    -- 3. Calcular la tasa de ruptura, evitando la división por cero
+    v_tasa_ruptura := (v_productos_sin_stock::NUMERIC / NULLIF(v_total_productos, 0)) * 100;
+
+    -- 4. Construir el objeto JSON con los resultados
+    RETURN json_build_object(
+        'total_productos', v_total_productos,
+        'productos_sin_stock', v_productos_sin_stock,
+        'tasa_ruptura', v_tasa_ruptura
+    );
+END;
+$$ LANGUAGE plpgsql;
+
+--grafico de tendencia de ventas
+CREATE OR REPLACE FUNCTION public.grafico_tendencia_ventas(
+    p_fecha_inicio DATE,
+    p_fecha_fin DATE,
+    p_agrupacion TEXT DEFAULT 'dia'
+)
+RETURNS JSON AS $$
+DECLARE
+    v_reporte_data JSON;
+BEGIN
+    -- Se utiliza una estructura IF/ELSIF para construir la consulta de forma segura,
+    -- usando literales de texto para los intervalos ('day', 'week', 'month').
+    
+    IF p_agrupacion = 'mes' THEN
+        -- Lógica para agrupar por MES
+        WITH ventas_unificadas AS (
+            SELECT ven_fis_fecha AS fecha, ven_fis_total AS total FROM public.venta_fisica
+            UNION ALL
+            SELECT ven_onl_fecha AS fecha, ven_onl_total AS total FROM public.venta_online
+        ),
+        ventas_agrupadas AS (
+            SELECT date_trunc('month', fecha)::DATE AS fecha_agrupada, SUM(total) AS total_ventas
+            FROM ventas_unificadas WHERE fecha BETWEEN p_fecha_inicio AND p_fecha_fin
+            GROUP BY fecha_agrupada
+        ),
+        serie_tiempo AS (
+            SELECT generate_series(date_trunc('month', p_fecha_inicio)::DATE, p_fecha_fin, '1 month')::DATE AS fecha_serie
+        )
+        SELECT COALESCE(json_agg(json_build_object('fecha', TO_CHAR(st.fecha_serie, 'YYYY-MM-DD'), 'total_ventas', COALESCE(va.total_ventas, 0)) ORDER BY st.fecha_serie), '[]'::json)
+        INTO v_reporte_data
+        FROM serie_tiempo st
+        LEFT JOIN ventas_agrupadas va ON st.fecha_serie = va.fecha_agrupada;
+
+    ELSIF p_agrupacion = 'semana' THEN
+        -- Lógica para agrupar por SEMANA
+        WITH ventas_unificadas AS (
+            SELECT ven_fis_fecha AS fecha, ven_fis_total AS total FROM public.venta_fisica
+            UNION ALL
+            SELECT ven_onl_fecha AS fecha, ven_onl_total AS total FROM public.venta_online
+        ),
+        ventas_agrupadas AS (
+            SELECT date_trunc('week', fecha)::DATE AS fecha_agrupada, SUM(total) AS total_ventas
+            FROM ventas_unificadas WHERE fecha BETWEEN p_fecha_inicio AND p_fecha_fin
+            GROUP BY fecha_agrupada
+        ),
+        serie_tiempo AS (
+            SELECT generate_series(date_trunc('week', p_fecha_inicio)::DATE, p_fecha_fin, '1 week')::DATE AS fecha_serie
+        )
+        SELECT COALESCE(json_agg(json_build_object('fecha', TO_CHAR(st.fecha_serie, 'YYYY-MM-DD'), 'total_ventas', COALESCE(va.total_ventas, 0)) ORDER BY st.fecha_serie), '[]'::json)
+        INTO v_reporte_data
+        FROM serie_tiempo st
+        LEFT JOIN ventas_agrupadas va ON st.fecha_serie = va.fecha_agrupada;
+
+    ELSE -- El caso por defecto es agrupar por DÍA
+        WITH ventas_unificadas AS (
+            SELECT ven_fis_fecha AS fecha, ven_fis_total AS total FROM public.venta_fisica
+            UNION ALL
+            SELECT ven_onl_fecha AS fecha, ven_onl_total AS total FROM public.venta_online
+        ),
+        ventas_agrupadas AS (
+            SELECT date_trunc('day', fecha)::DATE AS fecha_agrupada, SUM(total) AS total_ventas
+            FROM ventas_unificadas WHERE fecha BETWEEN p_fecha_inicio AND p_fecha_fin
+            GROUP BY fecha_agrupada
+        ),
+        serie_tiempo AS (
+            SELECT generate_series(date_trunc('day', p_fecha_inicio)::DATE, p_fecha_fin, '1 day')::DATE AS fecha_serie
+        )
+        SELECT COALESCE(json_agg(json_build_object('fecha', TO_CHAR(st.fecha_serie, 'YYYY-MM-DD'), 'total_ventas', COALESCE(va.total_ventas, 0)) ORDER BY st.fecha_serie), '[]'::json)
+        INTO v_reporte_data
+        FROM serie_tiempo st
+        LEFT JOIN ventas_agrupadas va ON st.fecha_serie = va.fecha_agrupada;
+    END IF;
+
+    RETURN v_reporte_data;
+END;
+$$ LANGUAGE plpgsql;
+
+--productos más vendidos
+CREATE OR REPLACE FUNCTION public.kpi_productos_mas_vendidos(
+    p_fecha_inicio DATE,
+    p_fecha_fin DATE
+)
+RETURNS JSON AS $$
+DECLARE
+    v_reporte_data JSON;
+BEGIN
+    WITH
+    -- Paso 1: Se unifican los detalles de todas las ventas (físicas y online)
+    ventas_detalladas AS (
+        SELECT
+            i.fk_presentacion,
+            d.det_ven_fis_cantidad AS cantidad,
+            d.det_ven_fis_precio_unitario AS precio
+        FROM public.detalle_venta_fisica d
+        JOIN public.venta_fisica v ON d.fk_venta_fisica = v.ven_fis_id
+        JOIN public.inventario i ON d.fk_inventario = i.inv_id
+        WHERE v.ven_fis_fecha BETWEEN p_fecha_inicio AND p_fecha_fin
+
+        UNION ALL
+
+        SELECT
+            pa.fk_presentacion,
+            d.det_ven_onl_cantidad AS cantidad,
+            d.det_ven_onl_precio AS precio
+        FROM public.detalle_venta_online d
+        JOIN public.venta_online v ON d.fk_venta_online = v.ven_onl_id
+        JOIN public.pre_alm pa ON d.fk_pre_alm = pa.pre_alm_id
+        WHERE v.ven_onl_fecha BETWEEN p_fecha_inicio AND p_fecha_fin
+    ),
+    -- Paso 2: Se calculan los totales y se obtiene el Top 10 de productos
+    top_productos AS (
+        SELECT
+            fk_presentacion,
+            SUM(cantidad) as unidades_vendidas,
+            SUM(cantidad * precio) as ingresos_totales
+        FROM ventas_detalladas
+        GROUP BY fk_presentacion
+        ORDER BY ingresos_totales DESC
+        LIMIT 10
+    )
+    -- Paso 3: Se unen los resultados con la tabla de presentación para obtener los nombres y se construye el JSON
+    SELECT COALESCE(json_agg(
+        json_build_object(
+            'producto_id', p.prese_id,
+            'producto_nombre', p.prese_nombre,
+            'unidades_vendidas', tp.unidades_vendidas,
+            'ingresos_totales', tp.ingresos_totales
+        ) ORDER BY tp.ingresos_totales DESC
+    ), '[]'::json)
+    INTO v_reporte_data
+    FROM top_productos tp
+    JOIN public.presentacion p ON tp.fk_presentacion = p.prese_id;
+
+    RETURN v_reporte_data;
+END;
+$$ LANGUAGE plpgsql;
+
+--inventario actual
+-- ✅ NUEVA FUNCIÓN: Para obtener la lista de todas las tiendas
+CREATE OR REPLACE FUNCTION public.obtener_lista_tiendas()
+RETURNS JSON AS $$
+BEGIN
+    RETURN (
+        SELECT COALESCE(json_agg(
+            json_build_object(
+                'id', tie_id,
+                'nombre', tie_nombre
+            ) ORDER BY tie_nombre
+        ), '[]'::json)
+        FROM public.tienda
+    );
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- ✅ FUNCIÓN MODIFICADA: Ahora filtra tanto el inventario de la tienda como el del almacén.
+CREATE OR REPLACE FUNCTION public.reporte_stock_por_presentacion(
+    p_tienda_id INT, -- ID de la tienda para filtrar. Si es 0, muestra el total de todas las tiendas.
+    p_limite INT DEFAULT 10,
+    p_offset INT DEFAULT 0
+)
+RETURNS JSON AS $$
+DECLARE
+    v_reporte_data JSON;
+BEGIN
+    WITH
+    -- Se calcula el stock en la tienda física seleccionada
+    stock_tienda_seleccionada AS (
+        SELECT
+            i.fk_presentacion,
+            SUM(i.inv_cantidad) AS total_tienda
+        FROM public.inventario i
+        JOIN public.anaquel a ON i.fk_anaquel = a.ana_id
+        JOIN public.lugar_tienda lt ON a.fk_lugar_tienda = lt.lug_tie_id
+        WHERE (p_tienda_id = 0 OR lt.fk_tienda = p_tienda_id)
+        GROUP BY i.fk_presentacion
+    ),
+    -- Se calcula el stock del almacén online asociado a la tienda
+    stock_almacen AS (
+        SELECT
+            pa.fk_presentacion,
+            SUM(pa.pre_alm_cantidad) AS total_almacen
+        FROM public.pre_alm pa
+        JOIN public.almacen a ON pa.fk_almacen = a.alm_id
+        WHERE (p_tienda_id = 0 OR a.fk_tienda = p_tienda_id)
+        GROUP BY pa.fk_presentacion
+    ),
+    -- Se unen los resultados
+    full_stock_list AS (
+        SELECT
+            p.prese_id,
+            p.prese_nombre,
+            COALESCE(st.total_tienda, 0) AS stock_tienda_seleccionada,
+            COALESCE(sa.total_almacen, 0) AS stock_almacen
+        FROM public.presentacion p
+        LEFT JOIN stock_tienda_seleccionada st ON p.prese_id = st.fk_presentacion
+        LEFT JOIN stock_almacen sa ON p.prese_id = sa.fk_presentacion
+    )
+    -- Se construye el JSON final
+    SELECT json_build_object(
+        'total_count', (SELECT COUNT(*) FROM full_stock_list),
+        'productos', (
+            SELECT COALESCE(json_agg(t.*), '[]'::json)
+            FROM (
+                SELECT * FROM full_stock_list
+                ORDER BY prese_nombre
+                LIMIT p_limite OFFSET p_offset
+            ) t
+        )
+    )
+    INTO v_reporte_data;
+
+    RETURN v_reporte_data;
+END;
+$$ LANGUAGE plpgsql;
