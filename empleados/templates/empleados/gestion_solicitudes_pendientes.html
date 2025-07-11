@@ -333,7 +333,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const response = await fetch('/empleados/api/solicitudes-pendientes/');
             const data = await response.json();
-            
+            const solicitudes = data.solicitudes || data;
             if (!data || data.length === 0) {
                 contenidoPendientes.innerHTML = `
                     <div class="card">
@@ -344,7 +344,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 `;
             } else {
-                renderizarTablaPendientes(data);
+                renderizarTablaPendientes(solicitudes);
             }
         } catch (error) {
             contenidoPendientes.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
@@ -357,6 +357,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const response = await fetch('/empleados/api/solicitudes-aprobadas/');
             const data = await response.json();
+            const solicitudes = data.solicitudes || data;
             
             if (!data || data.length === 0) {
                 contenidoAprobadas.innerHTML = `
@@ -368,7 +369,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 `;
             } else {
-                renderizarTablaAprobadas(data);
+                renderizarTablaAprobadas(solicitudes);
             }
         } catch (error) {
             contenidoAprobadas.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
@@ -381,6 +382,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const response = await fetch('/empleados/api/solicitudes-rechazadas/');
             const data = await response.json();
+            const solicitudes = data.solicitudes || data;
             
             if (!data || data.length === 0) {
                 contenidoRechazadas.innerHTML = `
@@ -392,7 +394,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 `;
             } else {
-                renderizarTablaRechazadas(data);
+                renderizarTablaRechazadas(solicitudes);
             }
         } catch (error) {
             contenidoRechazadas.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;

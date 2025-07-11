@@ -1,0 +1,41 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<h2 class="mb-4">Eventos Disponibles</h2>
+
+<div class="row" id="eventos-container">
+    {% for ev in eventos %}
+    <div class="col-lg-4 product-item" data-product-name="{{ ev.eve_nombre|lower }}">
+        <div class="box-element product">
+            <h6><strong>{{ ev.eve_nombre }}</strong></h6>
+
+            <div class="mb-2">
+                <p class="card-text">{{ ev.eve_descripcion }}</p>
+                <p><i class="fas fa-calendar-alt me-2"></i> {{ ev.eve_fecha_hora|date:"d/m/Y H:i" }}</p>
+                <p><strong>Boletos disponibles:</strong> {{ ev.eve_nro_boletos }}</p>
+                <p><strong>Precio:</strong> ${{ ev.eve_precio_boleto|floatformat:2 }} USD</p>
+            </div>
+
+            {% if ev.eve_nro_boletos > 0 %}
+                <div class="button-container">
+                    <button data-product="{{ ev.eve_id }}" data-action="add" data-tipo="evento"
+                        class="btn btn-outline-success update-cart">
+                        Agregar al carrito
+                    </button>
+                </div>
+            {% else %}
+                <div class="button-container">
+                    <button class="btn btn-outline-secondary" disabled>No disponible</button>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info text-center">
+            No hay eventos disponibles en este momento.
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

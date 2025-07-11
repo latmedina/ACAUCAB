@@ -373,6 +373,7 @@ class evento(models.Model):
     eve_descripcion = models.CharField(max_length=255)
     eve_fecha_hora = models.DateTimeField()
     eve_nro_boletos = models.IntegerField()
+    eve_precio_boleto = models.DecimalField(max_digits=10, decimal_places=2)
     fk_tip_eve = models.ForeignKey('tipo_evento', models.DO_NOTHING, db_column='fk_tip_eve')
     fk_lugar = models.ForeignKey('lugar', models.DO_NOTHING, db_column='fk_lugar')
 
@@ -385,7 +386,7 @@ class existencia_evento(models.Model):
     exi_eve_id = models.AutoField(primary_key=True)
     exi_eve_cantidad = models.IntegerField()
     fk_presentacion = models.ForeignKey('presentacion', models.DO_NOTHING, db_column='fk_presentacion')
-    fk_evento_proveedor = models.ForeignKey(eve_pro, models.DO_NOTHING, db_column='fk_evento_proveedor')
+    fk_evento_proveedor = models.ForeignKey(eve_pro, models.DO_NOTHING, db_column='fk_evento_proveedor', related_name='existencias')
 
     class Meta:
         managed = True
@@ -820,6 +821,8 @@ class venta_boleto_evento(models.Model):
     ven_bol_eve_fecha_hora = models.DateTimeField()
     ven_bol_eve_monto_total = models.DecimalField(max_digits=18, decimal_places=2)
     ven_bol_eve_descripcion = models.CharField(max_length=255)
+    fk_evento = models.ForeignKey('evento', models.DO_NOTHING, db_column='fk_evento')
+    fk_usuario = models.ForeignKey('usuario', on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
         managed = True

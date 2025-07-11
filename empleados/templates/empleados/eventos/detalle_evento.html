@@ -48,7 +48,7 @@
                                     <div class="stat-value">{{ estadisticas.boletos_vendidos }} / {{ evento.eve_nro_boletos }}</div>
                                     <div class="progress mt-2">
                                         <div class="progress-bar" role="progressbar" 
-                                             style="width: {{ estadisticas.porcentaje_vendido }}%">
+                                            style="width: {{ estadisticas.porcentaje_vendido }}%">
                                             {{ estadisticas.porcentaje_vendido|floatformat:0 }}%
                                         </div>
                                     </div>
@@ -106,7 +106,7 @@
                                     <tr>
                                         <th>Proveedor</th>
                                         <th>RIF</th>
-                                        <th>Teléfono</th>
+                                        <th></th>
                                         <th>Cervezas Aportadas</th>
                                     </tr>
                                 </thead>
@@ -116,12 +116,9 @@
                                             <td>{{ prov_eve.fk_proveedor.pro_razon_social }}</td>
                                             <td>{{ prov_eve.fk_proveedor.pro_rif }}</td>
                                             <td>
-                                                {% with tel=prov_eve.fk_proveedor.telefono_set.first %}
-                                                    {% if tel %}{{ tel.tel_numero }}{% else %}N/A{% endif %}
-                                                {% endwith %}
                                             </td>
                                             <td>
-                                                {% with count=prov_eve.existencia_evento_set.count %}
+                                                {% with count=prov_eve.existencias.count %}
                                                     <span class="badge bg-secondary">{{ count }} presentacion{{ count|pluralize:"es" }}</span>
                                                 {% endwith %}
                                             </td>

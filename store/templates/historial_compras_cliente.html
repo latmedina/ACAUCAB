@@ -141,6 +141,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!response.ok) {
                 throw new Error(`Error ${response.status}: No se pudo obtener el historial.`);
             }
+
             const allData = await response.json();
 
             if (!allData || allData.length === 0) {
@@ -148,20 +149,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            // Configuración de la paginación (10 compras por página)
+            // ✅ Transformar los datos para que coincidan con la plantilla
+            const transformedData = allData.map(item => ({
+                id_venta: item.venta_id,
+                fecha_compra: new Date(item.fecha).toLocaleString('es-VE'),
+                tipo_compra: item.tipo,
+                monto_total: item.monto,
+                tipo_factura: item.tipo_url
+            }));
+
+            // Configurar paginación
             $('#pagination-container').pagination({
-                items: allData.length,
+                items: transformedData.length,
                 itemsOnPage: 10,
                 cssStyle: 'light-theme',
                 onPageClick: function(pageNumber) {
                     const start = (pageNumber - 1) * 10;
                     const end = start + 10;
-                    contentContainer.innerHTML = template(allData.slice(start, end));
+                    contentContainer.innerHTML = template(transformedData.slice(start, end));
                 }
             });
 
-            // Renderiza la primera página al cargar
-            contentContainer.innerHTML = template(allData.slice(0, 10));
+            // Renderizar la primera página
+            contentContainer.innerHTML = template(transformedData.slice(0, 10));
 
         } catch (error) {
             console.error('Error al cargar el historial:', error);
@@ -178,7 +188,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Carga el historial al iniciar la página
+    // Cargar historial al iniciar
     cargarHistorial();
 });
 </script>
