@@ -1704,19 +1704,41 @@ def vista_reporte_inventario(request):
     return render(request, 'empleados/reporte_inventario_actual.html')
 
 @login_required
-def reporte_stock_presentacion_api(request):
+def tiendas_api(request):
     """
-    API endpoint que devuelve el stock total por presentación.
+    API endpoint que devuelve una lista de todas las tiendas.
     """
     try:
-        limite = int(request.GET.get('limite', 15))
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT public.obtener_lista_tiendas();")
+            result = cursor.fetchone()
+            data = result[0] if result and result[0] is not None else []
+            return JsonResponse(data, safe=False)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+def reporte_stock_presentacion_api(request):
+    """
+    API endpoint que devuelve el stock por presentación, filtrado por tienda.
+    """
+    try:
+        limite = int(request.GET.get('limite', 10))
         pagina = int(request.GET.get('pagina', 1))
         offset = (pagina - 1) * limite
+        
+        # ✅ SOLUCIÓN: Maneja correctamente el valor 'undefined' o 'all' que puede venir del frontend
+        tienda_id_str = request.GET.get('tienda_id', '0')
+        if not tienda_id_str.isdigit() or tienda_id_str == 'all':
+            tienda_id = 0
+        else:
+            tienda_id = int(tienda_id_str)
 
         with connection.cursor() as cursor:
             cursor.execute(
-                "SELECT public.reporte_stock_por_presentacion(%s, %s);", 
-                [limite, offset]
+                "SELECT public.reporte_stock_por_presentacion(%s, %s, %s);", 
+                [tienda_id, limite, offset]
             )
             result = cursor.fetchone()
             
@@ -1728,3 +1750,4 @@ def reporte_stock_presentacion_api(request):
 
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+

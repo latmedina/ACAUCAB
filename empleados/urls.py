@@ -119,6 +119,7 @@ urlpatterns = [
     # ========== graficos de productos mas vendidos ==========
     path('reportes/inventario-actual/', views.vista_reporte_inventario, name='vista_reporte_inventario'),
     path('api/stock-por-presentacion/', views.reporte_stock_presentacion_api, name='api_reporte_stock_presentacion'),
+    path('api/tiendas/', views.tiendas_api, name='api_tiendas'),
     
 
     # URLs del módulo de Eventos

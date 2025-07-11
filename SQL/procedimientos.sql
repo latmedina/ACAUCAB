@@ -1700,9 +1700,27 @@ END;
 $$ LANGUAGE plpgsql;
 
 --inventario actual
--- Reemplaza la función existente por esta versión con paginación y ordenamiento dinámico
+-- ✅ NUEVA FUNCIÓN: Para obtener la lista de todas las tiendas
+CREATE OR REPLACE FUNCTION public.obtener_lista_tiendas()
+RETURNS JSON AS $$
+BEGIN
+    RETURN (
+        SELECT COALESCE(json_agg(
+            json_build_object(
+                'id', tie_id,
+                'nombre', tie_nombre
+            ) ORDER BY tie_nombre
+        ), '[]'::json)
+        FROM public.tienda
+    );
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- ✅ FUNCIÓN MODIFICADA: Ahora filtra tanto el inventario de la tienda como el del almacén.
 CREATE OR REPLACE FUNCTION public.reporte_stock_por_presentacion(
-    p_limite INT DEFAULT 15,
+    p_tienda_id INT, -- ID de la tienda para filtrar. Si es 0, muestra el total de todas las tiendas.
+    p_limite INT DEFAULT 10,
     p_offset INT DEFAULT 0
 )
 RETURNS JSON AS $$
@@ -1710,45 +1728,52 @@ DECLARE
     v_reporte_data JSON;
 BEGIN
     WITH
-    -- Paso 1: Se calcula el stock total por presentación en las tiendas (inventario)
-    stock_tiendas AS (
+    -- Se calcula el stock en la tienda física seleccionada
+    stock_tienda_seleccionada AS (
         SELECT
-            fk_presentacion,
-            SUM(inv_cantidad) AS total_tienda
-        FROM public.inventario
-        GROUP BY fk_presentacion
+            i.fk_presentacion,
+            SUM(i.inv_cantidad) AS total_tienda
+        FROM public.inventario i
+        JOIN public.anaquel a ON i.fk_anaquel = a.ana_id
+        JOIN public.lugar_tienda lt ON a.fk_lugar_tienda = lt.lug_tie_id
+        WHERE (p_tienda_id = 0 OR lt.fk_tienda = p_tienda_id)
+        GROUP BY i.fk_presentacion
     ),
-    -- Paso 2: Se calcula el stock total por presentación en el almacén online (pre_alm)
+    -- Se calcula el stock del almacén online asociado a la tienda
     stock_almacen AS (
         SELECT
-            fk_presentacion,
-            SUM(pre_alm_cantidad) AS total_almacen
-        FROM public.pre_alm
-        GROUP BY fk_presentacion
+            pa.fk_presentacion,
+            SUM(pa.pre_alm_cantidad) AS total_almacen
+        FROM public.pre_alm pa
+        JOIN public.almacen a ON pa.fk_almacen = a.alm_id
+        WHERE (p_tienda_id = 0 OR a.fk_tienda = p_tienda_id)
+        GROUP BY pa.fk_presentacion
+    ),
+    -- Se unen los resultados
+    full_stock_list AS (
+        SELECT
+            p.prese_id,
+            p.prese_nombre,
+            COALESCE(st.total_tienda, 0) AS stock_tienda_seleccionada,
+            COALESCE(sa.total_almacen, 0) AS stock_almacen
+        FROM public.presentacion p
+        LEFT JOIN stock_tienda_seleccionada st ON p.prese_id = st.fk_presentacion
+        LEFT JOIN stock_almacen sa ON p.prese_id = sa.fk_presentacion
     )
-    -- Paso 3: Se unen los datos con la tabla de presentaciones para obtener los nombres
+    -- Se construye el JSON final
     SELECT json_build_object(
-        'total_count', (SELECT COUNT(*) FROM public.presentacion),
-        'productos', COALESCE(json_agg(
-            json_build_object(
-                'producto_id', p.prese_id,
-                'producto_nombre', p.prese_nombre,
-                -- Se usa COALESCE para mostrar 0 si no hay stock en una ubicación
-                'stock_tiendas', COALESCE(st.total_tienda, 0),
-                'stock_almacen', COALESCE(sa.total_almacen, 0)
-            ) ORDER BY p.prese_nombre
-        ), '[]'::json)
+        'total_count', (SELECT COUNT(*) FROM full_stock_list),
+        'productos', (
+            SELECT COALESCE(json_agg(t.*), '[]'::json)
+            FROM (
+                SELECT * FROM full_stock_list
+                ORDER BY prese_nombre
+                LIMIT p_limite OFFSET p_offset
+            ) t
+        )
     )
-    INTO v_reporte_data
-    FROM public.presentacion p
-    LEFT JOIN stock_tiendas st ON p.prese_id = st.fk_presentacion
-    LEFT JOIN stock_almacen sa ON p.prese_id = sa.fk_presentacion
-    LIMIT p_limite OFFSET p_offset;
+    INTO v_reporte_data;
 
     RETURN v_reporte_data;
 END;
 $$ LANGUAGE plpgsql;
-
-
-
-
