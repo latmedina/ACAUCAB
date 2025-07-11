@@ -151,11 +151,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // ✅ Transformar los datos para que coincidan con la plantilla
             const transformedData = allData.map(item => ({
-                id_venta: item.venta_id,
-                fecha_compra: new Date(item.fecha).toLocaleString('es-VE'),
-                tipo_compra: item.tipo,
-                monto_total: item.monto,
-                tipo_factura: item.tipo_url
+                id_venta: item.id_venta,
+                fecha_compra: item.fecha_compra,
+                tipo_compra: item.tipo_compra,
+                monto_total: item.monto_total,
+                tipo_factura: item.tipo_factura
             }));
 
             // Configurar paginación
