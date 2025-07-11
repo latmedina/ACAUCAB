@@ -99,5 +99,10 @@ urlpatterns = [
     path('eventos/<int:evento_id>/proveedores/<int:eve_pro_id>/eliminar/', views.eliminar_proveedor_evento, name='eliminar_proveedor_evento'),
     path('eventos/<int:evento_id>/proveedores/<int:eve_pro_id>/existencias/', views.gestionar_existencias_evento, name='gestionar_existencias_evento'),
     path('api/proveedores/<int:proveedor_id>/presentaciones/', views.obtener_presentaciones_proveedor, name='obtener_presentaciones_proveedor'),
+    
+    #Invitados
+    path('invitados/crear/<int:evento_id>/', views.crear_invitado, name='crear_invitado'),
+    path('invitados/<int:invitado_id>/eliminar/<int:evento_id>/', views.eliminar_invitado, name='eliminar_invitado'),
+    path('invitados/<int:invitado_id>/modificar/<int:evento_id>/', views.modificar_invitado, name='modificar_invitado'),
 ]
     

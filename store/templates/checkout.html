@@ -13,35 +13,41 @@
                             </a>
                             <span class="badge bg-primary fs-6">{{ order.get_cart_items }} items</span>
                         </div>
-                        
+
                         <div class="text-center mb-4">
                             <h3 class="text-gradient">
                                 <i class="fas fa-receipt me-2"></i>Resumen de la Orden
                             </h3>
                         </div>
+
                         <div class="checkout-items mb-4">
                             {% for item in items %}
                             <div class="checkout-item">
                                 <div class="d-flex align-items-center">
                                     <div class="flex-shrink-0 me-3">
-                                                            {% if item.product.prese_imagen %}
-                        <img class="row-image" src="{{ item.product.get_imagen_url }}" 
-                                                 style="width: 60px; height: 60px; object-fit: cover;" 
+                                        {% if tipo != "evento" and item.product.prese_imagen %}
+                                            <img class="row-image" src="{{ item.product.get_imagen_url }}"
+                                                 style="width: 60px; height: 60px; object-fit: cover;"
                                                  alt="{{ item.product.prese_nombre }}">
                                         {% else %}
-                                            <div class="d-flex align-items-center justify-content-center" 
+                                            <div class="d-flex align-items-center justify-content-center"
                                                  style="width: 60px; height: 60px; background: #f8f9fa; border-radius: 8px;">
-                                                <i class="fas fa-image text-muted fa-2x"></i>
+                                                <i class="fas fa-calendar-alt text-muted fa-2x"></i>
                                             </div>
                                         {% endif %}
                                     </div>
                                     <div class="flex-grow-1">
-                                        <h6 class="mb-1">{{ item.product.prese_nombre }}</h6>
+                                        <h6 class="mb-1">
+                                            {% if tipo == "evento" %}
+                                                {{ item.product.eve_nombre }}
+                                            {% else %}
+                                                {{ item.product.prese_nombre }}
+                                            {% endif %}
+                                        </h6>
                                         <div class="d-flex justify-content-between align-items-center">
                                             <span class="text-muted">
                                                 <i class="fas fa-dollar-sign me-1"></i>
-                                                ${{ item.precio_unitario_usd|floatformat:2 }} USD
-                                                <br>
+                                                ${{ item.precio_unitario_usd|floatformat:2 }} USD<br>
                                                 <small>{{ item.precio_unitario_bs|floatformat:2 }} Bs</small>
                                             </span>
                                             <span class="badge bg-secondary">
@@ -65,36 +71,36 @@
                         <div class="checkout-total">
                             <div class="row">
                                 <div class="col-sm-6">
-                                    <h5><i class="fas fa-box me-2"></i>Items: {{order.get_cart_items}}</h5>
+                                    <h5><i class="fas fa-box me-2"></i>Items: {{ order.get_cart_items }}</h5>
                                 </div>
                                 <div class="col-sm-6 text-sm-end">
-                                    <h5><i class="fas fa-calculator me-2"></i>Total: ${{order.get_cart_total_usd|floatformat:2}} USD</h5>
-                                    <small>{{order.get_cart_total_bs|floatformat:2}} Bs</small>
+                                    <h5><i class="fas fa-calculator me-2"></i>Total: ${{ order.get_cart_total_usd|floatformat:2 }} USD</h5>
+                                    <small>{{ order.get_cart_total_bs|floatformat:2 }} Bs</small>
                                 </div>
                             </div>
                         </div>
-                        
+
                         {% if user.is_authenticated %}
-                            <div class="text-center mt-4">
-                                <button id="continue-button" class="btn btn-success btn-lg pulse">
-                                    <i class="fas fa-credit-card me-2"></i>Proceder al Pago
-                                </button>
-                                <p class="text-muted mt-2">
-                                    <i class="fas fa-shield-alt me-1"></i>
-                                    Transacción segura y protegida
-                                </p>
-                            </div>
+                        <div class="text-center mt-4">
+                            <button id="continue-button" class="btn btn-success btn-lg pulse">
+                                <i class="fas fa-credit-card me-2"></i>Proceder al Pago
+                            </button>
+                            <p class="text-muted mt-2">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                Transacción segura y protegida
+                            </p>
+                        </div>
                         {% else %}
-                            <div class="text-center mt-4">
-                                <div class="alert alert-warning">
-                                    <i class="fas fa-exclamation-triangle me-2"></i>
-                                    <strong>Inicio de sesión requerido</strong>
-                                    <p class="mb-2">Debes iniciar sesión para completar la compra.</p>
-                                    <a href="{% url 'login' %}?next={% url 'checkout_view' tipo %}" class="btn btn-primary">
-                                        <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
-                                    </a>
-                                </div>
+                        <div class="text-center mt-4">
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Inicio de sesión requerido</strong>
+                                <p class="mb-2">Debes iniciar sesión para completar la compra.</p>
+                                <a href="{% url 'login' %}?next={% url 'checkout_view' tipo %}" class="btn btn-primary">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
+                                </a>
                             </div>
+                        </div>
                         {% endif %}
                     </div>
                 </div>
@@ -107,13 +113,12 @@
     document.addEventListener('DOMContentLoaded', function () {
         const tipo = "{{ tipo }}";
         const continueButton = document.getElementById('continue-button');
-        
+
         if (continueButton) {
             continueButton.addEventListener('click', function () {
                 const csrftoken = getCookie('csrftoken');
                 let payload = { tipo: tipo };
 
-                // Mostrar indicador de carga
                 continueButton.disabled = true;
                 continueButton.innerHTML = 'Procesando...';
 
@@ -128,19 +133,18 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === 'ok' && data.redirect_to_payment) {
-                        // Redirigir a la página de método de pago
                         window.location.href = "{% url 'payment_method' %}";
                     } else {
                         alert('Error procesando la orden: ' + (data.message || 'Error desconocido'));
                         continueButton.disabled = false;
-                        continueButton.innerHTML = 'Continue';
+                        continueButton.innerHTML = 'Proceder al Pago';
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
                     alert('Error de conexión. Por favor, intenta de nuevo.');
                     continueButton.disabled = false;
-                    continueButton.innerHTML = 'Continue';
+                    continueButton.innerHTML = 'Proceder al Pago';
                 });
             });
         }
