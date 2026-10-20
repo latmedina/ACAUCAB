@@ -1,0 +1,357 @@
+{% extends 'empleados/base_empleados.html' %}
+
+{% block title %}Dashboard - Empleados{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Estilos específicos para el dashboard */
+    .dashboard-card {
+        transition: all 0.3s ease;
+        border-width: 2px !important;
+        min-height: 200px;
+    }
+
+    .dashboard-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .dashboard-card .display-4 {
+        font-size: 2.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .dashboard-card:hover .display-4 {
+        transform: scale(1.1);
+    }
+
+    .card-title {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .btn-outline-primary:hover,
+    .btn-outline-success:hover,
+    .btn-outline-warning:hover,
+    .btn-outline-danger:hover,
+    .btn-outline-info:hover,
+    .btn-outline-secondary:hover,
+    .btn-outline-dark:hover {
+        transform: translateY(-1px);
+    }
+
+    /* Responsive grid improvements */
+    @media (min-width: 1400px) {
+        .col-xl-3 {
+            flex: 0 0 20%;
+            max-width: 20%;
+        }
+    }
+
+    /* Card spacing */
+    .mb-4 {
+        margin-bottom: 2rem !important;
+    }
+
+    /* Welcome section improvements */
+    .card-header h3 {
+        font-weight: 600;
+    }
+
+    /* Time display styling */
+    #current-time {
+        font-weight: 500;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="mb-0"><i class="fas fa-tachometer-alt me-2"></i>Dashboard de Empleados</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h4>¡Bienvenido, {{ user.get_full_name|default:user.username }}!</h4>
+                        <p class="text-muted mb-0">Accede a todas las herramientas y reportes disponibles para empleados.</p>
+                        {% if empleado %}
+                            <p class="text-muted">
+                                <strong>Empleado:</strong> {{ empleado.emp_pnombre }} {{ empleado.emp_papellido }}<br>
+                                <strong>Cédula:</strong> {{ empleado.emp_ci }}
+                            </p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="text-muted">
+                            <i class="fas fa-clock me-2"></i>
+                            <span id="current-time"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dashboard Cards -->
+<div class="row">
+    <!-- Reportes -->
+    {% if 'reportes' in privilegios %}
+    <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+        <div class="card h-100 text-center border-primary dashboard-card">
+            <div class="card-body">
+                <div class="display-4 text-primary mb-3">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <h6 class="card-title">Reportes del Sistema</h6>
+                <p class="card-text text-muted small">Facturas, órdenes, productores y más</p>
+                <a href="{% url 'empleados:reportes' %}" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-arrow-right me-1"></i>Acceder
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Gestión de Solicitudes -->
+    {% if 'gestion_solicitud' in privilegios %}
+    <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+        <div class="card h-100 text-center border-success dashboard-card">
+            <div class="card-body">
+                <div class="display-4 text-success mb-3">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h6 class="card-title">Gestión de Solicitudes</h6>
+                <p class="card-text text-muted small">Aprobar solicitudes de compra</p>
+                <a href="{% url 'empleados:vista_gestion_solicitudes_pendientes' %}" class="btn btn-outline-success btn-sm">
+                    <i class="fas fa-arrow-right me-1"></i>Acceder
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Eventos -->
+    <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+        <div class="card h-100 text-center border-info dashboard-card">
+            <div class="card-body">
+                <div class="display-4 text-info mb-3">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <h6 class="card-title">Gestión de Eventos</h6>
+                <p class="card-text text-muted small">Degustaciones, ferias y exposiciones</p>
+                <a href="{% url 'empleados:lista_eventos' %}" class="btn btn-outline-info btn-sm">
+                    <i class="fas fa-arrow-right me-1"></i>Acceder
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Facturas -->
+    {% if 'factura' in privilegios %}
+    <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+        <div class="card h-100 text-center border-warning dashboard-card">
+            <div class="card-body">
+                <div class="display-4 text-warning mb-3">
+                    <i class="fas fa-file-invoice"></i>
+                </div>
+                <h6 class="card-title">Facturas</h6>
+                <p class="card-text text-muted small">Generar reportes de facturas</p>
+                <a href="{% url 'empleados:vista_factura' %}" class="btn btn-outline-warning btn-sm">
+                    <i class="fas fa-arrow-right me-1"></i>Acceder
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Órdenes de Compra -->
+    {% if 'gestionar_ordenes' in privilegios %}
+    <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+        <div class="card h-100 text-center border-secondary dashboard-card">
+            <div class="card-body">
+                <div class="display-4 text-secondary mb-3">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <h6 class="card-title">Órdenes de Compra</h6>
+                <p class="card-text text-muted small">Consultar y generar reportes</p>
+                <a href="{% url 'empleados:vista_orden_compra' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-arrow-right me-1"></i>Acceder
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Productores -->
+    {% if 'reportes_general' in privilegios %}
+    <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+        <div class="card h-100 text-center border-dark dashboard-card">
+            <div class="card-body">
+                <div class="display-4 text-dark mb-3">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h6 class="card-title">Productores</h6>
+                <p class="card-text text-muted small">Reporte de productores en eventos</p>
+                <a href="{% url 'empleados:vista_reporte_productores' %}" class="btn btn-outline-dark btn-sm">
+                    <i class="fas fa-arrow-right me-1"></i>Acceder
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Gestión de Usuarios -->
+    {% if 'gestionar_usuario' in privilegios %}
+    <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+        <div class="card h-100 text-center border-danger dashboard-card">
+            <div class="card-body">
+                <div class="display-4 text-danger mb-3">
+                    <i class="fas fa-users-cog"></i>
+                </div>
+                <h6 class="card-title">Gestión de Usuarios</h6>
+                <p class="card-text text-muted small">Administrar usuarios del sistema</p>
+                <a href="{% url 'empleados:gestion_usuarios' %}" class="btn btn-outline-danger btn-sm">
+                    <i class="fas fa-arrow-right me-1"></i>Acceder
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Asignar Rol -->
+    {% if 'administrador' in privilegios %}
+    <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+        <div class="card h-100 text-center border-primary dashboard-card">
+            <div class="card-body">
+                <div class="display-4 text-primary mb-3">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <h6 class="card-title">Asignar Rol</h6>
+                <p class="card-text text-muted small">Asignar roles a usuarios</p>
+                <a href="{% url 'empleados:asignar_rol' %}" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-arrow-right me-1"></i>Acceder
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Crear Rol -->
+    {% if 'Administrador' in privilegios %}
+    <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+        <div class="card h-100 text-center border-success dashboard-card">
+            <div class="card-body">
+                <div class="display-4 text-success mb-3">
+                    <i class="fas fa-plus-circle"></i>
+                </div>
+                <h6 class="card-title">Crear Rol</h6>
+                <p class="card-text text-muted small">Define nuevos roles del sistema</p>
+                <a href="{% url 'empleados:crear_rol' %}" class="btn btn-outline-success btn-sm">
+                    <i class="fas fa-arrow-right me-1"></i>Acceder
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Crear Privilegio -->
+    {% if 'Administrador' in privilegios %}
+    <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+        <div class="card h-100 text-center border-warning dashboard-card">
+            <div class="card-body">
+                <div class="display-4 text-warning mb-3">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h6 class="card-title">Crear Privilegio</h6>
+                <p class="card-text text-muted small">Registrar nuevos permisos</p>
+                <a href="{% url 'empleados:crear_privilegio' %}" class="btn btn-outline-warning btn-sm">
+                    <i class="fas fa-arrow-right me-1"></i>Acceder
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Modificar Roles -->
+    {% if 'Administrador' in privilegios %}
+    <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+        <div class="card h-100 text-center border-secondary dashboard-card">
+            <div class="card-body">
+                <div class="display-4 text-secondary mb-3">
+                    <i class="fas fa-edit"></i>
+                </div>
+                <h6 class="card-title">Modificar Roles</h6>
+                <p class="card-text text-muted small">Editar roles existentes</p>
+                <a href="{% url 'empleados:listar_roles' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-arrow-right me-1"></i>Acceder
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Modificar Privilegios -->
+    {% if 'Administrador' in privilegios %}
+    <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+        <div class="card h-100 text-center border-info dashboard-card">
+            <div class="card-body">
+                <div class="display-4 text-info mb-3">
+                    <i class="fas fa-key"></i>
+                </div>
+                <h6 class="card-title">Modificar Privilegios</h6>
+                <p class="card-text text-muted small">Editar permisos disponibles</p>
+                <a href="{% url 'empleados:listar_privilegios' %}" class="btn btn-outline-info btn-sm">
+                    <i class="fas fa-arrow-right me-1"></i>Acceder
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Asignar Privilegios -->
+    {% if 'Administrador' in privilegios %}
+    <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+        <div class="card h-100 text-center border-dark dashboard-card">
+            <div class="card-body">
+                <div class="display-4 text-dark mb-3">
+                    <i class="fas fa-user-cog"></i>
+                </div>
+                <h6 class="card-title">Asignar Privilegios</h6>
+                <p class="card-text text-muted small">Privilegios a roles</p>
+                <a href="{% url 'empleados:seleccionar_rol_para_privilegios' %}" class="btn btn-outline-dark btn-sm">
+                    <i class="fas fa-arrow-right me-1"></i>Acceder
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Actualizar hora actual
+    function updateTime() {
+        const now = new Date();
+        const timeString = now.toLocaleString('es-ES', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+        document.getElementById('current-time').textContent = timeString;
+    }
+
+    // Actualizar cada segundo
+    updateTime();
+    setInterval(updateTime, 1000);
+</script>
+{% endblock %} 

@@ -98,16 +98,24 @@
 
             <!-- Botones de acción -->
             <div class="modificar-btn-container">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    Guardar Cambios
+                </button>
                 <a href="{% url 'store_view' 'fisica' %}" class="btn-secondary">
                     <i class="fas fa-times"></i>
                     Cancelar
                 </a>
             </div>
         </form>
-        <form method="POST" action="{% url 'eliminar_usuario' usuario.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">Eliminar</button>
-        </form>
+        <div class="eliminar-btn-container" style="margin-top: 20px; text-align: right;">
+            <form method="POST" action="{% url 'eliminar_usuario' usuario.id %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash-alt"></i> Eliminar Usuario
+                </button>
+            </form>
+        </div>
     </div>
 </div>
 

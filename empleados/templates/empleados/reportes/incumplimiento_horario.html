@@ -1,0 +1,259 @@
+{% extends 'empleados/base_empleados.html' %}
+
+{% block title %}Incumplimiento de Horario - Empleados{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'empleados:reportes' %}">Reportes</a></li>
+<li class="breadcrumb-item active">Incumplimiento de Horario</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="mb-0"><i class="fas fa-clock me-2"></i>Reporte de Incumplimiento de Horario</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Consulta los incumplimientos de horario del personal en un rango de fechas específico.</p>
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="fechaInicio" class="form-label">Fecha de Inicio</label>
+                        <input type="date" id="fechaInicio" class="form-control" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="fechaFin" class="form-label">Fecha de Fin</label>
+                        <input type="date" id="fechaFin" class="form-control" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">&nbsp;</label>
+                        <div>
+                            <button id="loadReportBtn" class="btn btn-primary">
+                                <i class="fas fa-search me-2"></i>Consultar Incumplimientos
+                            </button>
+                            <button id="clearBtn" class="btn btn-secondary">
+                                <i class="fas fa-eraser me-2"></i>Limpiar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div id="report-container">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Importante:</strong> Ambas fechas son requeridas para generar el reporte.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const reportContainer = document.getElementById('report-container');
+    const loadBtn = document.getElementById('loadReportBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const fechaInicio = document.getElementById('fechaInicio');
+    const fechaFin = document.getElementById('fechaFin');
+
+    // Establecer fechas por defecto (últimos 30 días)
+    const today = new Date();
+    const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+    fechaInicio.value = thirtyDaysAgo.toISOString().split('T')[0];
+    fechaFin.value = today.toISOString().split('T')[0];
+
+    async function loadReport() {
+        const inicio = fechaInicio.value;
+        const fin = fechaFin.value;
+
+        if (!inicio || !fin) {
+            reportContainer.innerHTML = `
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Ambas fechas son requeridas para generar el reporte.
+                </div>
+            `;
+            return;
+        }
+
+        if (new Date(inicio) > new Date(fin)) {
+            reportContainer.innerHTML = `
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    La fecha de inicio no puede ser posterior a la fecha de fin.
+                </div>
+            `;
+            return;
+        }
+
+        loadBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin me-2"></i>Consultando...';
+        loadBtn.disabled = true;
+
+        reportContainer.innerHTML = `
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="mt-2">Analizando incumplimientos del ${inicio} al ${fin}...</p>
+            </div>
+        `;
+
+        try {
+            const response = await fetch(`/empleados/api/reportes/incumplimiento-horario/?inicio=${inicio}&fin=${fin}`);
+            if (!response.ok) {
+                throw new Error(`Error ${response.status}: No se pudieron obtener los datos.`);
+            }
+            const data = await response.json();
+
+            if (!data || data.length === 0 || data.every(empleado => !empleado.incumplimientos || empleado.incumplimientos.length === 0)) {
+                reportContainer.innerHTML = `
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                            <h5 class="text-success">¡Excelente!</h5>
+                            <p class="text-muted">No se encontraron incumplimientos de horario en el período seleccionado.</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Incumplimientos Encontrados (${data.reduce((total, empleado) => total + empleado.incumplimientos.length, 0)})
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Empleado</th>
+                                        <th>Fecha</th>
+                                        <th>Horario Asignado</th>
+                                        <th>Hora de Llegada</th>
+                                        <th>Hora de Salida</th>
+                                        <th>Retraso</th>
+                                        <th>Tipo</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+            `;
+
+            // Procesar datos agrupados por empleado
+            data.forEach(empleado => {
+                empleado.incumplimientos.forEach(incumplimiento => {
+                    const tipoIncumplimiento = incumplimiento.tipo || 'Retraso';
+                    const badgeClass = tipoIncumplimiento === 'Falta' ? 'bg-danger' : 
+                                     tipoIncumplimiento.includes('Llegada') ? 'bg-warning text-dark' : 'bg-info text-dark';
+                    
+                    // Extraer información del detalle (ahora es un objeto JSON)
+                    const detalle = incumplimiento.detalle || {};
+                    const horaEntradaPautada = detalle.hora_entrada_pautada || 'N/A';
+                    const horaSalidaPautada = detalle.hora_salida_pautada || 'N/A';
+                    const horaEntradaReal = detalle.hora_entrada_real || 'N/A';
+                    const horaSalidaReal = detalle.hora_salida_real || 'N/A';
+                    
+                    // Convertir duración a minutos
+                    const duracion = incumplimiento.duracion || '00:00:00';
+                    const [horas, minutos, segundos] = duracion.split(':').map(Number);
+                    const totalMinutos = (horas * 60) + minutos + (segundos > 0 ? 1 : 0);
+
+                    html += `
+                        <tr>
+                            <td>
+                                <strong>${empleado.empleado_nombre || 'N/A'}</strong>
+                                <br><small class="text-muted">ID: ${empleado.empleado_id || 'N/A'}</small>
+                            </td>
+                            <td>${incumplimiento.fecha || 'N/A'}</td>
+                            <td>
+                                <small class="text-muted">Entrada:</small> ${horaEntradaPautada}<br>
+                                <small class="text-muted">Salida:</small> ${horaSalidaPautada}
+                            </td>
+                            <td>
+                                <span class="${horaEntradaReal !== 'N/A' ? '' : 'text-muted'}">
+                                    ${horaEntradaReal}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="${horaSalidaReal !== 'N/A' ? '' : 'text-muted'}">
+                                    ${horaSalidaReal}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="text-warning fw-bold">
+                                    ${totalMinutos} minutos
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge ${badgeClass}">
+                                    ${tipoIncumplimiento}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                });
+            });
+
+            html += `
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-3">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="alert alert-info">
+                                        <strong>Total de incumplimientos:</strong> ${data.reduce((total, empleado) => total + empleado.incumplimientos.length, 0)}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="alert alert-warning">
+                                        <strong>Período analizado:</strong> ${inicio} al ${fin}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            reportContainer.innerHTML = html;
+
+        } catch (error) {
+            console.error('Error:', error);
+            reportContainer.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <strong>Error:</strong> ${error.message}
+                </div>
+            `;
+        } finally {
+            loadBtn.innerHTML = '<i class="fas fa-search me-2"></i>Consultar Incumplimientos';
+            loadBtn.disabled = false;
+        }
+    }
+
+    function clearReport() {
+        reportContainer.innerHTML = `
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Importante:</strong> Ambas fechas son requeridas para generar el reporte.
+            </div>
+        `;
+    }
+
+    loadBtn.addEventListener('click', loadReport);
+    clearBtn.addEventListener('click', clearReport);
+});
+</script>
+{% endblock %} 

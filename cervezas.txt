@@ -422,3 +422,180 @@ ACAUCAB
 
 → Aldarra Mantuana: Caracterizada por una mezcla de cereales, maltas y lúpulos americanos. De un interesante color dorado, posee un sabor ligero y cuerpo liviano, además de un aroma que recuerda las frutas tropicales. Una preparación de carbonatación media, sin asperezas o astringencias. Está dentro de la categoría Blonde Ale.
 
+Eventos
+
+UBirra: 30 tipos de bebidas pudieron degustar los venezolanos en este evento donde participaron más de 30 productores de cerveza.
+
+Los espacios de la Plaza Mickey en Caracas, capital venezolana, fueron escenario de UBirra, un evento organizado por ACAUCAB.
+
+La actividad se desarrolló los días viernes y sábado del mes de Julio del 2024, contó con la participación de 30 productores de cerveza, quienes dictaron talleres y dirigieron ponencias para explicar el proceso de elaboración de este producto de forma artesanal.
+
+Se requiere que el sistema a desarrollar, cuente con un módulo que permita la organización de eventos ( locación, miembros proveedores, productos, venta de productos, venta de entradas en caso que aplique, entre otros).
+
+El negocio de ACAUCAB
+
+La misión de ACAUCAB es la distribución de cerveza artesanal con excelencia en precio, calidad y variedad para clientes que compran volumen, ofreciéndole ventajas y oportunidades para crecer. Para nuestros clientes, el objetivo es ser la fuente más segura de productos, dándoles la oportunidad de competir en sus respectivos mercados. Para nuestros miembros ser los distribuidores de sus productos al más bajo costo posible en el máximo número de puntos de venta.
+
+Somos la única organización mayorista que opera en el mercado venezolano, vendiendo grandes volúmenes de cerveza a clientes profesionales registrados. Hoteles, restaurantes, comedores, bodegas, empresas prestadoras de servicios y demás comercios afiliados a ACAUCAB se benefician por la
+
+Sistemas de Bases de Datos - Marzo 2025
+17
+
+Página 19
+ACAUCAB
+
+compra de productos al mayor. Así como también lo hacen los venezolanos para abastecerse al más bajo costo.
+
+Las ofertas de ACAUCAB son publicadas cada 30 días en DiarioDeUnaCerveza, folleto encartado en la prensa dominical y distribuido puerta a puerta de forma gratuita. Esta publicación requiere ser publicada en una versión digital en nuestra página web para que pueda ser consultada cuando se requiera. Gracias a un eficiente manejo de costos, en ACAUCAB ofrecemos a nuestros clientes la más amplia variedad de cervezas artesanales al mejor precio, en un ambiente amplio, cómodo y seguro. Nuestra sólida red de miembros y alto volumen de ventas, nos convierten en la organización mayorista de cerveza artesanal más eficiente de Venezuela.
+
+Nuestros clientes pueden solicitar a través de un correo electrónico un presupuesto de su posible compra, también puede reservar dicho presupuesto si está conforme y el departamento de Ventas en Línea tendrá el pedido listo para la entrega al cliente en la fecha acordada con él. Para realizar dicha transacción el cliente debe estar afiliado a nuestra asociación y debe enviar un correo electrónico a través de nuestro portal (Ejemplo: comprasacavucab@acaucab.com) indicando en el asunto su número de registro y la lista de productos que desea. Deseamos que la nueva versión de nuestro sistema integral ofrezca la posibilidad a nuestros clientes de registrarse en nuestra página web, realizar sus presupuestos y compras vía Internet.
+
+ACAUCAB está formada por un grupo de cerveceros artesanales en Venezuela, es requerido que su empresa desarrolle un módulo dentro del sistema integral de ACAUCAB, que permita la gestión de nuestros miembros (proveedores). Se necesita almacenar la información base (Razón Social, Denominación Comercial, RIF , dirección fiscal, dirección física, teléfonos de contacto, personal de contacto, direcciones de correo electrónico, página web, clasificación de la(s) cerveza que fabrica, entre otros datos que usted debe considerar y que sean de utilidad para nosotros).
+
+Nuestros clientes varían desde hoteles, restaurantes, comedores, bodegas, empresas prestadoras de servicios, comercios y clientes particulares. Cabe destacar que para comprar en ACAUCAB es necesario afiliarse a nuestra red. El sistema que su empresa desarrolle debe permitir la emisión de un carnet a través del módulo de gestión de clientes, para mantener activa nuestra clientela por cada producto comprado ACAUCAB otorga un punto a su cuenta, que posteriormente puede canjear al momento del pago. Actualmente cada punto equivale a 1 Bs; es importante mencionar que dicho monto puede variar con el pasar del tiempo. Cada cliente que se registre debe suministrar la siguiente información:
+
+Personas Jurídicas:
+
+Sistemas de Bases de Datos - Marzo 2025
+18
+
+Página 20
+ACAUCAB
+
+RIF, denominación comercial, razón social, teléfonos, correo electrónico, página web, capital disponible, personas de contacto, métodos de pago, dirección fiscal, dirección física principal.
+
+Personas Naturales:
+
+RIF, Cédula de Identidad, nombres, apellidos, teléfonos, correo electrónico, dirección de habitación, métodos de pago.
+
+El formato de nuestro carnet de identificación para clientes debe ser propuesto por su empresa en el primer entregable del proyecto. Se requiere que dicho carnet contenga un número identificador de ocho (8) caracteres, nombre o razón social: Corresponde al nombre identificador del cliente, según aplique (jurídico o natural), cédula de Identidad para personas naturales y el RIF para personas jurídicas y un código QR que permitirá la identificación de nuestros clientes en los lectores ubicados en la entrada de nuestros eventos. La identificación emitida por el código QR debe corresponder a la cédula de identidad o rif del cliente.
+
+Ventas en ACAUCAB
+
+En la actualidad ACAUCAB se encuentra como líder de ventas a nivel nacional en cerveza artesanal. Nuestra constante innovación nos hace siempre líderes de ventas. Actualmente ofrecemos a nuestros clientes jurídicos la oportunidad de realizar sus presupuestos y compras a través de correo electrónico, ayudando a nuestros clientes a reducir el tiempo que pueden emplear en sus negocios. Actualmente queremos ofrecer la oportunidad a todos nuestros clientes de realizar compras vía internet tal como lo hace Amazon o Walmart (como referencia), su sistema debe tener la capacidad de mostrar todos los productos disponibles y ser capaz de aceptar varias tarjetas de crédito como forma de pago, debe ser capaz de emitir la facturación correspondiente y emitir la orden de despacho al departamento encargado. El departamento de despacho debe procesar el pedido y tenerlo listo para la entrega en un lapso no mayor a 2 horas y debe cambiar el estatus del pedido a “Listo para la entrega”. El departamento de entrega una vez que un pedido cambia al estatus de “Listo para la entrega" debe dirigirse a la zona de despacho a buscar el pedido y tenerlo listo para ser entregado al cliente; una vez se entrega al cliente el pedido debe cambiar de estatus a “Entregado".
+
+Sistemas de Bases de Datos - Marzo 2025
+19
+
+Página 21
+ACAUCAB
+
+También trabajamos como cualquier supermercado mayorista ofreciendo la venta de productos en nuestra tienda. Cualquier cliente puede dirigirse a la tienda de la asociación y realizar sus compras, el beneficio de realizar la compra en tienda es que nuestros clientes obtienen un punto en su cuenta por cada producto adquirido. El sistema que su empresa desarrolle debe ser capaz de manejar la venta, descuento de inventario, control y canjeo de puntos de nuestros clientes. Los clientes en la tienda pueden realizar sus pagos en efectivo (Bs o divisas por lo que debe ofrecer el cálculo de conversión), débito, crédito y cheque. Debe registrarse la información base de los medios de pago correspondiente.
+
+Su sistema debe ser capaz de emitir una orden de reposición de inventario al departamento de Compras cada vez que solo se cuente con cien (100) unidades la disponibilidad de un producto. Dicha orden debe estar completa para solicitar la compra al proveedor correspondiente, el jefe de compras solo debe aprobar dicha orden para emitirla al proveedor. Parte de su trabajo debe ser ofrecer una propuesta de orden de compra para la primera entrega de su proyecto.
+
+Cada veinte (30) días emitimos el DiarioDeUnaCerveza, equivale a una revista con algunos productos que presentan ofertas durante un período de 10 días a partir de la emisión del Diario, las ofertas son válidas para todos los clientes en la tienda. El sistema integral debe ser capaz de emitir dicho diario. La construcción del diario es responsabilidad del gerente general de promociones y es el encargado de seleccionar los productos y el descuento correspondiente para ser publicado en el DiarioDeUnaCerveza.
+
+Compras y reposición en tienda
+
+Tal como se mencionó anteriormente cada vez que un producto llegue a cien (100) unidades disponibles debe emitirse una orden de compra al miembro proveedor correspondiente por un total de 10000 unidades; dicha orden debe ser aprobada por el responsable del área de compras y debe ser cancelada en efectivo al proveedor 15 días después de la recepción del producto. Una vez que el producto es recibido en la tienda debe ser ubicado en los almacenes correspondientes. En la tienda nunca podemos tener anaqueles vacíos el sistema debe generar las alertas correspondientes al jefe de pasillos cuando queden disponibilidad de 20 unidades de un producto para realizar la reposición de los productos; indicando el pasillo y zona del pasillo donde debe ser restituido el (los) productos.
+
+Sistemas de Bases de Datos - Marzo 2025
+20
+
+Página 22
+¿Quienes trabajan en ACAUCAB?
+
+ACAUCAB
+
+Nuestro personal es la clave del éxito, por lo tanto necesitamos que su sistema de gestión disponga de un módulo de “Control de Nómina”, que brinde la oportunidad de controlar los horarios, vacaciones, salarios, beneficios y todo lo relacionado a nuestro personal.
+
+El manejo del Talento Humano (personal) es vital para nosotros, hemos reportado algunos empleados que incumplen los horarios de trabajo desmejorando el servicio, actitud que no podemos permitir. Por lo tanto recientemente implementamos en nuestra tienda un sistema de control de entrada, básicamente el empleado pasa por un control biométrico registrando la hora de entrada y salida.
+
+Dicho sistema genera un reporte diario, semanal, mensual como nosotros necesitamos en un archivo .txt separado por “/” que registra la siguiente información:
+
+→ Cédula del Empleado.
+→ Fecha.
+→ Hora de Entrada.
+→ Hora de Salida.
+→ Cargo.
+
+Requerimos que el sistema que su empresa implementará sea capaz de procesar dicho archivo para luego, nuestro personal responsable del talento humano pueda realizar los diferentes análisis sobre el cumplimiento de horario de nuestros empleados.
+
+De nuestros miembros proveedores es necesario registrar la información detallada de los mismos y de los productos (cerveza) que fabrica. Su sistema debe generar una ficha de afiliación para cada miembro proveedor.
+
+Los miembros mensualmente cancelan una cuota de afiliación por ser parte de ACAUCAB, su empresa debe ser capaz de integrar en el sistema la gestión y cobro de dicha cuota, también de generar el recibo correspondiente, cuyo formato debe ser propuesto en el primer entregable del proyecto.
+
+Sistemas de Bases de Datos - Marzo 2025
+21
+
+Página 23
+¿ODS en ACAUCAB?
+
+ACAUCAB
+
+La elaboración de cerveza artesanal debe alinearse con los Objetivos de Desarrollo Sostenible (ODS) para promover prácticas más sostenibles y responsables. Por ejemplo, el ODS 12 (Producción y Consumo Responsables) se puede aplicar mediante la utilización de ingredientes locales y orgánicos, reduciendo así la huella de carbono y apoyando a los agricultores locales. El ODS 6 (Agua Limpia y Saneamiento) es importante en la industria cervecera, ya que la producción de cerveza requiere grandes cantidades de agua. Implementar sistemas de reciclaje y tratamiento de agua ayuda a minimizar el desperdicio y asegurar un uso eficiente de este recurso. Asimismo, el ODS 8 (Trabajo Decente y Crecimiento Económico) se puede fomentar creando empleos justos y seguros en la comunidad, apoyando el desarrollo económico local.
+
+Para mejorar estos ODS, ACAUCAB adoptó varias estrategias. Invertimos en tecnologías de producción eficientes y sostenibles, como equipos de bajo consumo energético y sistemas de gestión de residuos. También establecimos programas de capacitación para empleados sobre prácticas sostenibles y responsabilidad social.
+
+Se necesita que su empresa pueda generar informes de sostenibilidad anuales que incluyan métricas sobre el uso de recursos, la reducción de emisiones y el impacto social. Estos informes pueden basarse en estándares internacionales como el Global Reporting Initiative (GRI) y los Informes Nacionales Voluntarios (VNR) para evaluar el progreso en la implementación de los ODS. Además, ACAUCAB necesita realizar auditorías internas y externas para asegurar la transparencia y la mejora continua en sus prácticas sostenibles.
+
+Sistemas de Bases de Datos - Marzo 2025
+22
+
+Página 24
+Entregas
+
+ACAUCAB
+
+Planificación y requerimientos
+
+Se debe entregar un informe escrito:
+→ Planificación de las actividades a ejecutar para el desarrollo del proyecto durante el semestre, indicando fechas y persona(s) responsable(s) de cada actividad.
+→ Lista de requerimientos de la aplicación.
+→ Lista de reportes identificados.
+→ Diseño de las interfaces de la aplicación (Wireframes).
+→ Propuesta de solicitud de compra.
+
+Diseño lógico y conceptual
+
+Se debe entregar un informe escrito:
+→ Modelo Entidad Relación completo y normalizado utilizando la notación de James Martín (Patas de Gallo).
+→ Modelo Relacional.
+→ El esquema lógico de la base de datos:
+♦ Ejemplo:
+
+ENTIDAD: XYZ							
+Atributo	Clave Primaria	Clave Foránea	Not NULL	UNIQUE	CHECK	Tipo de Dato	Descripción
+Atributo 1	X		X	X		NUMERIC(10)	Identificador de la entidad XYZ
+...							
+Atributo N			X			VARCHAR(20)	Descripción del atributo
+→ Reglas de Integridad del negocio explícitas que deben ser aplicadas al esquema lógico (especificando las tablas y columnas involucradas).
+→ Convención de diseño aplicada.
+
+Sistemas de Bases de Datos - Marzo 2025
+23
+
+Página 25
+ACAUCAB
+
+Demostración I
+
+Se debe entregar:
+→ El Modelo Entidad Relación corregido.
+→ Los scripts de creación de la base de datos ( Incluir DROP, CREATE, INSERT y ALTER si aplica)
+→ Implementación del proyecto (CRUD, interfaces, store procedures,etc). La lista de requerimientos a evaluar será entregada en clases.
+→ Los reportes deben ser generados con JasperReports.
+→ Las tablas que se presentan en la aplicación deben contener un buscador, paginación y ordenamiento por columna.
+→ La aplicación es Web.
+→ La lógica de negocio debe ser implementada con Store Procedures
+
+Nota:
+→ En esta entrega se trabaja manipulación directa de la base de datos.
+→ Cada entidad debe contener datos registrados (Los datos a registrar serán asignados a los equipos en clase). Sin datos registrados no se efectuará la revisión del proyecto.
+→ La corrección se efectuará en una sola computadora por equipo.
+→ Deben estar presentes todos los integrantes del equipo.
+
+Demostración II
+
+Se debe entregar:
+→ Implementación del proyecto (CRUD, interfaces, store procedures, reportes, etc). La lista de requerimientos a evaluar será entregada en clases.
+→ Los reportes deben ser generados con JasperReports.
+→ Las tablas que se presentan en la aplicación deben contener un buscador, paginación y ordenamiento por columna.
+→ La aplicación es Web.
+→ La lógica de negocio debe ser implementada con Store Procedures
+→ La corrección se efectuará en una sola computadora por equipo.
+→ Deben estar presentes todos los integrantes del equipo.
+
+Sistemas de Bases de Datos - Marzo 2025
+24

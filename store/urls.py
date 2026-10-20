@@ -32,6 +32,7 @@ urlpatterns = [
     path('add-partial-payment/', views.add_partial_payment, name='add_partial_payment'),
     path('remove-partial-payment/', views.remove_partial_payment, name='remove_partial_payment'),
     path('finalize-multiple-payment-purchase/', views.finalize_multiple_payment_purchase, name='finalize_multiple_payment_purchase'),
+    path('compra-exitosa/<str:tipo>/<int:venta_id>/', views.purchase_success_view, name='purchase_success'),
     
     # Métodos de pago originales (compatibilidad)
     path('payment-method-original/', views.payment_method_view_original, name='payment_method_original'),
@@ -51,7 +52,7 @@ urlpatterns = [
 
     # Reportes
     #path('factura/', views.vista_factura, name='vista_factura'),
-    path('factura/<int:venta_id>/', views.vista_factura_directa, name='vista_factura_directa'),
+    path('factura/<str:tipo>/<int:venta_id>/', views.vista_factura_directa, name='vista_factura_directa'),
     path('api/reporte/venta/<int:venta_id>/', views.generar_reporte_venta_api, name='api_reporte_venta'),
     path('orden/', views.vista_orden_compra, name='vista_orden_compra'),
     path('api/reporte/orden/<int:orden_id>/', views.generar_orden_compra_api, name='api_orden_compra'),
@@ -70,6 +71,9 @@ urlpatterns = [
     path('historial-compras/<int:id_usuario>/', views.vista_historial_compras, name='historial-compras'),
     path('api/historial/usuario/<int:id_usuario>/', views.historial_compras_api, name='api_historial_compras'),
 
+    #Compra de boleto para evento
+    path('eventos/', views.eventos_disponibles_view, name='eventos_disponibles'),
+
     # Interfaz de empleado
     path('empleado/home/', views.empleado_home, name='empleado_home'),
     path('empleado/consulta_reportes/', views.vista_consulta_reportes, name='vista_consulta_reportes'),
@@ -77,7 +81,6 @@ urlpatterns = [
     path('api/gestion/ordenes/', views.gestion_ordenes_api, name='api_gestion_ordenes'),
     path('api/gestion/ordenes/actualizar/<int:orden_id>/', views.actualizar_orden_api, name='api_actualizar_orden'),
     path('orden/<int:orden_id>/', views.vista_orden_compra_directa, name='vista_orden_compra_directa'),
-
 
     # AJAX para selector jerárquico de lugar
     path('ajax/load-municipios/', views.load_municipios, name='ajax_load_municipios'),

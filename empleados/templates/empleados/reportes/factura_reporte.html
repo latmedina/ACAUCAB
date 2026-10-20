@@ -1,0 +1,244 @@
+{% extends 'empleados/base_empleados.html' %}
+
+{% block title %}Reporte de Facturas - Empleados{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'empleados:reportes' %}">Reportes</a></li>
+<li class="breadcrumb-item active">Facturas</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .invoice-container { max-width: 850px; margin: auto; background-color: #fff; padding: 40px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); border-radius: 8px; }
+    .invoice-header { background-color: #1A237E; color: #fff; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; border-radius: 8px 8px 0 0; }
+    .header-left { display: flex; align-items: center; }
+    .logo { background-color: #FFC107; padding: 8px; border-radius: 8px; margin-right: 20px; font-size: 32px; }
+    .company-details h1 { margin: 0; font-size: 28px; font-weight: bold; }
+    .company-details p { margin: 4px 0 0; font-size: 13px; font-weight: 500; }
+    .header-right { text-align: right; font-size: 14px; font-weight: bold; }
+    .header-right p { margin: 5px 0; }
+    .invoice-main { padding: 30px 0; }
+    .client-info h2 { font-size: 20px; color: #1A237E; margin-top: 0; }
+    .client-info .info-line { display: flex; align-items: baseline; margin-bottom: 12px; font-size: 15px; }
+    .client-info label { font-weight: bold; flex-basis: 100px; flex-shrink: 0; }
+    .client-info .line { flex-grow: 1; border-bottom: 1.5px dotted #aaa; height: 15px; padding: 0 5px;}
+    .items-table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+    .items-table thead th { background-color: #1A237E; color: #fff; padding: 12px; font-size: 13px; text-align: left; }
+    .items-table tbody td { border: 1.5px dotted #ccc; padding: 8px; height: 25px; }
+    .col-id { width: 10%; }
+    .col-desc { width: 50%; }
+    .col-qty, .col-price, .col-total { width: 13.33%; text-align: right; }
+    .invoice-footer { display: flex; justify-content: space-between; margin-top: 30px; padding-top: 20px; border-top: 2px solid #f0f2f5; }
+    .observations { width: 60%; }
+    .observations h3 { margin-top: 0; font-size: 16px; color: #1A237E; }
+    .observations p { font-size: 13px; color: #666; line-height: 1.6; }
+    .totals { width: 35%; }
+    .totals-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
+    .totals-row .label { background-color: #1A237E; color: #fff; padding: 10px 15px; font-weight: bold; font-size: 14px; flex-basis: 40%; text-align: center; }
+    .totals-row .value { flex-grow: 1; border-bottom: 1.5px dotted #aaa; height: 38px; margin-left: 10px; padding: 0 5px; text-align: right; line-height: 38px;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="mb-0"><i class="fas fa-file-invoice me-2"></i>Generar Reporte de Factura</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="number" id="ventaIdInput" class="form-control" placeholder="Ingrese ID de Venta" min="1">
+                            <button id="generarBtn" class="btn btn-primary">
+                                <i class="fas fa-file-pdf me-2"></i>Generar Factura
+                            </button>
+                        </div>
+                        <small class="text-muted mt-2 d-block">Ingrese el ID de la venta para generar la factura correspondiente.</small>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <small>La factura se generará automáticamente con todos los datos de la venta.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contenedor donde se renderizará la factura -->
+<div id="factura-container"></div>
+
+<!-- Plantilla Handlebars para la factura -->
+{% verbatim %}
+<script id="plantilla-factura" type="text/x-handlebars-template">
+<div class="card">
+    <div class="invoice-container">
+        <header class="invoice-header">
+            <div class="header-left">
+                <div class="logo">🍺</div>
+                <div class="company-details">
+                    <h1>ACAUCAB</h1>
+                    <p>Final Avenida Teherán, Caracas 1020, Distrito Capital, Venezuela.</p>
+                    <p>Tlf: 0412-1234567</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <p>FECHA: {{venta.fecha}}</p>
+                <p>NÚMERO: {{venta.id}}</p>
+            </div>
+        </header>
+
+        <main class="invoice-main">
+            <section class="client-info">
+                <h2>CLIENTE:</h2>
+                <div class="info-line">
+                    <label>Nombre</label>
+                    <div class="line">{{cliente.nombre}}</div>
+                </div>
+                <div class="info-line">
+                    <label>Teléfono</label>
+                    <div class="line">{{cliente.telefono}}</div>
+                </div>
+                <div class="info-line">
+                    <label>Dirección</label>
+                    <div class="line">{{cliente.direccion}}</div>
+                </div>
+            </section>
+
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th class="col-id">ID</th>
+                        <th class="col-desc">PRODUCTO</th>
+                        <th class="col-qty">CANTIDAD</th>
+                        <th class="col-price">PRECIO UNIT.</th>
+                        <th class="col-total">TOTAL</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each detalles}}
+                    <tr>
+                        <td>{{id}}</td>
+                        <td>{{producto}}</td>
+                        <td style="text-align: right;">{{cantidad}}</td>
+                        <td style="text-align: right;">{{formatCurrency precio_unitario}}</td>
+                        <td style="text-align: right;">{{formatCurrency total_linea}}</td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </main>
+
+        <footer class="invoice-footer">
+            <div class="observations">
+                <h3>OBSERVACIONES:</h3>
+                <p>Factura emitida sin enmiendas ni tachaduras. Agradecemos su compra.</p>
+            </div>
+            <div class="totals">
+                <div class="totals-row">
+                    <div class="label">BASE</div>
+                    <div class="value">{{formatCurrency venta.subtotal}}</div>
+                </div>
+                <div class="totals-row">
+                    <div class="label">IVA (16%)</div>
+                    <div class="value">{{formatCurrency venta.iva}}</div>
+                </div>
+                <div class="totals-row">
+                    <div class="label">TOTAL</div>
+                    <div class="value">{{formatCurrency venta.total}}</div>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+    <div class="text-center mt-4">
+        <button class="btn btn-success" onclick="window.print()">
+            <i class="fas fa-print me-2"></i>Imprimir Factura
+        </button>
+        <button class="btn btn-secondary ms-2" onclick="document.getElementById('factura-container').innerHTML = ''">
+            <i class="fas fa-times me-2"></i>Cerrar
+        </button>
+    </div>
+</div>
+</script>
+{% endverbatim %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/handlebars@4.7.8/dist/handlebars.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Helper para formatear moneda
+    Handlebars.registerHelper('formatCurrency', function(value) {
+        if (typeof value !== 'number') value = parseFloat(value);
+        return value ? value.toFixed(2) : '0.00';
+    });
+
+    async function generarFactura() {
+        const ventaId = document.getElementById('ventaIdInput').value;
+        const container = document.getElementById('factura-container');
+
+        if (!ventaId) {
+            container.innerHTML = '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i>Por favor, ingrese un ID de venta.</div>';
+            return;
+        }
+
+        container.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Generando factura...</span></div><p class="mt-2">Generando factura...</p></div>';
+
+        try {
+            // Primero detectar el tipo de venta
+            let tipoVenta = 'fisica'; // Default
+            
+            // Verificar si existe como venta física
+            const verificaFisica = await fetch(`/factura/fisica/${ventaId}/`);
+            if (verificaFisica.ok) {
+                tipoVenta = 'fisica';
+            } else {
+                // Si no es física, verificar si es online
+                const verificaOnline = await fetch(`/factura/online/${ventaId}/`);
+                if (verificaOnline.ok) {
+                    tipoVenta = 'online';
+                } else {
+                    throw new Error('No se encontró una venta con ese ID.');
+                }
+            }
+            
+            // Ahora llamar al API con el tipo correcto
+            const response = await fetch(`/empleados/api/reportes/venta/${tipoVenta}/${ventaId}/`);
+            if (!response.ok) {
+                throw new Error(`Error ${response.status}: Los datos de la venta no fueron encontrados.`);
+            }
+            const data = await response.json();
+
+            const templateHtml = document.getElementById('plantilla-factura').innerHTML;
+            const template = Handlebars.compile(templateHtml);
+            container.innerHTML = template(data);
+
+        } catch (error) {
+            console.error('Error al generar la factura:', error);
+            container.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>${error.message}</div>`;
+        }
+    }
+
+    const generarBtn = document.getElementById('generarBtn');
+    if (generarBtn) {
+        generarBtn.addEventListener('click', generarFactura);
+    }
+
+    // Permitir generar con Enter
+    const input = document.getElementById('ventaIdInput');
+    if (input) {
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                generarFactura();
+            }
+        });
+    }
+});
+</script>
+{% endblock %} 

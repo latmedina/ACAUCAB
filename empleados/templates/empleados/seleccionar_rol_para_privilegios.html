@@ -1,0 +1,31 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Seleccionar Rol para Asignar Privilegios</h2>
+
+    <form method="get" action="{% url 'empleados:asignar_privilegios' 0 %}" onsubmit="return goToAsignarPrivilegios();">
+        <div class="mb-3">
+            <label for="rol_id" class="form-label">Seleccione un Rol:</label>
+            <select class="form-select" id="rol_id" name="rol_id" required>
+                <option value="" disabled selected>-- Seleccione un rol --</option>
+                {% for rol_id, rol_nombre in roles %}
+                    <option value="{{ rol_id }}">{{ rol_nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Continuar</button>
+    </form>
+</div>
+
+<script>
+    function goToAsignarPrivilegios() {
+        const rolId = document.getElementById('rol_id').value;
+        if (!rolId) return false;
+        const url = "{% url 'empleados:asignar_privilegios' 0 %}".replace('0', rolId);
+        window.location.href = url;
+        return false;
+    }
+</script>
+{% endblock %}

@@ -113,7 +113,7 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql;
 
--- Función para registrar un pago completo
+-- Función para registrar un pago completo venta física o online
 CREATE OR REPLACE FUNCTION public.registrar_pago(
     p_monto DECIMAL(12,2),
     p_metodo_pago_id INTEGER,
@@ -278,4 +278,55 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION obtener_historial_compras_cliente(p_cliente_id INTEGER)
+RETURNS JSON AS $$
+DECLARE
+    resultado JSON;
+BEGIN
+    SELECT json_agg(h.* ORDER BY h.fecha DESC) INTO resultado
+    FROM (
+        -- Ventas físicas
+        SELECT 
+            'Venta Física' AS tipo,
+            vf.ven_fis_fecha AS fecha,
+            vf.ven_fis_total AS monto,
+            CONCAT('Compra en tienda física - #', vf.ven_fis_id) AS descripcion,
+            vf.ven_fis_id AS venta_id,
+            'fisica' AS tipo_url
+        FROM venta_fisica vf
+        WHERE vf.fk_cliente = p_cliente_id
 
+        UNION ALL
+
+        -- Ventas online
+        SELECT 
+            'Venta Online' AS tipo,
+            vo.ven_onl_fecha AS fecha,
+            vo.ven_onl_total AS monto,
+            CONCAT('Compra en tienda online - #', vo.ven_onl_id) AS descripcion,
+            vo.ven_onl_id AS venta_id,
+            'online' AS tipo_url
+        FROM venta_online vo
+        WHERE vo.fk_usuario IN (
+            SELECT id FROM usuario WHERE fk_cliente = p_cliente_id
+        )
+
+        UNION ALL
+
+        -- Ventas de eventos
+        SELECT 
+            'Evento' AS tipo,
+            vbe.ven_bol_eve_fecha_hora AS fecha,
+            vbe.ven_bol_eve_monto_total AS monto,
+            vbe.ven_bol_eve_descripcion AS descripcion,
+            vbe.ven_bol_eve_id AS venta_id,
+            'evento' AS tipo_url
+        FROM venta_boleto_evento vbe
+        WHERE vbe.fk_usuario IN (
+            SELECT id FROM usuario WHERE fk_cliente = p_cliente_id
+        )
+    ) h;
+
+    RETURN resultado;
+END;
+$$ LANGUAGE plpgsql;

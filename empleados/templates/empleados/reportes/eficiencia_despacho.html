@@ -1,0 +1,140 @@
+{% extends 'empleados/base_empleados.html' %}
+
+{% block title %}Eficiencia de Despacho - Empleados{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'empleados:reportes' %}">Reportes</a></li>
+<li class="breadcrumb-item active">Eficiencia de Despacho</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="mb-0"><i class="fas fa-truck me-2"></i>Reporte de Eficiencia de Despacho</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Análisis del tiempo promedio de despacho de pedidos.</p>
+                <button id="loadReportBtn" class="btn btn-primary">
+                    <i class="fas fa-chart-line me-2"></i>Generar Reporte
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div id="report-container">
+            <!-- El reporte se cargará aquí -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const reportContainer = document.getElementById('report-container');
+    const loadBtn = document.getElementById('loadReportBtn');
+
+    async function loadReport() {
+        loadBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin me-2"></i>Generando...';
+        loadBtn.disabled = true;
+
+        reportContainer.innerHTML = `
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="mt-2">Calculando eficiencia de despacho...</p>
+            </div>
+        `;
+
+        try {
+            const response = await fetch('/empleados/api/reportes/eficiencia-despacho/');
+            if (!response.ok) {
+                throw new Error(`Error ${response.status}: No se pudieron obtener los datos.`);
+            }
+            const data = await response.json();
+
+            // Construir el tiempo legible
+            const dias = data.dias || 0;
+            const horas = data.horas || 0;
+            const minutos = data.minutos || 0;
+            
+            let tiempoTexto = '';
+            if (dias > 0) tiempoTexto += `${dias} días `;
+            if (horas > 0) tiempoTexto += `${horas} horas `;
+            if (minutos > 0) tiempoTexto += `${minutos} minutos`;
+            
+            if (tiempoTexto === '') tiempoTexto = 'Sin datos suficientes';
+
+            reportContainer.innerHTML = `
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Resultados de Eficiencia</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-4">
+                                <div class="border rounded p-4 mb-3">
+                                    <h2 class="text-primary">${dias}</h2>
+                                    <p class="text-muted mb-0">Días</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="border rounded p-4 mb-3">
+                                    <h2 class="text-info">${horas}</h2>
+                                    <p class="text-muted mb-0">Horas</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="border rounded p-4 mb-3">
+                                    <h2 class="text-success">${minutos}</h2>
+                                    <p class="text-muted mb-0">Minutos</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="alert alert-info text-center">
+                                    <h5><i class="fas fa-stopwatch me-2"></i>Tiempo Promedio de Despacho</h5>
+                                    <h3 class="text-primary">${tiempoTexto}</h3>
+                                    <p class="mb-0">Tiempo promedio desde que una orden está "Lista para Entrega" hasta que se marca como "Entregada"</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        ${(dias === 0 && horas === 0 && minutos === 0) ? `
+                            <div class="mt-3">
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <strong>Sin datos:</strong> No hay suficientes órdenes completadas para calcular el tiempo promedio de despacho.
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+
+        } catch (error) {
+            console.error('Error:', error);
+            reportContainer.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <strong>Error:</strong> ${error.message}
+                </div>
+            `;
+        } finally {
+            loadBtn.innerHTML = '<i class="fas fa-chart-line me-2"></i>Generar Reporte';
+            loadBtn.disabled = false;
+        }
+    }
+
+    loadBtn.addEventListener('click', loadReport);
+});
+</script>
+{% endblock %} 

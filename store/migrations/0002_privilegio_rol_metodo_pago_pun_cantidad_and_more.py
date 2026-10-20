@@ -33,11 +33,11 @@ class Migration(migrations.Migration):
                 'managed': True,
             },
         ),
-        migrations.AddField(
-            model_name='metodo_pago',
-            name='pun_cantidad',
-            field=models.IntegerField(blank=True, null=True),
-        ),
+        # migrations.AddField(
+        #     model_name='metodo_pago',
+        #     name='pun_cantidad',
+        #     field=models.IntegerField(blank=True, null=True),
+        # ),
         migrations.AlterField(
             model_name='metodo_pago',
             name='che_num_cheque',

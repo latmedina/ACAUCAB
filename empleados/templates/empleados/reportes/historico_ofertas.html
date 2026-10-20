@@ -1,0 +1,214 @@
+{% extends 'empleados/base_empleados.html' %}
+
+{% block title %}Histórico de Ofertas - Empleados{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'empleados:reportes' %}">Reportes</a></li>
+<li class="breadcrumb-item active">Histórico de Ofertas</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="mb-0"><i class="fas fa-tags me-2"></i>Histórico de Ofertas</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Consulta el histórico de ofertas activas en un rango de fechas específico.</p>
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="fechaInicio" class="form-label">Fecha de Inicio</label>
+                        <input type="date" id="fechaInicio" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="fechaFin" class="form-label">Fecha de Fin</label>
+                        <input type="date" id="fechaFin" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">&nbsp;</label>
+                        <div>
+                            <button id="loadReportBtn" class="btn btn-primary">
+                                <i class="fas fa-search me-2"></i>Buscar Ofertas
+                            </button>
+                            <button id="clearBtn" class="btn btn-secondary">
+                                <i class="fas fa-eraser me-2"></i>Limpiar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div id="report-container">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                Selecciona un rango de fechas para ver las ofertas activas en ese período.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const reportContainer = document.getElementById('report-container');
+    const loadBtn = document.getElementById('loadReportBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const fechaInicio = document.getElementById('fechaInicio');
+    const fechaFin = document.getElementById('fechaFin');
+
+    // Establecer fechas por defecto (último mes)
+    const today = new Date();
+    const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+    fechaInicio.value = lastMonth.toISOString().split('T')[0];
+    fechaFin.value = today.toISOString().split('T')[0];
+
+    async function loadReport() {
+        const inicio = fechaInicio.value;
+        const fin = fechaFin.value;
+
+        if (!inicio || !fin) {
+            reportContainer.innerHTML = `
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Por favor, selecciona ambas fechas.
+                </div>
+            `;
+            return;
+        }
+
+        if (new Date(inicio) > new Date(fin)) {
+            reportContainer.innerHTML = `
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    La fecha de inicio no puede ser posterior a la fecha de fin.
+                </div>
+            `;
+            return;
+        }
+
+        loadBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin me-2"></i>Buscando...';
+        loadBtn.disabled = true;
+
+        reportContainer.innerHTML = `
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="mt-2">Buscando ofertas del ${inicio} al ${fin}...</p>
+            </div>
+        `;
+
+        try {
+            const response = await fetch(`/empleados/api/reportes/historico-ofertas/?inicio=${inicio}&fin=${fin}`);
+            if (!response.ok) {
+                throw new Error(`Error ${response.status}: No se pudieron obtener los datos.`);
+            }
+            const data = await response.json();
+
+            if (!data || data.length === 0) {
+                reportContainer.innerHTML = `
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                            <h5>No se encontraron ofertas</h5>
+                            <p class="text-muted">No hay ofertas activas en el rango de fechas seleccionado.</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-tags me-2"></i>Ofertas Encontradas (${data.length})</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre de Oferta</th>
+                                        <th>Descripción</th>
+                                        <th>Descuento</th>
+                                        <th>Fecha Inicio</th>
+                                        <th>Fecha Fin</th>
+                                        <th>Productos Afectados</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+            `;
+
+            data.forEach(oferta => {
+                const productos = oferta.productos_afectados || [];
+                const productosHtml = productos.length > 0 
+                    ? productos.map(producto => `<li>${producto}</li>`).join('') 
+                    : '<li>N/A</li>';
+
+                html += `
+                    <tr>
+                        <td>
+                            <strong>${oferta.oferta_nombre || 'N/A'}</strong>
+                        </td>
+                        <td>
+                            ${oferta.oferta_descripcion || 'N/A'}
+                        </td>
+                        <td>
+                            <span class="badge bg-warning text-dark">${oferta.descuento_porcentaje || 0}%</span>
+                        </td>
+                        <td>${oferta.fecha_inicio || 'N/A'}</td>
+                        <td>${oferta.fecha_fin || 'N/A'}</td>
+                        <td>
+                            <ul class="list-unstyled mb-0">
+                                ${productosHtml}
+                            </ul>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            reportContainer.innerHTML = html;
+
+        } catch (error) {
+            console.error('Error:', error);
+            reportContainer.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <strong>Error:</strong> ${error.message}
+                </div>
+            `;
+        } finally {
+            loadBtn.innerHTML = '<i class="fas fa-search me-2"></i>Buscar Ofertas';
+            loadBtn.disabled = false;
+        }
+    }
+
+    function clearReport() {
+        reportContainer.innerHTML = `
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                Selecciona un rango de fechas para ver las ofertas activas en ese período.
+            </div>
+        `;
+    }
+
+    loadBtn.addEventListener('click', loadReport);
+    clearBtn.addEventListener('click', clearReport);
+});
+</script>
+{% endblock %} 

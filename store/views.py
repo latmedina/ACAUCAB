@@ -1,29 +1,40 @@
+# Django core
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse
-import json
-import math
-from django.utils import timezone
-from django.contrib.auth.models import User, Group
-from django.contrib import messages
-from django.db import connection, transaction
-from django.http import JsonResponse, HttpResponseNotFound
-from django.http import JsonResponse, HttpResponse, HttpResponseNotFound
-from django.core.serializers.json import DjangoJSONEncoder
-import traceback
-from .models import (
-    presentacion, venta_online, detalle_venta_online, pre_alm, 
-    metodo_pago, pago, moneda, historico_moneda, historico_precio_punto, tienda, 
-    inventario, venta_fisica, detalle_venta_fisica, cliente, proveedor, empleado, emp_car, usuario, lugar, usuario,
+from django.http import (
+    JsonResponse, HttpResponse, HttpResponseNotFound, HttpResponseForbidden
 )
-from .models import estatus as Estatus
-from django.db import connection
+from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
+from django.utils.timezone import now
+from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.models import User, Group
+from django.core.serializers.json import DjangoJSONEncoder
+from django.db import connection, transaction
+
+# Python estándar
+import json
+import math
+import traceback
 from decimal import Decimal
 from datetime import datetime, date
+
+# Formularios
 from .forms import ClienteForm, EmpleadoForm, ProveedorForm
+
+# Utilidades personalizadas
+from empleados.utils import obtener_privilegios, requiere_privilegio
 from .utils import crear_usuario_sql, modificar_usuario_sql, eliminar_usuario_sql
+
+# Modelos
+from .models import (
+    presentacion, venta_online, detalle_venta_online, pre_alm,
+    metodo_pago, pago, moneda, historico_moneda, historico_precio_punto,
+    tienda, inventario, venta_fisica, detalle_venta_fisica,
+    cliente, proveedor, empleado, emp_car, usuario, lugar, estatus as Estatus,
+    evento, venta_boleto_evento
+)
 
 def validate_expiration_date(exp_date_str):
     """Valida que la fecha de vencimiento no sea anterior a la actual"""
@@ -173,64 +184,85 @@ def cartData(request):
 
 # FUNCIÓN AUXILIAR GENERALIZADA PARA CARRITO (NUEVA VERSIÓN)
 def cart_data(request, tipo='fisica'):
-    """Función generalizada para carrito físico y online"""
-    cart_key = 'cart_fisica' if tipo == 'fisica' else 'cart'
+    """Función generalizada para carrito físico, online y de eventos"""
+    if tipo == 'fisica':
+        cart_key = 'cart_fisica'
+    elif tipo == 'evento':
+        cart_key = 'cart_evento'
+    else:
+        cart_key = 'cart'  # para tienda online
+
     cart = request.session.get(cart_key, {})
     items, total_usd, total_items = [], 0, 0
     dollar_rate = get_dollar_exchange_rate()
 
     for product_id, quantity in cart.items():
         try:
-            producto = presentacion.objects.get(pk=int(product_id))
-            
-            if tipo == 'fisica':
-                # Para tienda física: usar tabla inventario
-                inventario_item = inventario.objects.filter(fk_presentacion=producto).first()
-                if not inventario_item:
-                    continue
-                precio_usd = inventario_item.inv_precio_unitario
-                source_item = inventario_item
-            else:
-                # Para tienda online: usar tabla pre_alm
-                prealm = pre_alm.objects.filter(fk_presentacion=producto).first()
-                if not prealm:
-                    continue
-                precio_usd = prealm.pre_alm_precio
-                source_item = prealm
-            
-            precio_bs = convert_price_to_bolivars(precio_usd)
-            subtotal_usd = precio_usd * quantity
-            subtotal_bs = precio_bs * quantity
+            if tipo == 'evento':
+                producto = evento.objects.get(pk=int(product_id))
+                precio_usd = producto.eve_precio_boleto
+                precio_bs = convert_price_to_bolivars(precio_usd)
+                subtotal_usd = precio_usd * quantity
+                subtotal_bs = precio_bs * quantity
 
-            item_data = {
-                'product': producto,
-                'quantity': quantity,
-                'get_total': subtotal_usd,
-                'get_total_bs': subtotal_bs,
-                'precio_unitario': precio_usd,
-                'precio_unitario_bs': precio_bs,
-                'precio_unitario_usd': precio_usd,
-            }
-            
-            # Agregar la referencia correcta según el tipo
-            if tipo == 'fisica':
-                item_data['inventario'] = source_item
+                item_data = {
+                    'product': producto,
+                    'quantity': quantity,
+                    'get_total': subtotal_usd,
+                    'get_total_bs': subtotal_bs,
+                    'precio_unitario': precio_usd,
+                    'precio_unitario_usd': precio_usd,
+                    'precio_unitario_bs': precio_bs,
+                }
+
             else:
-                item_data['prealm'] = source_item
-            
+                producto = presentacion.objects.get(pk=int(product_id))
+
+                if tipo == 'fisica':
+                    inventario_item = inventario.objects.filter(fk_presentacion=producto).first()
+                    if not inventario_item:
+                        continue
+                    precio_usd = inventario_item.inv_precio_unitario
+                    source_item = inventario_item
+                else:
+                    prealm = pre_alm.objects.filter(fk_presentacion=producto).first()
+                    if not prealm:
+                        continue
+                    precio_usd = prealm.pre_alm_precio
+                    source_item = prealm
+
+                precio_bs = convert_price_to_bolivars(precio_usd)
+                subtotal_usd = precio_usd * quantity
+                subtotal_bs = precio_bs * quantity
+
+                item_data = {
+                    'product': producto,
+                    'quantity': quantity,
+                    'get_total': subtotal_usd,
+                    'get_total_bs': subtotal_bs,
+                    'precio_unitario': precio_usd,
+                    'precio_unitario_bs': precio_bs,
+                    'precio_unitario_usd': precio_usd,
+                }
+
+                if tipo == 'fisica':
+                    item_data['inventario'] = source_item
+                else:
+                    item_data['prealm'] = source_item
+
             items.append(item_data)
             total_usd += subtotal_usd
             total_items += quantity
-        except presentacion.DoesNotExist:
+
+        except (presentacion.DoesNotExist, evento.DoesNotExist):
             continue
 
-    # Convertir el total de dólares a bolívares
     total_bs = convert_price_to_bolivars(total_usd)
 
     order = {
-        'get_cart_total': total_usd,  # Total en dólares (base)
-        'get_cart_total_usd': total_usd,  # Total en dólares
-        'get_cart_total_bs': total_bs,  # Total en bolívares para mostrar
+        'get_cart_total': total_usd,
+        'get_cart_total_usd': total_usd,
+        'get_cart_total_bs': total_bs,
         'get_cart_items': total_items,
         'shipping': False,
         'dollar_rate': dollar_rate
@@ -275,42 +307,55 @@ def store(request):
     }
     return render(request, 'store.html', context)
 
+
 def store_view(request, tipo='fisica', extra_context=None):
-    """Vista general de tienda (física/online)"""
+    """Vista general de tienda (física/online/evento)"""
     data = cart_data(request, tipo)
-    productos = presentacion.objects.all()
-    
-    for p in productos:
-        if tipo == 'fisica':
-            # Para tienda física: usar tabla inventario
-            inventario_item = inventario.objects.filter(fk_presentacion=p).first()
-            if inventario_item:
-                p.precio_usd = inventario_item.inv_precio_unitario
-                p.precio_bs = convert_price_to_bolivars(inventario_item.inv_precio_unitario)
-                p.disponible = inventario_item.inv_cantidad > 0
-                p.cantidad_disponible = inventario_item.inv_cantidad  # Mostrar cantidad exacta
-                p.stock_info = f"En stock: {inventario_item.inv_cantidad} unidades"
+
+    if tipo == 'evento':
+        eventos = evento.objects.filter(eve_nro_boletos__gt=0, eve_fecha_hora__gte=timezone.now()).order_by('eve_fecha_hora')
+        productos = []
+
+        for ev in eventos:
+            ev.precio_usd = ev.eve_precio_boleto
+            ev.precio_bs = convert_price_to_bolivars(ev.eve_precio_boleto)
+            ev.disponible = ev.eve_nro_boletos > 0
+            ev.cantidad_disponible = ev.eve_nro_boletos
+            ev.stock_info = f"En stock: {ev.eve_nro_boletos} boletos"
+            productos.append(ev)
+
+    else:
+        productos = presentacion.objects.all()
+        
+        for p in productos:
+            if tipo == 'fisica':
+                inventario_item = inventario.objects.filter(fk_presentacion=p).first()
+                if inventario_item:
+                    p.precio_usd = inventario_item.inv_precio_unitario
+                    p.precio_bs = convert_price_to_bolivars(inventario_item.inv_precio_unitario)
+                    p.disponible = inventario_item.inv_cantidad > 0
+                    p.cantidad_disponible = inventario_item.inv_cantidad
+                    p.stock_info = f"En stock: {inventario_item.inv_cantidad} unidades"
+                else:
+                    p.precio_usd = 0
+                    p.precio_bs = 0
+                    p.disponible = False
+                    p.cantidad_disponible = 0
+                    p.stock_info = "No disponible en tienda física"
             else:
-                p.precio_usd = 0
-                p.precio_bs = 0
-                p.disponible = False
-                p.cantidad_disponible = 0
-                p.stock_info = "No disponible en tienda física"
-        else:
-            # Para tienda online: usar tabla pre_alm
-            prealm = pre_alm.objects.filter(fk_presentacion=p).first()
-            if prealm:
-                p.precio_usd = prealm.pre_alm_precio
-                p.precio_bs = convert_price_to_bolivars(prealm.pre_alm_precio)
-                p.disponible = prealm.pre_alm_cantidad > 0
-                p.cantidad_disponible = prealm.pre_alm_cantidad  # Mostrar cantidad exacta
-                p.stock_info = f"En stock: {prealm.pre_alm_cantidad} unidades"
-            else:
-                p.precio_usd = 0
-                p.precio_bs = 0
-                p.disponible = False
-                p.cantidad_disponible = 0
-                p.stock_info = "No disponible en tienda online"
+                prealm = pre_alm.objects.filter(fk_presentacion=p).first()
+                if prealm:
+                    p.precio_usd = prealm.pre_alm_precio
+                    p.precio_bs = convert_price_to_bolivars(prealm.pre_alm_precio)
+                    p.disponible = prealm.pre_alm_cantidad > 0
+                    p.cantidad_disponible = prealm.pre_alm_cantidad
+                    p.stock_info = f"En stock: {prealm.pre_alm_cantidad} unidades"
+                else:
+                    p.precio_usd = 0
+                    p.precio_bs = 0
+                    p.disponible = False
+                    p.cantidad_disponible = 0
+                    p.stock_info = "No disponible en tienda online"
 
     # Contexto base
     context = {
@@ -319,14 +364,13 @@ def store_view(request, tipo='fisica', extra_context=None):
         'tipo': tipo,
         'dollar_rate': get_dollar_exchange_rate()
     }
-    
-    # Añadir contexto extra si se proporciona (para autopago)
+
     if extra_context:
         context.update(extra_context)
 
-    template = 'tienda_fisica.html' if tipo == 'fisica' else 'store.html'
+    # Usar misma plantilla para todos
+    template = 'store.html' if tipo != 'fisica' else 'tienda_fisica.html'
     return render(request, template, context)
-
 # ACTUALIZAR CARRITO
 @csrf_exempt
 def update_cart(request):
@@ -353,83 +397,101 @@ def update_cart(request):
     total_items = sum(quantity for pid, quantity in cart.items() if pid.strip().isdigit())
     return JsonResponse({'status': 'ok', 'cartItems': total_items})
 
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+import json
+
 @csrf_exempt
 def update_cart_view(request, tipo):
-    """Actualizar carrito generalizado (física/online) con validación de inventario"""
-    data = json.loads(request.body)
-    product_id = str(data.get('productId', '')).strip()
-    action = data.get('action')
+    """Actualizar carrito (física/online/evento) con validación e incompatibilidad entre tipos"""
+    try:
+        data = json.loads(request.body)
+        product_id = str(data.get('productId', '')).strip()
+        action = data.get('action')
 
-    cart_key = 'cart_fisica' if tipo == 'fisica' else 'cart'
-    cart = request.session.get(cart_key, {})
+        # Determinar clave de carrito por tipo
+        cart_key = 'cart_evento' if tipo == 'evento' else 'cart_fisica' if tipo == 'fisica' else 'cart'
+        cart = request.session.get(cart_key, {})
 
-    # Validar inventario antes de añadir al carrito
-    if action == 'add':
-        try:
-            producto = presentacion.objects.get(prese_id=int(product_id))
+        if action == 'add':
             nueva_cantidad = cart.get(product_id, 0) + 1
-            
-            # Verificar disponibilidad según el tipo de tienda
-            if tipo == 'fisica':
-                # Para tienda física: verificar tabla inventario
-                inventario_item = inventario.objects.filter(fk_presentacion=producto).first()
-                if not inventario_item:
-                    return JsonResponse({
-                        'status': 'error', 
-                        'message': f'Producto "{producto.prese_nombre}" no disponible en tienda física'
+
+            if tipo == 'evento':
+                ev = evento.objects.get(eve_id=int(product_id))
+                if ev.eve_nro_boletos < nueva_cantidad:
+                    return JsonResponse({'status': 'error',
+                        'message': f'No hay suficientes boletos disponibles para "{ev.eve_nombre}".'
                     }, status=400)
-                
-                if inventario_item.inv_cantidad < nueva_cantidad:
-                    return JsonResponse({
-                        'status': 'error', 
-                        'message': f'Inventario insuficiente para "{producto.prese_nombre}". Disponible: {inventario_item.inv_cantidad}, Solicitado: {nueva_cantidad}'
-                    }, status=400)
-                    
+                cart[product_id] = nueva_cantidad
+
             else:
-                # Para tienda online: verificar tabla pre_alm
-                prealm_item = pre_alm.objects.filter(fk_presentacion=producto).first()
-                if not prealm_item:
-                    return JsonResponse({
-                        'status': 'error', 
-                        'message': f'Producto "{producto.prese_nombre}" no disponible en tienda online'
-                    }, status=400)
-                
-                if prealm_item.pre_alm_cantidad < nueva_cantidad:
-                    return JsonResponse({
-                        'status': 'error', 
-                        'message': f'Stock insuficiente para "{producto.prese_nombre}". Disponible: {prealm_item.pre_alm_cantidad}, Solicitado: {nueva_cantidad}'
-                    }, status=400)
-            
-            # Si pasa las validaciones, añadir al carrito
-            cart[product_id] = nueva_cantidad
-            
-        except presentacion.DoesNotExist:
-            return JsonResponse({
-                'status': 'error', 
-                'message': 'Producto no encontrado'
-            }, status=404)
-        except ValueError:
-            return JsonResponse({
-                'status': 'error', 
-                'message': 'ID de producto inválido'
-            }, status=400)
-            
-    elif action == 'remove' and cart.get(product_id):
-        cart[product_id] -= 1
-        if cart[product_id] <= 0:
-            del cart[product_id]
+                producto = presentacion.objects.get(prese_id=int(product_id))
 
-    request.session[cart_key] = cart
-    total_items = sum(q for _, q in cart.items() if str(q).isdigit())
-    return JsonResponse({'status': 'ok', 'cartItems': total_items})
+                if tipo == 'fisica':
+                    inventario_item = inventario.objects.filter(fk_presentacion=producto).first()
+                    if not inventario_item:
+                        return JsonResponse({'status': 'error',
+                            'message': f'Producto "{producto.prese_nombre}" no disponible en tienda física'
+                        }, status=400)
+                    if inventario_item.inv_cantidad < nueva_cantidad:
+                        return JsonResponse({'status': 'error',
+                            'message': f'Inventario insuficiente para "{producto.prese_nombre}". Disponible: {inventario_item.inv_cantidad}, Solicitado: {nueva_cantidad}'
+                        }, status=400)
+                else:
+                    prealm_item = pre_alm.objects.filter(fk_presentacion=producto).first()
+                    if not prealm_item:
+                        return JsonResponse({'status': 'error',
+                            'message': f'Producto "{producto.prese_nombre}" no disponible en tienda online'
+                        }, status=400)
+                    if prealm_item.pre_alm_cantidad < nueva_cantidad:
+                        return JsonResponse({'status': 'error',
+                            'message': f'Stock insuficiente para "{producto.prese_nombre}". Disponible: {prealm_item.pre_alm_cantidad}, Solicitado: {nueva_cantidad}'
+                        }, status=400)
 
+                cart[product_id] = nueva_cantidad
+
+        elif action == 'remove' and product_id in cart:
+            cart[product_id] -= 1
+            if cart[product_id] <= 0:
+                del cart[product_id]
+
+        # Guardar carrito actualizado
+        request.session[cart_key] = cart
+        total_items = sum(q for q in cart.values() if isinstance(q, int))
+        return JsonResponse({'status': 'ok', 'cartItems': total_items})
+
+    except (presentacion.DoesNotExist, evento.DoesNotExist):
+        return JsonResponse({'status': 'error', 'message': 'Producto no encontrado'}, status=404)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': f'Error interno: {str(e)}'}, status=500)
+    
 # VISTAS DE CARRITO
 @csrf_exempt
 def cart_dropdown_data(request):
     """Vista AJAX para obtener datos del carrito para el dropdown"""
     try:
-        # Usar carrito físico por defecto
-        data = cart_data(request, tipo='fisica')
+        # Detectar tipo de tienda basándose en la URL de referencia o el path actual
+        tipo = 'fisica'  # default
+        
+        # Verificar la URL de referencia (de dónde viene la petición)
+        referer = request.META.get('HTTP_REFERER', '')
+        if '/store/online/' in referer:
+            tipo = 'online'
+        elif '/store/fisica/' in referer:
+            tipo = 'fisica'
+        
+        # También verificar el path actual
+        current_path = request.path
+        if '/online/' in current_path:
+            tipo = 'online'
+        elif '/fisica/' in current_path:
+            tipo = 'fisica'
+            
+        # Si hay parámetro en la petición, usarlo
+        if request.GET.get('tipo'):
+            tipo = request.GET.get('tipo')
+        
+        data = cart_data(request, tipo=tipo)
         
         cart_items = []
         for item in data['items']:
@@ -450,7 +512,8 @@ def cart_dropdown_data(request):
             'total_usd': float(data['order']['get_cart_total_usd']),
             'total_bs': float(data['order']['get_cart_total_bs']),
             'dollar_rate': float(data['order']['dollar_rate']),
-            'empty': len(cart_items) == 0
+            'empty': len(cart_items) == 0,
+            'tipo': tipo  # Incluir el tipo detectado en la respuesta
         }
         
         return JsonResponse(response_data)
@@ -463,7 +526,8 @@ def cart_dropdown_data(request):
             'total_items': 0,
             'total_usd': 0,
             'total_bs': 0,
-            'empty': True
+            'empty': True,
+            'tipo': 'fisica'
         })
 
 # VISTAS DE AUTOPAGO
@@ -738,13 +802,14 @@ def processOrder(request):
     request.session['pending_venta_id'] = venta.ven_fis_id
     request.session['pending_total'] = float(total_venta_usd)  # Mantener en USD para compatibilidad con métodos de pago
     request.session['pending_tipo'] = 'fisica'
-    # NO limpiar el carrito aquí - se limpiará después del pago exitoso
+    # Limpiar el carrito ahora que la venta fue exitosa
+    request.session['cart'] = {}
 
     return JsonResponse({
         'status': 'ok', 
         'message': 'Venta registrada', 
         'venta_id': venta.ven_fis_id,
-        'redirect_to_payment': True
+        'redirect_url': f'/compra-exitosa/fisica/{venta.ven_fis_id}/'
     })
 
 def ejecutar_registro_venta_fisica(cliente_id, tienda_id, total_bolivares):
@@ -761,116 +826,133 @@ def process_order_view(request, tipo):
 
     data = json.loads(request.body)
     tipo = data.get('tipo', tipo)
-    cart_key = 'cart_fisica' if tipo == 'fisica' else 'cart'
+
+    # Determinar clave de carrito según tipo
+    cart_key = 'cart_evento' if tipo == 'evento' else 'cart_fisica' if tipo == 'fisica' else 'cart'
     cart = request.session.get(cart_key, {})
 
     if not cart:
         return JsonResponse({'status': 'error', 'message': 'Carrito vacío'}, status=400)
 
-    if tipo == 'fisica':
-        # Validar inventario físico pero NO crear venta aún
-        detalles_validados, total_venta = [], 0
-        errores_inventario = []
-        
+    detalles_validados, total_venta = [], 0
+
+    if tipo == 'evento':
+        errores_boletos = []
+        for eid, cantidad in cart.items():
+            try:
+                ev = evento.objects.get(pk=int(eid))
+
+                if ev.eve_nro_boletos < cantidad:
+                    errores_boletos.append(
+                        f'No hay suficientes boletos para "{ev.eve_nombre}". '
+                        f'Disponibles: {ev.eve_nro_boletos}, Solicitados: {cantidad}'
+                    )
+                    continue
+
+                detalles_validados.append({
+                    'evento_id': ev.eve_id,
+                    'cantidad': cantidad,
+                    'precio_unitario': float(ev.eve_precio_boleto)
+                })
+                total_venta += float(ev.eve_precio_boleto) * cantidad
+
+            except evento.DoesNotExist:
+                errores_boletos.append(f'Evento con ID {eid} no encontrado')
+                continue
+
+        if errores_boletos:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Errores con los boletos:',
+                'errores': errores_boletos
+            }, status=400)
+
+    elif tipo == 'fisica':
+        errores_productos = []
         for pid, cantidad in cart.items():
             try:
                 producto = presentacion.objects.get(pk=int(pid))
-                inventario_item = inventario.objects.filter(fk_presentacion=producto).first()
-                
-                if not inventario_item:
-                    errores_inventario.append(f'Producto "{producto.prese_nombre}" no disponible en inventario físico')
+                invent = inventario.objects.filter(fk_presentacion=producto).first()
+
+                if not invent:
+                    errores_productos.append(f'Producto no disponible: {producto.prese_nombre}')
                     continue
-                    
-                if inventario_item.inv_cantidad < cantidad:
-                    errores_inventario.append(
-                        f'Inventario insuficiente para "{producto.prese_nombre}". '
-                        f'Disponible: {inventario_item.inv_cantidad}, Solicitado: {cantidad}'
+
+                if invent.inv_cantidad < cantidad:
+                    errores_productos.append(
+                        f'Sin stock suficiente para "{producto.prese_nombre}". '
+                        f'Disponible: {invent.inv_cantidad}, Solicitado: {cantidad}'
                     )
                     continue
-                
+
                 detalles_validados.append({
-                    'producto_id': producto.prese_id,
-                    'inventario_id': inventario_item.inv_id,
+                    'presentacion_id': producto.prese_id,
                     'cantidad': cantidad,
-                    'precio_unitario': float(inventario_item.inv_precio_unitario)
+                    'precio_unitario': float(invent.inv_precio_unitario)
                 })
-                
-                subtotal = inventario_item.inv_precio_unitario * cantidad
-                total_venta += subtotal
-                
+                total_venta += float(invent.inv_precio_unitario) * cantidad
+
             except presentacion.DoesNotExist:
-                errores_inventario.append(f'Producto con ID {pid} no encontrado')
+                errores_productos.append(f'Producto con ID {pid} no encontrado')
                 continue
 
-        if errores_inventario:
+        if errores_productos:
             return JsonResponse({
-                'status': 'error', 
-                'message': 'Errores de inventario encontrados:', 
-                'errores': errores_inventario
+                'status': 'error',
+                'message': 'Errores con productos:',
+                'errores': errores_productos
             }, status=400)
 
-        # Verificar cliente asociado
-        if not request.user.fk_cliente:
-            return JsonResponse({'status': 'error', 'message': 'Usuario debe tener un cliente asociado para ventas físicas'}, status=400)
-        
-    else:
-        # Validar stock online pero NO crear venta aún
-        detalles_validados, total_venta = [], 0
-        errores_stock = []
-        
+    else:  # tipo == 'online'
+        errores_productos = []
         for pid, cantidad in cart.items():
             try:
                 producto = presentacion.objects.get(pk=int(pid))
                 prealm = pre_alm.objects.filter(fk_presentacion=producto).first()
-                
+
                 if not prealm:
-                    errores_stock.append(f'Producto "{producto.prese_nombre}" no disponible en tienda online')
+                    errores_productos.append(f'Producto no disponible: {producto.prese_nombre}')
                     continue
-                
+
                 if prealm.pre_alm_cantidad < cantidad:
-                    errores_stock.append(
-                        f'Stock insuficiente para "{producto.prese_nombre}". '
+                    errores_productos.append(
+                        f'Sin stock suficiente para "{producto.prese_nombre}". '
                         f'Disponible: {prealm.pre_alm_cantidad}, Solicitado: {cantidad}'
                     )
                     continue
-                
+
                 detalles_validados.append({
-                    'producto_id': producto.prese_id,
-                    'prealm_id': prealm.pre_alm_id,
+                    'pre_alm_id': prealm.pre_alm_id,  # ✅ CORREGIDO
                     'cantidad': cantidad,
                     'precio_unitario': float(prealm.pre_alm_precio)
                 })
-                
-                subtotal = prealm.pre_alm_precio * cantidad
-                total_venta += subtotal
-                
+                total_venta += float(prealm.pre_alm_precio) * cantidad
+
             except presentacion.DoesNotExist:
-                errores_stock.append(f'Producto con ID {pid} no encontrado')
+                errores_productos.append(f'Producto con ID {pid} no encontrado')
                 continue
 
-        if errores_stock:
+        if errores_productos:
             return JsonResponse({
-                'status': 'error', 
-                'message': 'Errores de stock encontrados:', 
-                'errores': errores_stock
+                'status': 'error',
+                'message': 'Errores con productos:',
+                'errores': errores_productos
             }, status=400)
 
-    if total_venta <= 0:
-        return JsonResponse({'status': 'error', 'message': 'Orden inválida - no hay productos válidos en el carrito'}, status=400)
+    if total_venta <= 0 or not detalles_validados:
+        return JsonResponse({'status': 'error', 'message': 'Orden inválida - sin productos válidos'}, status=400)
 
-    # Guardar datos validados en sesión para crear venta después del pago
+    # Guardar en sesión para usar luego en la pantalla de métodos de pago
     request.session['pending_order_data'] = {
         'tipo': tipo,
         'detalles': detalles_validados,
         'total': float(total_venta),
         'cart_key': cart_key
     }
-    
-    # NO crear venta ni limpiar carrito - se hará después del pago exitoso
 
     return JsonResponse({
-        'status': 'ok', 
-        'message': 'Orden validada correctamente', 
+        'status': 'ok',
+        'message': 'Orden validada correctamente',
         'total': float(total_venta),
         'redirect_to_payment': True
     })
@@ -1108,6 +1190,13 @@ def add_partial_payment(request):
                 if valor_punto <= 0:
                     return JsonResponse({'status': 'error', 'message': 'No hay precio de puntos configurado'}, status=400)
                 
+                # VALIDACIÓN: El monto mínimo debe ser equivalente al valor de 1 punto
+                if amount_bolivares < valor_punto:
+                    return JsonResponse({
+                        'status': 'error', 
+                        'message': f'El monto mínimo para pago con puntos es {valor_punto} Bs (equivalente a 1 punto)'
+                    }, status=400)
+                
                 puntos_necesarios = int(math.ceil(amount_bolivares / valor_punto))
                 payment_data['puntos_utilizados'] = puntos_necesarios
                 payment_data['valor_punto'] = valor_punto
@@ -1170,106 +1259,112 @@ def finalize_multiple_payment_purchase(request):
     """Vista para finalizar la compra con múltiples métodos de pago"""
     if request.method != 'POST':
         return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
-    
+
     try:
         print("=== INICIANDO FINALIZACIÓN DE COMPRA MÚLTIPLE ===")
         order_data = request.session.get('pending_order_data')
         partial_payments = request.session.get('partial_payments', [])
-        
+
         print(f"Order data: {order_data}")
         print(f"Partial payments: {partial_payments}")
-        
+
         if not order_data:
             print("ERROR: No hay orden pendiente")
             return JsonResponse({'status': 'error', 'message': 'No hay orden pendiente'}, status=400)
-        
+
         if not partial_payments:
             print("ERROR: No hay pagos aplicados")
             return JsonResponse({'status': 'error', 'message': 'No hay pagos aplicados'}, status=400)
-        
+
         # Verificar que el total esté completamente cubierto
         total_bs = convert_price_to_bolivars(Decimal(str(order_data['total'])))
         total_paid = sum(float(payment['monto_bolivares']) for payment in partial_payments)
-        
+
         if total_paid < float(total_bs) - 0.01:
             return JsonResponse({'status': 'error', 'message': f'Faltan {float(total_bs) - total_paid:.2f} Bs por pagar'}, status=400)
-        
+
         with transaction.atomic():
             print("Iniciando transacción...")
-            
-            # CREAR LA VENTA
-            print("Creando venta...")
-            venta_fisica_obj, venta_online_obj = create_sale_from_order_data(order_data, request.user)
-            print(f"Venta creada - Física: {venta_fisica_obj}, Online: {venta_online_obj}")
-            
+            tipo = order_data.get('tipo')
+            detalles = order_data.get('detalles', [])
+            venta_id = None
+            venta_fisica_obj = venta_online_obj = venta_evento_obj = None
+
+            if tipo == 'evento':
+                print("Creando venta de evento...")
+                venta_evento_obj = venta_boleto_evento.objects.create(
+                    ven_bol_eve_fecha_hora=timezone.now(),
+                    ven_bol_eve_monto_total=order_data['total'],
+                    ven_bol_eve_descripcion=f'Compra de {sum(d["cantidad"] for d in detalles)} boletos',
+                    fk_evento_id=detalles[0]['evento_id'] if detalles else None,
+                    fk_usuario=request.user  # ✅ AGREGA ESTA LÍNEA
+                )
+
+                for d in detalles:
+                    ev = evento.objects.get(pk=d['evento_id'])
+                    ev.eve_nro_boletos -= d['cantidad']
+                    ev.save()
+
+                venta_id = venta_evento_obj.ven_bol_eve_id
+
+            else:
+                # Para ventas físicas u online
+                venta_fisica_obj, venta_online_obj = create_sale_from_order_data(order_data, request.user)
+                venta_id = venta_fisica_obj.ven_fis_id if venta_fisica_obj else venta_online_obj.ven_onl_id
+
             # CREAR CADA MÉTODO DE PAGO Y SU PAGO CORRESPONDIENTE
             created_payments = []
-            
+
             for i, payment_data in enumerate(partial_payments):
                 print(f"\n--- Procesando pago {i+1}/{len(partial_payments)} ---")
                 print(f"Datos del pago: {payment_data}")
-                
-                # Crear método de pago usando la función existente
-                print("Creando método de pago...")
+
                 metodo_pago_obj = create_payment_method_from_partial_data(request.user, payment_data)
-                
                 if isinstance(metodo_pago_obj, JsonResponse):
-                    print(f"ERROR: Fallo al crear método de pago para {payment_data['tipo_pago']}")
                     raise Exception(f'Error creando método de pago: {payment_data["tipo_pago"]}')
-                
-                print(f"Método de pago creado con ID: {metodo_pago_obj.met_pag_id}")
-                
-                # Preparar IDs para el registro de pago
+
                 venta_fisica_id = venta_fisica_obj.ven_fis_id if venta_fisica_obj else None
                 venta_online_id = venta_online_obj.ven_onl_id if venta_online_obj else None
-                
-                # Obtener moneda
+                venta_evento_id = venta_evento_obj.ven_bol_eve_id if venta_evento_obj else None
+
                 try:
                     moneda_obj = moneda.objects.get(mon_id=payment_data['moneda_id'])
-                    print(f"Moneda encontrada: {moneda_obj.mon_tipo} (ID: {moneda_obj.mon_id})")
                 except moneda.DoesNotExist:
-                    print(f"ERROR: Moneda no encontrada con ID: {payment_data['moneda_id']}")
                     raise Exception(f'Moneda no encontrada: {payment_data["moneda_id"]}')
-                
-                # Registrar el pago usando la función SQL
+
                 if payment_data['tipo_pago'] == 'puntos':
-                    print("Procesando pago con puntos...")
-                    # Pago con puntos - usar función especial
                     with connection.cursor() as cursor:
                         cursor.execute("""
-                            SELECT * FROM public.procesar_pago_puntos(%s, %s, %s, %s)
+                            SELECT * FROM public.procesar_pago_puntos(%s, %s, %s, %s, %s)
                             AS (pago_id INTEGER, metodo_pago_id INTEGER, puntos_utilizados INTEGER, puntos_restantes INTEGER, monto_pago DECIMAL)
-                        """, [request.user.id, payment_data['puntos_utilizados'], venta_fisica_id, venta_online_id])
-                        
-                        resultado = cursor.fetchone()
-                        if not resultado:
-                            print("ERROR: No se pudo procesar pago con puntos")
-                            raise Exception('Error procesando pago con puntos')
-                        
-                        pago_id = resultado[0]
-                        print(f"Pago con puntos creado con ID: {pago_id}")
-                else:
-                    print(f"Procesando pago normal. Monto: {payment_data['monto_original']}")
-                    # Pago normal
-                    with connection.cursor() as cursor:
-                        cursor.execute("""
-                            SELECT public.registrar_pago(%s, %s, %s, %s, %s)
                         """, [
-                            float(payment_data['monto_original']), 
-                            metodo_pago_obj.met_pag_id, 
-                            venta_fisica_id, 
-                            venta_online_id, 
+                            request.user.id,
+                            payment_data['puntos_utilizados'],
+                            venta_fisica_id,
+                            venta_online_id,
+                            venta_evento_id,
                             moneda_obj.mon_id
                         ])
-                        
+                        resultado = cursor.fetchone()
+                        if not resultado:
+                            raise Exception('Error procesando pago con puntos')
+                        pago_id = resultado[0]
+                else:
+                    with connection.cursor() as cursor:
+                        cursor.execute("""SELECT public.registrar_pago(CAST(%s AS numeric), CAST(%s AS integer), CAST(%s AS integer), CAST(%s AS integer), CAST(%s AS integer), CAST(%s AS integer)
+        )                        """, [
+                            float(payment_data['monto_original']),
+                            metodo_pago_obj.met_pag_id,
+                            venta_fisica_id,
+                            venta_online_id,
+                            venta_evento_id,
+                            moneda_obj.mon_id
+                        ])
                         result = cursor.fetchone()
                         if not result or not result[0]:
-                            print("ERROR: No se pudo registrar el pago")
                             raise Exception('Error registrando pago')
-                        
                         pago_id = result[0]
-                        print(f"Pago normal creado con ID: {pago_id}")
-                
+
                 created_payments.append({
                     'pago_id': pago_id,
                     'metodo_pago_id': metodo_pago_obj.met_pag_id,
@@ -1278,29 +1373,99 @@ def finalize_multiple_payment_purchase(request):
                     'moneda': payment_data['moneda_tipo'],
                     'tipo_pago': payment_data['tipo_pago']
                 })
-                print(f"Pago {i+1} procesado exitosamente")
-            
-            print(f"Todos los pagos procesados. Total: {len(created_payments)}")
-        
-        # Limpiar la sesión
-        cart_key = order_data['cart_key']
+
         request.session.pop('pending_order_data', None)
         request.session.pop('partial_payments', None)
-        request.session[cart_key] = {}  # Limpiar el carrito
-        
+        request.session[order_data['cart_key']] = {}
+
+        if tipo not in ['fisica', 'online', 'evento']:
+            return JsonResponse({'status': 'error', 'message': 'Tipo de venta inválido'}, status=400)
+
+        tipo_venta = tipo
         return JsonResponse({
             'status': 'success',
             'message': 'Compra finalizada exitosamente',
-            'venta_id': venta_fisica_obj.ven_fis_id if venta_fisica_obj else venta_online_obj.ven_onl_id,
+            'venta_id': venta_id,
             'total_pagos': len(created_payments),
             'pagos_creados': created_payments,
-            'redirect_url': f'/store/{order_data["tipo"]}/'
+            'redirect_url': f'/compra-exitosa/{tipo_venta}/{venta_id}/'
         })
-        
-    except Exception as e:
-        print(f"Error finalizando compra múltiple: {e}")
-        return JsonResponse({'status': 'error', 'message': f'Error finalizando compra: {str(e)}'}, status=500)
 
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': f'Error finalizando compra: {str(e)}'}, status=500)
+    
+@login_required
+def purchase_success_view(request, tipo, venta_id):
+    """Vista para mostrar la página de éxito después de completar una compra"""
+    try:
+        # Validar tipo de venta
+        if tipo not in ['fisica', 'online', 'evento']:
+            return HttpResponseNotFound("Tipo de venta inválido.")
+        
+        venta_fisica_obj = venta_online_obj = venta_evento_obj = None
+
+        if tipo == 'fisica':
+            try:
+                venta_fisica_obj = venta_fisica.objects.get(ven_fis_id=venta_id)
+                if request.user.fk_cliente and venta_fisica_obj.fk_cliente.cli_id != request.user.fk_cliente.cli_id:
+                    return HttpResponseNotFound("No se encontró la venta especificada.")
+            except venta_fisica.DoesNotExist:
+                return HttpResponseNotFound("No se encontró la venta física especificada.")
+        
+        elif tipo == 'online':
+            try:
+                venta_online_obj = venta_online.objects.get(ven_onl_id=venta_id)
+                if venta_online_obj.fk_usuario.id != request.user.id:
+                    return HttpResponseNotFound("No se encontró la venta especificada.")
+            except venta_online.DoesNotExist:
+                return HttpResponseNotFound("No se encontró la venta online especificada.")
+        
+        elif tipo == 'evento':
+            try:
+                venta_evento_obj = venta_boleto_evento.objects.get(ven_bol_eve_id=venta_id)
+                # Aquí no hay verificación de cliente porque es general
+            except venta_boleto_evento.DoesNotExist:
+                return HttpResponseNotFound("No se encontró la venta de evento especificada.")
+
+        # Determinar la información de la venta
+        if venta_fisica_obj:
+            venta_info = {
+                'id': venta_fisica_obj.ven_fis_id,
+                'fecha': venta_fisica_obj.ven_fis_fecha.strftime('%d/%m/%Y %H:%M'),
+                'total': venta_fisica_obj.ven_fis_total,
+                'tipo': 'Venta Física',
+                'tipo_url': 'fisica',
+                'tienda': venta_fisica_obj.fk_tienda.tie_nombre if venta_fisica_obj.fk_tienda else 'N/A'
+            }
+        elif venta_online_obj:
+            venta_info = {
+                'id': venta_online_obj.ven_onl_id,
+                'fecha': venta_online_obj.ven_onl_fecha.strftime('%d/%m/%Y %H:%M'),
+                'total': venta_online_obj.ven_onl_total,
+                'tipo': 'Venta Online',
+                'tipo_url': 'online',
+                'tienda': venta_online_obj.fk_tienda.tie_nombre if venta_online_obj.fk_tienda else 'N/A'
+            }
+        else:  # evento
+            venta_info = {
+                'id': venta_evento_obj.ven_bol_eve_id,
+                'fecha': venta_evento_obj.ven_bol_eve_fecha_hora.strftime('%d/%m/%Y %H:%M'),
+                'total': venta_evento_obj.ven_bol_eve_monto_total,
+                'tipo': 'Venta de Evento',
+                'tipo_url': 'evento',
+                'tienda': venta_evento_obj.fk_evento.eve_nombre if venta_evento_obj.fk_evento else 'N/A'
+            }
+
+        context = {
+            'venta_info': venta_info,
+            'venta_id': venta_id
+        }
+
+        return render(request, 'purchase_success.html', context)
+
+    except Exception as e:
+        print(f"Error en página de éxito: {e}")
+        return HttpResponse(f"<h1>Error</h1><p>Ocurrió un error al mostrar la página de éxito: {str(e)}</p>", status=500)
 def create_payment_method_from_partial_data(user, payment_data):
     """Función para crear un método de pago desde los datos de un pago parcial"""
     try:
@@ -1669,6 +1834,10 @@ def process_payment_method_original(request):
         request.session.pop('pending_order_data', None)
         request.session[cart_key] = {}  # Limpiar el carrito SOLO después del pago exitoso
         
+        # Obtener el ID de la venta para la página de éxito
+        venta_id = venta_fisica_obj.ven_fis_id if venta_fisica_obj else venta_online_obj.ven_onl_id
+        tipo_venta = 'fisica' if venta_fisica_obj else 'online'
+        
         return JsonResponse({
             'status': 'success',
             'message': 'Pago procesado exitosamente',
@@ -1677,7 +1846,7 @@ def process_payment_method_original(request):
             'monto_convertido': float(monto_convertido),
             'moneda': moneda_obj.mon_tipo,
             'tasa_cambio': float(ultimo_historico.his_valor_cambio),
-            'redirect_url': f'/store/{pending_tipo}/'  # Redirigir de vuelta al tipo de tienda correcto
+            'redirect_url': f'/compra-exitosa/{tipo_venta}/{venta_id}/'  # Redirigir a la página de éxito
         })
         
     except Exception as e:
@@ -1708,6 +1877,13 @@ def process_points_payment(request, data, order_data, total, pending_tipo):
             
             if valor_punto == 0:
                 return JsonResponse({'status': 'error', 'message': 'No hay precio de puntos configurado'}, status=400)
+            
+            # VALIDACIÓN: El monto mínimo debe ser equivalente al valor de 1 punto
+            if float(total_bs) < valor_punto:
+                return JsonResponse({
+                    'status': 'error', 
+                    'message': f'El monto mínimo para pago con puntos es {valor_punto} Bs (equivalente a 1 punto)'
+                }, status=400)
             
             puntos_necesarios = int(math.ceil(float(total_bs) / valor_punto))
             
@@ -1744,13 +1920,17 @@ def process_points_payment(request, data, order_data, total, pending_tipo):
         request.session.pop('pending_order_data', None)
         request.session[cart_key] = {}
         
+        # Obtener el ID de la venta para la página de éxito
+        venta_id = venta_fisica_obj.ven_fis_id if venta_fisica_obj else venta_online_obj.ven_onl_id
+        tipo_venta = 'fisica' if venta_fisica_obj else 'online'
+        
         return JsonResponse({
             'status': 'success',
             'message': 'Pago con puntos procesado exitosamente',
             'pago_id': pago_id,
             'puntos_utilizados': puntos_utilizados,
             'puntos_restantes': puntos_restantes,
-            'redirect_url': f'/store/{pending_tipo}/'
+            'redirect_url': f'/compra-exitosa/{tipo_venta}/{venta_id}/'
         })
         
     except Exception as e:
@@ -1800,7 +1980,7 @@ def create_sale_from_order_data(order_data, user):
             
             # Crear detalles de venta online
             for detalle in detalles:
-                prealm_obj = pre_alm.objects.get(pre_alm_id=detalle['prealm_id'])
+                prealm_obj = pre_alm.objects.get(pre_alm_id=detalle['pre_alm_id'])
                 detalle_venta_online.objects.create(
                     fk_venta_online=venta_online_obj,
                     fk_pre_alm=prealm_obj,
@@ -1911,13 +2091,25 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user:
             login(request, user)
+
+            # Obtener privilegios desde la BD y guardarlos en la sesión
+            request.session['privilegios'] = list(obtener_privilegios(user))
+
+            # DETECTAR TIPO DE USUARIO Y REDIRIGIR APROPIADAMENTE
+            if hasattr(user, 'fk_emp_car') and user.fk_emp_car:
+                messages.success(request, f'¡Bienvenido al módulo de empleados, {user.get_full_name() or user.username}!')
+                return redirect('empleados:dashboard')
+            elif hasattr(user, 'fk_cliente') and user.fk_cliente:
+                messages.success(request, f'¡Bienvenido a la tienda, {user.get_full_name() or user.username}!')
+                return redirect('store_view', tipo='fisica')
+            elif hasattr(user, 'fk_proveedor') and user.fk_proveedor:
+                messages.success(request, f'¡Bienvenido, {user.get_full_name() or user.username}!')
+                return redirect('home')
+
             next_url = request.GET.get('next')
             if next_url:
                 return redirect(next_url)
-            # Verificar si el usuario es empleado
-            usuario_obj = get_object_or_404(usuario, pk=user.id)
-            if usuario_obj.fk_emp_car:
-                return redirect('empleado_home')  # Cambia 'empleado_home' por el nombre de tu vista/template de empleados
+
             return redirect('home')
         else:
             return render(request, 'login.html', {'error': 'Credenciales inválidas'})
@@ -1952,7 +2144,6 @@ def empleado_home(request):
 def logout_view(request):
     logout(request)
     return redirect('login')
-
 
 def crear_usuario_view(request, tipo, id_entidad):
     if request.method == 'POST':
@@ -2176,243 +2367,143 @@ def load_parroquias(request):
     return JsonResponse({'parroquias': parroquias_data})
 
 
-# Facturas
-def vista_factura(request):
-    # Asegúrate de que tu archivo 'factura_reporte.html' esté en tu carpeta de templates
-        return render(request, 'reportes/factura_reporte.html')
+# NOTA: Las vistas de reportes se han movido al módulo de empleados
+# para una mejor organización y control de acceso.
 
-def generar_reporte_venta_api(request, venta_id):
+# Historial de Compras de Clientes
+def historial_compras_api(request, id_usuario):
     """
-    API endpoint que obtiene los datos para un reporte de venta específico.
+    API endpoint que devuelve el historial de compras para un cliente,
+    buscado a través de su ID de usuario.
     """
-    if request.method != 'GET':
-        return JsonResponse({'error': 'Método no permitido'}, status=405)
-
     try:
+        user= get_object_or_404(usuario, pk=id_usuario)
+        cliente_id = user.fk_cliente_id 
+        
+        if not cliente_id:
+            return JsonResponse([], safe=False)
+
         with connection.cursor() as cursor:
-            print(f"Ejecutando consulta para venta_id: {venta_id}")
-            cursor.execute("SELECT obtener_datos_reporte_venta(%s);", [venta_id])
+            cursor.execute("SELECT public.obtener_historial_compras_cliente(%s);", [cliente_id])
             result = cursor.fetchone()
             
             if result is None or result[0] is None:
-                print(f"No se encontró resultado en la BD para venta_id: {venta_id}")
-                return HttpResponseNotFound(f'No se encontraron datos para la venta con ID {venta_id}')
-
-            # El resultado es un diccionario de Python
-            report_data = result[0]
-            print("Datos obtenidos de la BD correctamente. Procediendo a serializar.")
-            # print(f"Datos: {report_data}") # Descomenta esta línea si necesitas ver el diccionario completo
-
-            # LA CORRECCIÓN: Convertimos manualmente a JSON
-            # Esto nos da más control y nos ayuda a aislar el error.
-            json_output = json.dumps(report_data, cls=DjangoJSONEncoder)
-            
-            print("Serialización a JSON exitosa. Enviando respuesta.")
-            
-            # Devolvemos una HttpResponse con el tipo de contenido correcto.
-            return HttpResponse(json_output, content_type='application/json')
-
-    except Exception as e:
-        # Este bloque capturará cualquier error durante el proceso
-        print(f"¡ERROR! Ocurrió una excepción en la vista: {e}")
-        return JsonResponse({'success': False, 'error': str(e)}, status=500)
-    
-
-# Orden de Compra
-def vista_orden_compra(request):
-    # Asegúrate de que tu archivo 'factura_reporte.html' esté en tu carpeta de templates
-        return render(request, 'reportes/Orden_compra_reporte.html')
-
-def generar_orden_compra_api(request, orden_id):
-    if request.method != 'GET':
-        return JsonResponse({'error': 'Método no permitido'}, status=405)
-
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT obtener_datos_orden_compra(%s);", [orden_id])
-            result = cursor.fetchone()
-            
-            if result is None or result[0] is None:
-                return HttpResponseNotFound(f'No se encontraron datos para la orden de compra con ID {orden_id}')
-
-            report_data = result[0]
-            return JsonResponse(report_data, encoder=DjangoJSONEncoder, safe=False)
-
-    except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=500)
-    
-
-# Reportes de Productores en Eventos
-def reporte_productores_eventos_api(request):
-    """
-    API endpoint que devuelve los datos para el reporte de productores en eventos.
-    """
-    print("Iniciando llamada al API de reporte de productores...")
-    try:
-        with connection.cursor() as cursor:
-            # Se llama a la función de la base de datos
-            cursor.execute("SELECT public.obtener_datos_productores_eventos();")
-            result = cursor.fetchone()
-            
-            if result is None or result[0] is None:
-                print("La consulta a la BD no devolvió resultados.")
                 return JsonResponse([], safe=False)
 
             report_data = result[0]
-            print("Datos obtenidos de la BD correctamente. Se procederá a enviar.")
-
-            # Se utiliza HttpResponse para un control manual y evitar errores de serialización
-            json_output = json.dumps(report_data, cls=DjangoJSONEncoder, indent=4)
-            return HttpResponse(json_output, content_type='application/json')
-
-    except Exception as e:
-        # ¡ESTA PARTE ES LA MÁS IMPORTANTE!
-        # Imprimirá el error exacto de la base de datos en tu consola de Django.
-        print("\n¡Ocurrió un error grave en la vista del API!")
-        print("------------------------------------------")
-        print(f"Tipo de Excepción: {type(e).__name__}")
-        print(f"Error: {e}")
-        print("------------------------------------------\n")
-        return JsonResponse({'error': f'Ocurrió un error en el servidor: {e}'}, status=500)
-
-def vista_reporte_productores(request):
-    """
-    Esta vista simplemente renderiza la página HTML que mostrará el reporte.
-    """
-    return render(request, 'reportes/productores_eventos.html')
-
-
-# Reporte de Eficiencia de Despacho
-def reporte_eficiencia_despacho_api(request):
-    """
-    API endpoint que devuelve el tiempo promedio de despacho.
-    """
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT public.calcular_eficiencia_despacho();")
-            result = cursor.fetchone()
-            print("Ejecutando consulta para calcular eficiencia de despacho...")
-            print(f"Resultado de la consulta: {result}")
-            if result is None or result[0] is None:
-                return JsonResponse({'error': 'No se pudo calcular la eficiencia.'}, status=404)
-
-            report_data = result[0]
             return JsonResponse(report_data, encoder=DjangoJSONEncoder, safe=False)
+
+    except usuario.DoesNotExist:
+        return HttpResponseNotFound("El usuario no existe.")
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
-def vista_reporte_eficiencia(request):
-    """
-    Esta vista simplemente renderiza la página HTML que mostrará el reporte.
-    """
-    # Asegúrate de crear la carpeta 'reportes' dentro de 'templates'
-    return render(request, 'reportes/eficiencia_despacho.html')
-
-# Reporte Histórico de Ofertas
-def reporte_historico_ofertas_api(request):
-    """
-    API endpoint que devuelve las ofertas activas en un rango de fechas.
-    """
-    print("Iniciando llamada al API de histórico de ofertas...")
-    try:
-        # Obtener fechas desde los parámetros de la URL, con valores por defecto
-        fecha_inicio_str = request.GET.get('inicio', '1900-01-01')
-        fecha_fin_str = request.GET.get('fin', datetime.now().strftime('%Y-%m-%d'))
-        
-        print(f"Buscando ofertas entre {fecha_inicio_str} y {fecha_fin_str}")
-
-        with connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT public.obtener_historico_ofertas(%s::DATE, %s::DATE);",
-                [fecha_inicio_str, fecha_fin_str]
-            )
-            result = cursor.fetchone()
-            
-            if result is None or result[0] is None:
-                print("La consulta a la BD no devolvió resultados.")
-                return JsonResponse([], safe=False)
-
-            report_data = result[0]
-            print("Datos obtenidos de la BD correctamente. Enviando respuesta.")
-            return JsonResponse(report_data, encoder=DjangoJSONEncoder, safe=False)
-
-    except Exception as e:
-        # ¡ESTA PARTE ES LA MÁS IMPORTANTE!
-        # Imprimirá el error exacto en tu consola de Django.
-        print("\n¡Ocurrió un error grave en la vista del API de Ofertas!")
-        print("-----------------------------------------------------")
-        print(f"Tipo de Excepción: {type(e).__name__}")
-        print(f"Error: {e}")
-        print("-----------------------------------------------------\n")
-        return JsonResponse({'error': f'Ocurrió un error en el servidor: {e}'}, status=500)
-
-def vista_reporte_ofertas(request):
-    """
-    Renderiza la página HTML para el reporte de histórico de ofertas.
-    """
-    return render(request, 'reportes/historico_ofertas.html')
-
-# Reporte de Incumplimiento de Horario
-def reporte_incumplimiento_horario_api(request):
-    """
-    API endpoint que devuelve los incumplimientos de horario en un rango de fechas.
-    """
-    try:
-        # Obtener fechas desde los parámetros de la URL
-        fecha_inicio_str = request.GET.get('inicio')
-        fecha_fin_str = request.GET.get('fin')
-        
-        if not fecha_inicio_str or not fecha_fin_str:
-            return JsonResponse({'error': 'Fechas de inicio y fin son requeridas'}, status=400)
-        
-        with connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT public.obtener_reporte_incumplimiento_horario(%s::DATE, %s::DATE);",
-                [fecha_inicio_str, fecha_fin_str]
-            )
-            result = cursor.fetchone()
-            
-            if result is None or result[0] is None:
-                return JsonResponse([], safe=False)
-
-            report_data = result[0]
-            return JsonResponse(report_data, encoder=DjangoJSONEncoder, safe=False)
-
-    except Exception as e:
-        # Manejo de errores para depuración
-        print(f"Error en API de incumplimiento: {e}")
-        return JsonResponse({'error': str(e)}, status=500)
+def vista_historial_compras(request, id_usuario):
+    usuario_obj = get_object_or_404(usuario, pk=id_usuario)
+    cliente_obj = usuario_obj.fk_cliente 
     
-def reporte_incumplimiento_horario_api(request):
+    if not cliente_obj:
+        return HttpResponse("Este usuario no tiene un perfil de cliente asociado.", status=404)
+    
+    context = {'cliente': cliente_obj, 'usuario': usuario_obj}
+    return render(request, 'historial_compras_cliente.html', context)
+
+@login_required
+def vista_factura_directa(request, tipo, venta_id):
     """
-    API endpoint que devuelve los incumplimientos de horario en un rango de fechas.
+    Renderiza la factura para una venta específica.
     """
     try:
-        # Obtener fechas desde los parámetros de la URL
-        fecha_inicio_str = request.GET.get('inicio')
-        fecha_fin_str = request.GET.get('fin')
-        
-        if not fecha_inicio_str or not fecha_fin_str:
-            return JsonResponse({'error': 'Fechas de inicio y fin son requeridas'}, status=400)
-        
-        with connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT public.obtener_reporte_incumplimiento_horario(%s::DATE, %s::DATE);",
-                [fecha_inicio_str, fecha_fin_str]
-            )
-            result = cursor.fetchone()
-            
-            if result is None or result[0] is None:
-                return JsonResponse([], safe=False)
+        if tipo not in ['fisica', 'online', 'evento']:
+            return HttpResponseNotFound("<h1>Tipo de venta inválido</h1><p>El tipo debe ser 'fisica', 'online' o 'evento'.</p>")
 
+        # ---------------------------
+        # FACTURA DE VENTA FÍSICA
+        # ---------------------------
+        if tipo == 'fisica':
+            if not venta_fisica.objects.filter(ven_fis_id=venta_id).exists():
+                return HttpResponseNotFound("<h1>Venta física no encontrada</h1>")
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT public.obtener_datos_reporte_venta(%s, %s);", [venta_id, tipo])
+                result = cursor.fetchone()
+            if result is None or result[0] is None:
+                return HttpResponseNotFound("<h1>Factura no encontrada</h1>")
             report_data = result[0]
-            return JsonResponse(report_data, encoder=DjangoJSONEncoder, safe=False)
-     
+            report_data['dollar_rate'] = float(get_dollar_exchange_rate())
+            return render(request, 'factura_template.html', {'report_data': report_data})
+
+        # ---------------------------
+        # FACTURA DE VENTA ONLINE
+        # ---------------------------
+        elif tipo == 'online':
+            if not venta_online.objects.filter(ven_onl_id=venta_id).exists():
+                return HttpResponseNotFound("<h1>Venta online no encontrada</h1>")
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT public.obtener_datos_reporte_venta(%s, %s);", [venta_id, tipo])
+                result = cursor.fetchone()
+            if result is None or result[0] is None:
+                return HttpResponseNotFound("<h1>Factura no encontrada</h1>")
+            report_data = result[0]
+            report_data['dollar_rate'] = float(get_dollar_exchange_rate())
+            return render(request, 'factura_template.html', {'report_data': report_data})
+
+        # ---------------------------
+        # FACTURA DE EVENTO
+        # ---------------------------
+        elif tipo == 'evento':
+            from .models import venta_boleto_evento
+            venta = venta_boleto_evento.objects.select_related('fk_evento', 'fk_usuario__fk_cliente').get(ven_bol_eve_id=venta_id)
+
+            cliente = venta.fk_usuario.fk_cliente
+            cantidad = int(venta.ven_bol_eve_descripcion.split()[2])  # Ej. "Compra de 3 boletos"
+            total = float(venta.ven_bol_eve_monto_total)
+
+            # Calcular sin redondear primero
+            raw_subtotal = total / 1.16
+            raw_iva = total - raw_subtotal
+
+            precio_unitario = total / cantidad
+            dollar_rate = float(get_dollar_exchange_rate())
+
+            report_data = {
+                "venta": {
+                    "fecha": venta.ven_bol_eve_fecha_hora.strftime('%d/%m/%Y %H:%M'),
+                    "id": venta.ven_bol_eve_id,
+                    "subtotal": round(raw_subtotal, 2),
+                    "iva": round(raw_iva, 2),
+                    "total": round(total, 2)
+                },
+                "cliente": {
+                    "nombre": str(cliente),
+                    "telefono": "",  # Puedes ajustar esto si lo tienes
+                    "direccion": cliente.cli_direccion_fisica
+                },
+                "detalles": [
+                    {
+                        "id": venta.ven_bol_eve_id,
+                        "producto": venta.fk_evento.eve_nombre,
+                        "cantidad": cantidad,
+                        "precio_unitario": round(precio_unitario, 2),
+                        "total_linea": round(total, 2)
+                    }
+                ],
+                "dollar_rate": dollar_rate
+            }
+
+            return render(request, 'factura_evento.html', {'report_data': report_data})
 
     except Exception as e:
-        # Manejo de errores para depuración
-        print(f"Error en API de incumplimiento: {e}")
-        return JsonResponse({'error': str(e)}, status=500)
+        print(f"Error al generar factura directa: {e}")
+        return HttpResponse(f"<h1>Error al generar la factura</h1><p>{e}</p>", status=500)
+    
+def eventos_disponibles_view(request):
+    """Mostrar todos los eventos disponibles para comprar boletos"""
+    eventos = evento.objects.filter(eve_fecha_hora__gte=now()).order_by('eve_fecha_hora')
+
+    context = {
+        'eventos': eventos
+    }
+    return render(request, 'eventos_disponibles.html', context)
 
 def vista_reporte_incumplimiento(request):
     """
@@ -2456,70 +2547,6 @@ def vista_reporte_ordenes_pendientes(request):
     Renderiza la página HTML para el reporte de órdenes pendientes.
     """
     return render(request, 'reportes/ordenes_pendientes.html')
-
-# Historial de Compras de Clientes
-def historial_compras_api(request, id_usuario):
-    """
-    API endpoint que devuelve el historial de compras para un cliente,
-    buscado a través de su ID de usuario.
-    """
-    try:
-        user= get_object_or_404(usuario, pk=id_usuario)
-        cliente_id = user.fk_cliente_id 
-        
-        if not cliente_id:
-            return JsonResponse([], safe=False)
-
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT public.obtener_historial_compras_cliente(%s);", [cliente_id])
-            result = cursor.fetchone()
-            
-            if result is None or result[0] is None:
-                return JsonResponse([], safe=False)
-
-            report_data = result[0]
-            return JsonResponse(report_data, encoder=DjangoJSONEncoder, safe=False)
-
-    except usuario.DoesNotExist:
-        return HttpResponseNotFound("El usuario no existe.")
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
-
-def vista_historial_compras(request, id_usuario):
-    usuario_obj = get_object_or_404(usuario, pk=id_usuario)
-    cliente_obj = usuario_obj.fk_cliente 
-    
-    if not cliente_obj:
-        return HttpResponse("Este usuario no tiene un perfil de cliente asociado.", status=404)
-    
-    context = {'cliente': cliente_obj, 'usuario': usuario_obj}
-    return render(request, 'historial_compras_cliente.html', context)
-
-def vista_factura_directa(request, venta_id):
-    """
-    Renderiza la factura para una venta específica.
-    """
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT public.obtener_datos_reporte_venta(%s);", [venta_id])
-            result = cursor.fetchone()
-
-            if result is None or result[0] is None:
-                return HttpResponseNotFound("<h1>Factura no encontrada</h1><p>No se encontraron datos para la venta especificada.</p>")
-
-            # Se obtienen los datos como un diccionario de Python
-            report_data = result[0]
-            
-            # CORRECCIÓN: Pasamos el diccionario directamente en el contexto
-            context = {
-                'report_data': report_data
-            }
-            
-            return render(request, 'factura_template.html', context)
-
-    except Exception as e:
-        print(f"Error al generar factura directa: {e}")
-        return HttpResponse(f"<h1>Error al generar la factura</h1><p>{e}</p>", status=500)
 
 @login_required
 def vista_consulta_reportes(request):

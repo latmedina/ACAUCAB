@@ -15,37 +15,37 @@
 
     <form method="POST" id="usuarioForm">
         {% csrf_token %}
-        
+
         <!-- Información de Usuario -->
         <div class="form-section">
             <h3><i class="fas fa-user-circle"></i> Información de Cuenta</h3>
-            
+
             <div class="form-group">
                 <label for="username" class="required">Nombre de usuario</label>
-                <input type="text" name="username" id="username" class="form-control" 
-                       placeholder="Ingrese su nombre de usuario" required>
+                <input type="text" name="username" id="username" class="form-control"
+                    placeholder="Ingrese su nombre de usuario" required>
                 <div class="help-text">
-                    <i class="fas fa-info-circle"></i> 
+                    <i class="fas fa-info-circle"></i>
                     El nombre de usuario debe ser único y se usará para iniciar sesión
                 </div>
             </div>
 
             <div class="form-group">
                 <label for="email" class="required">Correo electrónico</label>
-                <input type="email" name="email" id="email" class="form-control" 
-                       placeholder="ejemplo@correo.com" required>
+                <input type="email" name="email" id="email" class="form-control" placeholder="ejemplo@correo.com"
+                    required>
                 <div class="help-text">
-                    <i class="fas fa-info-circle"></i> 
+                    <i class="fas fa-info-circle"></i>
                     Se usará para recuperar su contraseña si es necesario
                 </div>
             </div>
 
             <div class="form-group">
                 <label for="password" class="required">Contraseña</label>
-                <input type="password" name="password" id="password" class="form-control" 
-                       placeholder="Ingrese una contraseña segura" required>
+                <input type="password" name="password" id="password" class="form-control"
+                    placeholder="Ingrese una contraseña segura" required>
                 <div class="help-text">
-                    <i class="fas fa-info-circle"></i> 
+                    <i class="fas fa-info-circle"></i>
                     Use al menos 8 caracteres con letras, números y símbolos
                 </div>
             </div>
@@ -64,73 +64,73 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('usuarioForm');
-    const inputs = form.querySelectorAll('input');
-    
-    // Validación en tiempo real
-    inputs.forEach(input => {
-        input.addEventListener('input', function() {
-            this.classList.remove('is-invalid');
-            
-            // Validación de contraseña
-            if (this.name === 'password') {
-                const password = this.value;
-                const isValid = password.length >= 8;
-                
-                if (password.length > 0) {
-                    if (isValid) {
-                        this.style.borderColor = '#28a745';
-                    } else {
-                        this.style.borderColor = '#dc3545';
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('usuarioForm');
+        const inputs = form.querySelectorAll('input');
+
+        // Validación en tiempo real
+        inputs.forEach(input => {
+            input.addEventListener('input', function () {
+                this.classList.remove('is-invalid');
+
+                // Validación de contraseña
+                if (this.name === 'password') {
+                    const password = this.value;
+                    const isValid = password.length >= 8;
+
+                    if (password.length > 0) {
+                        if (isValid) {
+                            this.style.borderColor = '#28a745';
+                        } else {
+                            this.style.borderColor = '#dc3545';
+                        }
                     }
                 }
+
+                // Validación de email
+                if (this.type === 'email') {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    const isValid = emailRegex.test(this.value);
+
+                    if (this.value.length > 0) {
+                        if (isValid) {
+                            this.style.borderColor = '#28a745';
+                        } else {
+                            this.style.borderColor = '#dc3545';
+                        }
+                    }
+                }
+            });
+        });
+
+        // Validación al enviar
+        form.addEventListener('submit', function (e) {
+            const password = document.getElementById('password').value;
+            const email = document.getElementById('email').value;
+            const username = document.getElementById('username').value;
+
+            let isValid = true;
+
+            if (password.length < 8) {
+                document.getElementById('password').style.borderColor = '#dc3545';
+                isValid = false;
             }
-            
-            // Validación de email
-            if (this.type === 'email') {
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                const isValid = emailRegex.test(this.value);
-                
-                if (this.value.length > 0) {
-                    if (isValid) {
-                        this.style.borderColor = '#28a745';
-                    } else {
-                        this.style.borderColor = '#dc3545';
-                    }
-                }
+
+            if (!email.includes('@') || !email.includes('.')) {
+                document.getElementById('email').style.borderColor = '#dc3545';
+                isValid = false;
+            }
+
+            if (username.length < 3) {
+                document.getElementById('username').style.borderColor = '#dc3545';
+                isValid = false;
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+                alert('Por favor, complete todos los campos correctamente.');
             }
         });
     });
-
-    // Validación al enviar
-    form.addEventListener('submit', function(e) {
-        const password = document.getElementById('password').value;
-        const email = document.getElementById('email').value;
-        const username = document.getElementById('username').value;
-        
-        let isValid = true;
-        
-        if (password.length < 8) {
-            document.getElementById('password').style.borderColor = '#dc3545';
-            isValid = false;
-        }
-        
-        if (!email.includes('@') || !email.includes('.')) {
-            document.getElementById('email').style.borderColor = '#dc3545';
-            isValid = false;
-        }
-        
-        if (username.length < 3) {
-            document.getElementById('username').style.borderColor = '#dc3545';
-            isValid = false;
-        }
-        
-        if (!isValid) {
-            e.preventDefault();
-            alert('Por favor, complete todos los campos correctamente.');
-        }
-    });
-});
 </script>
 {% endblock %}

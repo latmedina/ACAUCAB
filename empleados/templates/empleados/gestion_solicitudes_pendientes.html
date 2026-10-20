@@ -1,0 +1,850 @@
+{% extends 'empleados/base_empleados.html' %}
+
+{% block title %}Gestión de Solicitudes - Empleados{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'empleados:dashboard' %}">Dashboard</a></li>
+<li class="breadcrumb-item active">Gestión de Solicitudes</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.dropdown-menu-right {
+    right: 0;
+    left: auto;
+}
+
+.dropdown-toggle::after {
+    display: none;
+}
+
+.three-dots-menu {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.three-dots-menu:hover {
+    background-color: #f8f9fa;
+    border-radius: 3px;
+}
+
+.section-divider {
+    margin: 40px 0;
+    border-top: 2px solid #dee2e6;
+}
+
+.table-section {
+    margin-bottom: 50px;
+}
+
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.status-badge-pendiente { background-color: #ffc107; }
+.status-badge-aprobada { background-color: #28a745; }
+.status-badge-rechazada { background-color: #dc3545; }
+.status-badge-entregada { background-color: #17a2b8; }
+
+/* Alinear acciones a la derecha */
+.actions-column {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.btn-group {
+    justify-content: flex-end;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="mb-0"><i class="fas fa-clipboard-check me-2"></i>Gestión Completa de Solicitudes de Compra</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Gestiona todas las solicitudes de compra en sus diferentes estados: pendientes, aprobadas, rechazadas y entregadas.</p>
+                <div class="d-flex gap-2">
+                    <button id="cargarTodas" class="btn btn-primary">
+                        <i class="fas fa-sync-alt me-2"></i>Cargar Todas las Solicitudes
+                    </button>
+                    <button id="refrescar" class="btn btn-outline-primary">
+                        <i class="fas fa-redo me-2"></i>Refrescar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sección: Solicitudes Pendientes -->
+<div class="table-section">
+    <div class="row">
+        <div class="col-12">
+            <div id="contenido-pendientes">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-clock fa-3x text-warning mb-3"></i>
+                        <h5 class="text-muted">Solicitudes Pendientes</h5>
+                        <p class="text-muted mb-0">Esperando aprobación o rechazo.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sección: Solicitudes Aprobadas -->
+<div class="table-section">
+    <div class="row">
+        <div class="col-12">
+            <div id="contenido-aprobadas">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                        <h5 class="text-muted">Solicitudes Aprobadas</h5>
+                        <p class="text-muted mb-0">Esperando llegada del proveedor.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sección: Solicitudes Rechazadas -->
+<div class="table-section">
+    <div class="row">
+        <div class="col-12">
+            <div id="contenido-rechazadas">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-times-circle fa-3x text-danger mb-3"></i>
+                        <h5 class="text-muted">Solicitudes Rechazadas</h5>
+                        <p class="text-muted mb-0">Pueden ser devueltas a pendientes.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sección: Solicitudes Entregadas -->
+<div class="table-section">
+    <div class="row">
+        <div class="col-12">
+            <div id="contenido-entregadas">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-truck fa-3x text-info mb-3"></i>
+                        <h5 class="text-muted">Solicitudes Entregadas</h5>
+                        <p class="text-muted mb-0">Pedidos completados y recibidos.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para cambiar proveedor -->
+<div class="modal fade" id="modalCambiarProveedor" tabindex="-1" aria-labelledby="modalCambiarProveedorLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCambiarProveedorLabel">
+                    <i class="fas fa-exchange-alt me-2"></i>Cambiar Proveedor
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Selecciona el nuevo proveedor para la solicitud <strong id="solicitudIdTexto"></strong>:</p>
+                <div class="mb-3">
+                    <label for="selectProveedor" class="form-label">Proveedor:</label>
+                    <select class="form-select" id="selectProveedor">
+                        <option value="">Cargando proveedores...</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="confirmarCambioProveedor">
+                    <i class="fas fa-save me-2"></i>Guardar Cambio
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación para aprobar -->
+<div class="modal fade" id="modalConfirmarAprobacion" tabindex="-1" aria-labelledby="modalConfirmarAprobacionLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalConfirmarAprobacionLabel">
+                    <i class="fas fa-check-circle me-2"></i>Confirmar Aprobación
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro que deseas aprobar la solicitud <strong id="solicitudIdAprobacion"></strong>?</p>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Una vez aprobada, la solicitud será enviada al proveedor.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" id="confirmarAprobacion">
+                    <i class="fas fa-check me-2"></i>Aprobar Solicitud
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación para rechazar -->
+<div class="modal fade" id="modalConfirmarRechazo" tabindex="-1" aria-labelledby="modalConfirmarRechazoLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalConfirmarRechazoLabel">
+                    <i class="fas fa-times-circle me-2"></i>Confirmar Rechazo
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro que deseas rechazar la solicitud <strong id="solicitudIdRechazo"></strong>?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    La solicitud se marcará como rechazada y podrá ser revisada posteriormente.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmarRechazo">
+                    <i class="fas fa-times me-2"></i>Rechazar Solicitud
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación para marcar como entregada -->
+<div class="modal fade" id="modalConfirmarEntrega" tabindex="-1" aria-labelledby="modalConfirmarEntregaLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalConfirmarEntregaLabel">
+                    <i class="fas fa-truck me-2"></i>Confirmar Entrega
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Confirmas que el pedido de la solicitud <strong id="solicitudIdEntrega"></strong> ya llegó al almacén?</p>
+                <div class="alert alert-success">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Esto marcará la solicitud como entregada y activará el trigger para actualizar el inventario.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" id="confirmarEntrega">
+                    <i class="fas fa-check me-2"></i>Marcar como Entregada
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Contenedores de las tablas
+    const contenidoPendientes = document.getElementById('contenido-pendientes');
+    const contenidoAprobadas = document.getElementById('contenido-aprobadas');
+    const contenidoRechazadas = document.getElementById('contenido-rechazadas');
+    const contenidoEntregadas = document.getElementById('contenido-entregadas');
+    
+    // Botones principales
+    const btnCargar = document.getElementById('cargarTodas');
+    const btnRefrescar = document.getElementById('refrescar');
+    
+    // Modales
+    const modalCambiarProveedor = new bootstrap.Modal(document.getElementById('modalCambiarProveedor'));
+    const modalConfirmarAprobacion = new bootstrap.Modal(document.getElementById('modalConfirmarAprobacion'));
+    const modalConfirmarRechazo = new bootstrap.Modal(document.getElementById('modalConfirmarRechazo'));
+    const modalConfirmarEntrega = new bootstrap.Modal(document.getElementById('modalConfirmarEntrega'));
+    
+    // Variables globales
+    let solicitudActual = null;
+    let proveedores = [];
+    let paginaActualEntregadas = 1;
+    const limitePorPagina = 10;
+
+    // Cargar proveedores al inicio
+    cargarProveedores();
+
+    // Event listeners principales
+    btnCargar.addEventListener('click', cargarTodasLasSolicitudes);
+    btnRefrescar.addEventListener('click', cargarTodasLasSolicitudes);
+    
+    // Event listeners de modales
+    document.getElementById('confirmarCambioProveedor').addEventListener('click', cambiarProveedor);
+    document.getElementById('confirmarAprobacion').addEventListener('click', aprobarSolicitud);
+    document.getElementById('confirmarRechazo').addEventListener('click', rechazarSolicitud);
+    document.getElementById('confirmarEntrega').addEventListener('click', marcarComoEntregada);
+
+    async function cargarTodasLasSolicitudes() {
+        const btnActivo = event ? event.target : btnCargar;
+        const textoOriginal = btnActivo.innerHTML;
+        
+        btnActivo.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Cargando...';
+        btnActivo.disabled = true;
+
+        try {
+            await Promise.all([
+                cargarSolicitudesPendientes(),
+                cargarSolicitudesAprobadas(),
+                cargarSolicitudesRechazadas(),
+                cargarSolicitudesEntregadas(1)
+            ]);
+        } catch (error) {
+            console.error('Error al cargar solicitudes:', error);
+            mostrarNotificacion('Error al cargar las solicitudes: ' + error.message, 'danger');
+        } finally {
+            btnActivo.innerHTML = textoOriginal;
+            btnActivo.disabled = false;
+        }
+    }
+
+    async function cargarSolicitudesPendientes() {
+        contenidoPendientes.innerHTML = '<div class="text-center py-3"><div class="spinner-border text-primary"></div></div>';
+        
+        try {
+            const response = await fetch('/empleados/api/solicitudes-pendientes/');
+            const data = await response.json();
+            const solicitudes = data.solicitudes || data;
+            if (!data || data.length === 0) {
+                contenidoPendientes.innerHTML = `
+                    <div class="card">
+                        <div class="card-body text-center py-4">
+                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                            <h5 class="text-success">¡No hay solicitudes pendientes!</h5>
+                        </div>
+                    </div>
+                `;
+            } else {
+                renderizarTablaPendientes(solicitudes);
+            }
+        } catch (error) {
+            contenidoPendientes.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+        }
+    }
+
+    async function cargarSolicitudesAprobadas() {
+        contenidoAprobadas.innerHTML = '<div class="text-center py-3"><div class="spinner-border text-success"></div></div>';
+        
+        try {
+            const response = await fetch('/empleados/api/solicitudes-aprobadas/');
+            const data = await response.json();
+            const solicitudes = data.solicitudes || data;
+            
+            if (!data || data.length === 0) {
+                contenidoAprobadas.innerHTML = `
+                    <div class="card">
+                        <div class="card-body text-center py-4">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No hay solicitudes aprobadas</h5>
+                        </div>
+                    </div>
+                `;
+            } else {
+                renderizarTablaAprobadas(solicitudes);
+            }
+        } catch (error) {
+            contenidoAprobadas.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+        }
+    }
+
+    async function cargarSolicitudesRechazadas() {
+        contenidoRechazadas.innerHTML = '<div class="text-center py-3"><div class="spinner-border text-danger"></div></div>';
+        
+        try {
+            const response = await fetch('/empleados/api/solicitudes-rechazadas/');
+            const data = await response.json();
+            const solicitudes = data.solicitudes || data;
+            
+            if (!data || data.length === 0) {
+                contenidoRechazadas.innerHTML = `
+                    <div class="card">
+                        <div class="card-body text-center py-4">
+                            <i class="fas fa-smile fa-3x text-success mb-3"></i>
+                            <h5 class="text-success">¡No hay solicitudes rechazadas!</h5>
+                        </div>
+                    </div>
+                `;
+            } else {
+                renderizarTablaRechazadas(solicitudes);
+            }
+        } catch (error) {
+            contenidoRechazadas.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+        }
+    }
+
+    async function cargarSolicitudesEntregadas(pagina = 1) {
+        contenidoEntregadas.innerHTML = '<div class="text-center py-3"><div class="spinner-border text-info"></div></div>';
+        
+        try {
+            const response = await fetch(`/empleados/api/solicitudes-entregadas/?limite=${limitePorPagina}&pagina=${pagina}`);
+            const data = await response.json();
+            
+            if (!data.solicitudes || data.solicitudes.length === 0) {
+                contenidoEntregadas.innerHTML = `
+                    <div class="card">
+                        <div class="card-body text-center py-4">
+                            <i class="fas fa-archive fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No hay solicitudes entregadas</h5>
+                        </div>
+                    </div>
+                `;
+            } else {
+                renderizarTablaEntregadas(data.solicitudes, data.total_count, pagina);
+            }
+        } catch (error) {
+            contenidoEntregadas.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+        }
+    }
+
+    function renderizarTablaPendientes(solicitudes) {
+        const tabla = `
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <span class="badge status-badge-pendiente me-2">${solicitudes.length}</span>
+                        Solicitudes Pendientes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-warning">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Fecha</th>
+                                    <th>Proveedor</th>
+                                    <th>Total</th>
+                                    <th class="actions-column">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${solicitudes.map(solicitud => `
+                                    <tr>
+                                        <td><span class="badge bg-warning text-dark">#${solicitud.orden_id}</span></td>
+                                        <td>${solicitud.fecha_solicitud}</td>
+                                        <td><i class="fas fa-building me-2"></i>${solicitud.proveedor_nombre || 'Sin asignar'}</td>
+                                        <td class="fw-bold text-success">$${solicitud.total_orden}</td>
+                                        <td class="actions-column">
+                                            <div class="btn-group" role="group">
+                                                <button class="btn btn-outline-primary btn-sm" onclick="abrirModalCambiarProveedor(${solicitud.orden_id})">
+                                                    <i class="fas fa-exchange-alt me-1"></i>Cambiar Proveedor
+                                                </button>
+                                                <button class="btn btn-success btn-sm" onclick="abrirModalAprobar(${solicitud.orden_id})">
+                                                    <i class="fas fa-check me-1"></i>Aprobar
+                                                </button>
+                                                <button class="btn btn-danger btn-sm" onclick="abrirModalRechazar(${solicitud.orden_id})">
+                                                    <i class="fas fa-times me-1"></i>Rechazar
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+        contenidoPendientes.innerHTML = tabla;
+    }
+
+    function renderizarTablaAprobadas(solicitudes) {
+        const tabla = `
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <span class="badge status-badge-aprobada me-2">${solicitudes.length}</span>
+                        Solicitudes Aprobadas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-success">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Fecha Solicitud</th>
+                                    <th>Fecha Aprobación</th>
+                                    <th>Proveedor</th>
+                                    <th>Aprobado por</th>
+                                    <th>Total</th>
+                                    <th class="actions-column">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${solicitudes.map(solicitud => `
+                                    <tr>
+                                        <td><span class="badge bg-success">#${solicitud.orden_id}</span></td>
+                                        <td>${solicitud.fecha_solicitud}</td>
+                                        <td><i class="fas fa-calendar-check me-2 text-success"></i>${solicitud.fecha_aprobacion}</td>
+                                        <td><i class="fas fa-building me-2"></i>${solicitud.proveedor_nombre}</td>
+                                        <td><i class="fas fa-user-check me-2"></i>${solicitud.aprobado_por}</td>
+                                        <td class="fw-bold text-success">$${solicitud.total_orden}</td>
+                                        <td class="actions-column">
+                                            <div class="dropdown">
+                                                <button class="three-dots-menu" type="button" data-bs-toggle="dropdown">
+                                                    <i class="fas fa-ellipsis-v"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-right">
+                                                    <li>
+                                                        <a class="dropdown-item" href="#" onclick="abrirModalMarcarEntregada(${solicitud.orden_id})">
+                                                            <i class="fas fa-truck me-2 text-success"></i>¿Ya llegó el pedido? Marcar como entregado
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+        contenidoAprobadas.innerHTML = tabla;
+    }
+
+    function renderizarTablaRechazadas(solicitudes) {
+        const tabla = `
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <span class="badge status-badge-rechazada me-2">${solicitudes.length}</span>
+                        Solicitudes Rechazadas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-danger">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Fecha Solicitud</th>
+                                    <th>Fecha Rechazo</th>
+                                    <th>Proveedor</th>
+                                    <th>Rechazado por</th>
+                                    <th>Total</th>
+                                    <th class="actions-column">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${solicitudes.map(solicitud => `
+                                    <tr>
+                                        <td><span class="badge bg-danger">#${solicitud.orden_id}</span></td>
+                                        <td>${solicitud.fecha_solicitud}</td>
+                                        <td><i class="fas fa-calendar-times me-2 text-danger"></i>${solicitud.fecha_rechazo}</td>
+                                        <td><i class="fas fa-building me-2"></i>${solicitud.proveedor_nombre}</td>
+                                        <td><i class="fas fa-user-times me-2"></i>${solicitud.rechazado_por}</td>
+                                        <td class="fw-bold text-success">$${solicitud.total_orden}</td>
+                                        <td class="actions-column">
+                                            <button class="btn btn-warning btn-sm" onclick="devolverAPendiente(${solicitud.orden_id})">
+                                                <i class="fas fa-undo me-1"></i>Devolver a Pendiente
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+        contenidoRechazadas.innerHTML = tabla;
+    }
+
+    function renderizarTablaEntregadas(solicitudes, totalCount, paginaActual) {
+        const totalPaginas = Math.ceil(totalCount / limitePorPagina);
+        
+        const tabla = `
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <span class="badge status-badge-entregada me-2">${totalCount}</span>
+                        Solicitudes Entregadas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-info">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Fecha Solicitud</th>
+                                    <th>Fecha Entrega</th>
+                                    <th>Proveedor</th>
+                                    <th>Aprobado por</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${solicitudes.map(solicitud => `
+                                    <tr>
+                                        <td><span class="badge bg-info">#${solicitud.orden_id}</span></td>
+                                        <td>${solicitud.fecha_solicitud}</td>
+                                        <td><i class="fas fa-calendar-check me-2"></i>${solicitud.fecha_entrega}</td>
+                                        <td><i class="fas fa-building me-2"></i>${solicitud.proveedor_nombre}</td>
+                                        <td><i class="fas fa-user-check me-2"></i>${solicitud.aprobado_por}</td>
+                                        <td class="fw-bold text-success">$${solicitud.total_orden}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    ${totalPaginas > 1 ? `
+                        <div class="pagination-controls">
+                            <button class="btn btn-outline-info btn-sm" ${paginaActual <= 1 ? 'disabled' : ''} 
+                                    onclick="cargarSolicitudesEntregadas(${paginaActual - 1})">
+                                <i class="fas fa-chevron-left"></i> Anterior
+                            </button>
+                            <span class="mx-3">Página ${paginaActual} de ${totalPaginas}</span>
+                            <button class="btn btn-outline-info btn-sm" ${paginaActual >= totalPaginas ? 'disabled' : ''} 
+                                    onclick="cargarSolicitudesEntregadas(${paginaActual + 1})">
+                                Siguiente <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+        contenidoEntregadas.innerHTML = tabla;
+        paginaActualEntregadas = paginaActual;
+    }
+
+    async function cargarProveedores() {
+        try {
+            const response = await fetch('/empleados/api/proveedores/');
+            proveedores = await response.json();
+            
+            const selectProveedor = document.getElementById('selectProveedor');
+            selectProveedor.innerHTML = '<option value="">Seleccione un proveedor...</option>' +
+                proveedores.map(proveedor => 
+                    `<option value="${proveedor.id}">${proveedor.nombre} (${proveedor.rif})</option>`
+                ).join('');
+        } catch (error) {
+            console.error('Error al cargar proveedores:', error);
+        }
+    }
+
+    // Funciones globales para los botones y menús
+    window.abrirModalCambiarProveedor = function(solicitudId) {
+        solicitudActual = solicitudId;
+        document.getElementById('solicitudIdTexto').textContent = solicitudId;
+        modalCambiarProveedor.show();
+    }
+
+    window.abrirModalAprobar = function(solicitudId) {
+        solicitudActual = solicitudId;
+        document.getElementById('solicitudIdAprobacion').textContent = solicitudId;
+        modalConfirmarAprobacion.show();
+    }
+
+    window.abrirModalRechazar = function(solicitudId) {
+        solicitudActual = solicitudId;
+        document.getElementById('solicitudIdRechazo').textContent = solicitudId;
+        modalConfirmarRechazo.show();
+    }
+
+    window.abrirModalMarcarEntregada = function(solicitudId) {
+        solicitudActual = solicitudId;
+        document.getElementById('solicitudIdEntrega').textContent = solicitudId;
+        modalConfirmarEntrega.show();
+    }
+
+    window.devolverAPendiente = async function(solicitudId) {
+        if (!confirm(`¿Estás seguro que deseas devolver la solicitud #${solicitudId} a pendiente?`)) return;
+        
+        try {
+            const formData = new FormData();
+            const response = await fetch(`/empleados/api/solicitudes-rechazadas/${solicitudId}/devolver-pendiente/`, {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                cargarTodasLasSolicitudes();
+                mostrarNotificacion('Solicitud devuelta a pendiente correctamente', 'success');
+            } else {
+                throw new Error(result.error || 'Error desconocido');
+            }
+        } catch (error) {
+            mostrarNotificacion('Error: ' + error.message, 'danger');
+        }
+    }
+
+    window.cargarSolicitudesEntregadas = cargarSolicitudesEntregadas;
+
+    // Funciones de acciones con modales
+    async function cambiarProveedor() {
+        const nuevoProveedorId = document.getElementById('selectProveedor').value;
+        if (!nuevoProveedorId) {
+            alert('Por favor selecciona un proveedor.');
+            return;
+        }
+
+        const btn = document.getElementById('confirmarCambioProveedor');
+        const textoOriginal = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Guardando...';
+        btn.disabled = true;
+
+        try {
+            const formData = new FormData();
+            formData.append('nuevo_proveedor_id', nuevoProveedorId);
+
+            const response = await fetch(`/empleados/api/solicitudes-pendientes/${solicitudActual}/cambiar-proveedor/`, {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                modalCambiarProveedor.hide();
+                cargarTodasLasSolicitudes();
+                mostrarNotificacion('Proveedor actualizado correctamente', 'success');
+            } else {
+                throw new Error(result.error || 'Error desconocido');
+            }
+        } catch (error) {
+            mostrarNotificacion('Error al cambiar proveedor: ' + error.message, 'danger');
+        } finally {
+            btn.innerHTML = textoOriginal;
+            btn.disabled = false;
+        }
+    }
+
+    async function aprobarSolicitud() {
+        const btn = document.getElementById('confirmarAprobacion');
+        const textoOriginal = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Aprobando...';
+        btn.disabled = true;
+
+        try {
+            const formData = new FormData();
+            const response = await fetch(`/empleados/api/solicitudes-pendientes/${solicitudActual}/aprobar/`, {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                modalConfirmarAprobacion.hide();
+                cargarTodasLasSolicitudes();
+                mostrarNotificacion('Solicitud aprobada correctamente', 'success');
+            } else {
+                throw new Error(result.error || 'Error desconocido');
+            }
+        } catch (error) {
+            mostrarNotificacion('Error al aprobar solicitud: ' + error.message, 'danger');
+        } finally {
+            btn.innerHTML = textoOriginal;
+            btn.disabled = false;
+        }
+    }
+
+    async function rechazarSolicitud() {
+        const btn = document.getElementById('confirmarRechazo');
+        const textoOriginal = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Rechazando...';
+        btn.disabled = true;
+
+        try {
+            const formData = new FormData();
+            const response = await fetch(`/empleados/api/solicitudes-pendientes/${solicitudActual}/rechazar/`, {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                modalConfirmarRechazo.hide();
+                cargarTodasLasSolicitudes();
+                mostrarNotificacion('Solicitud rechazada correctamente', 'warning');
+            } else {
+                throw new Error(result.error || 'Error desconocido');
+            }
+        } catch (error) {
+            mostrarNotificacion('Error al rechazar solicitud: ' + error.message, 'danger');
+        } finally {
+            btn.innerHTML = textoOriginal;
+            btn.disabled = false;
+        }
+    }
+
+    async function marcarComoEntregada() {
+        const btn = document.getElementById('confirmarEntrega');
+        const textoOriginal = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Procesando...';
+        btn.disabled = true;
+
+        try {
+            const formData = new FormData();
+            const response = await fetch(`/empleados/api/solicitudes-aprobadas/${solicitudActual}/marcar-entregada/`, {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                modalConfirmarEntrega.hide();
+                cargarTodasLasSolicitudes();
+                mostrarNotificacion('Solicitud marcada como entregada. El inventario se actualizará automáticamente.', 'success');
+            } else {
+                throw new Error(result.error || 'Error desconocido');
+            }
+        } catch (error) {
+            mostrarNotificacion('Error al marcar como entregada: ' + error.message, 'danger');
+        } finally {
+            btn.innerHTML = textoOriginal;
+            btn.disabled = false;
+        }
+    }
+
+    function mostrarNotificacion(mensaje, tipo) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${tipo} alert-dismissible fade show position-fixed`;
+        alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        alertDiv.innerHTML = `
+            ${mensaje}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(alertDiv);
+        
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.parentNode.removeChild(alertDiv);
+            }
+        }, 5000);
+    }
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,131 @@
+{% extends "main.html" %}
+{% load static %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+<style>
+    .dashboard-container { padding: 25px; }
+    .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
+    .dashboard-header h1 { color: #1a237e; margin: 0; }
+    .filters { display: flex; gap: 15px; align-items: center; background-color: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .chart-container { background-color: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-top: 25px; }
+    .btn-back { display: inline-flex; align-items: center; gap: 8px; background-color: #6c757d; color: white; padding: 10px 15px; border-radius: 4px; text-decoration: none; font-weight: bold; }
+
+    /* Hace que el botón de generar crezca para ocupar el espacio disponible */
+#generarBtn {
+    width: 500px; /* Ajusta este valor en píxeles como necesites */
+    flex-grow: 1; /* Permite que el botón se expanda */
+    text-align: center; /* Mantiene el texto centrado */
+}
+</style>
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <a href="{% url 'empleados:dashboard_indicadores' %}" class="btn-back"><i class="fas fa-arrow-left"></i> Regresar</a>
+        <h1>Gráfico de Tendencia de Ventas</h1>
+    </div>
+        <div class="filters">
+            <label for="fecha_inicio">Desde:</label>
+            <input type="date" id="fecha_inicio" class="form-control">
+            <label for="fecha_fin">Hasta:</label>
+            <input type="date" id="fecha_fin" class="form-control">
+            <label for="agrupacion" style="margin-left: 15px;">Agrupar:</label>
+            <select id="agrupacion" class="form-control">
+                <option value="dia">Día</option>
+                <option value="semana">Semana</option>
+                <option value="mes">Mes</option>
+            </select>
+            <button id="generarBtn" class="btn btn-primary">Generar Gráfico</button>
+        </div>
+    </div>
+
+    <div class="chart-container">
+        <div id="tendencia-ventas-chart">
+            <div class="alert alert-info">Seleccione un rango de fechas para generar el gráfico.</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const generarBtn = document.getElementById('generarBtn');
+        const chartContainer = document.getElementById('tendencia-ventas-chart');
+        let chart; // Variable para mantener la instancia del gráfico
+
+        async function generarGrafico() {
+            const fechaInicio = document.getElementById('fecha_inicio').value;
+            const fechaFin = document.getElementById('fecha_fin').value;
+            const agrupacion = document.getElementById('agrupacion').value;
+
+            if (!fechaInicio || !fechaFin) {
+                alert('Por favor, seleccione ambas fechas.');
+                return;
+            }
+            chartContainer.innerHTML = '<div class="alert alert-info">Cargando datos...</div>';
+
+            try {
+                const apiUrl = `/empleados/api/graficos/tendencia-ventas/?inicio=${fechaInicio}&fin=${fechaFin}&agrupacion=${agrupacion}`;
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    throw new Error('No se pudieron cargar los datos de tendencia.');
+                }
+                const data = await response.json();
+                
+                renderizarGrafico(data);
+
+            } catch (error) {
+                console.error('Error al generar el gráfico:', error);
+                // ✅ SOLUCIÓN: Se corrigió la sintaxis de esta línea
+                chartContainer.innerHTML = `<div class="alert alert-danger">${error.message}</div>`;
+            }
+        }
+
+        function renderizarGrafico(data) {
+            // Limpiar el contenedor antes de renderizar un nuevo gráfico
+            chartContainer.innerHTML = '';
+
+            const options = {
+                series: [{
+                    name: 'Ventas Totales',
+                    data: data.map(item => item.total_ventas)
+                }],
+                chart: {
+                    type: 'area',
+                    height: 400,
+                    zoom: { enabled: false }
+                },
+                dataLabels: { enabled: false },
+                stroke: { curve: 'smooth' },
+                xaxis: {
+                    type: 'datetime',
+                    categories: data.map(item => item.fecha),
+                },
+                yaxis: {
+                    labels: {
+                        formatter: (val) => '$' + val.toFixed(2)
+                    }
+                },
+                title: {
+                    text: 'Tendencia de Ventas a lo Largo del Tiempo',
+                    align: 'left'
+                },
+                tooltip: {
+                    x: { format: 'dd/MM/yyyy' }
+                }
+            };
+
+            // Si ya existe un gráfico, lo actualizamos. Si no, lo creamos.
+            if (chart) {
+                chart.updateOptions(options);
+            } else {
+                chart = new ApexCharts(chartContainer, options);
+                chart.render();
+            }
+        }
+
+        generarBtn.addEventListener('click', generarGrafico);
+    });
+</script>
+
+{% endblock %}

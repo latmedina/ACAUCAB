@@ -1,0 +1,229 @@
+{% extends 'empleados/base_empleados.html' %}
+
+{% block title %}Reporte de Órdenes de Compra - Empleados{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'empleados:reportes' %}">Reportes</a></li>
+<li class="breadcrumb-item active">Órdenes de Compra</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .order-container { max-width: 800px; margin: auto; background-color: #fff; padding: 30px; border: 1px solid #ccc; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+    .header-section { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+    .company-info { text-align: left; }
+    .right-column { text-align: right; }
+    .company-info h2 { margin-top: 0; }
+    .main-title { font-size: 28px; font-weight: bold; color: #1a237e; margin: 0; white-space: nowrap; margin-bottom: 15px; }
+    .company-info p, .order-info p { margin: 0; line-height: 1.8; }
+    .order-info span { display: inline-block; border-bottom: 1px solid #333; min-width: 100px; margin-left: 10px; padding: 0 5px;}
+    .section { display: flex; justify-content: space-between; margin-bottom: 20px; }
+    .provider-info { border: 1px solid #ccc; padding: 15px; border-radius: 5px; display: flex; justify-content: space-between; }
+    .provider-info > div { width: 48%; }
+    .provider-info p { margin: 5px 0; display: flex; justify-content: space-between; }
+    .provider-info span { border-bottom: 1px solid #333; flex-grow: 1; margin-left: 10px; padding: 0 5px;}
+    .order-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
+    .order-table th, .order-table td { border: 1px solid #000; padding: 5px; text-align: left; }
+    .order-table th { background-color: #f2f2f2; font-weight: bold; }
+    .col-id { width: 10%; }
+    .col-name { width: 45%; }
+    .col-qty, .col-price, .col-total { width: 15%; text-align: right; }
+    .totals-section { display: flex; justify-content: space-between; margin-top: 10px; }
+    .notes-box { border: 1px solid #000; padding: 10px; width: 50%; min-height: 100px; }
+    .totals-table { width: 45%; text-align: right; }
+    .totals-table p { margin: 10px 0; display: flex; justify-content: space-between; }
+    .totals-table span { border-bottom: 1px solid #333; min-width: 80px; text-align: right; padding: 0 5px; }
+    .totals-table strong { margin-right: 15px; }
+    .signatures { margin-top: 30px; display: flex; justify-content: space-around; }
+    .signature-box { text-align: center; width: 40%; }
+    .signature-box p { border-top: 1px solid #333; padding-top: 8px; margin-top: 40px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="mb-0"><i class="fas fa-shopping-cart me-2"></i>Generar Orden de Compra</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="number" id="ordenIdInput" class="form-control" placeholder="Ingrese ID de la Solicitud de Compra" min="1">
+                            <button id="generarBtn" class="btn btn-primary">
+                                <i class="fas fa-file-alt me-2"></i>Generar Orden
+                            </button>
+                        </div>
+                        <small class="text-muted mt-2 d-block">Ingrese el ID de la solicitud de compra para generar la orden correspondiente.</small>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <small>La orden se generará con todos los detalles del proveedor y productos.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contenedor donde se renderizará la orden -->
+<div id="reporte-container"></div>
+
+<!-- Plantilla Handlebars para la orden de compra -->
+{% verbatim %}
+<script id="plantilla-orden" type="text/x-handlebars-template">
+<div class="card">
+    <div class="order-container">
+        <div class="header-section">
+            <div class="company-info">
+                <h2>ACAUCAB</h2>
+                <p>Asociación de Cerveceros Artesanales de la UCAB</p>
+                <p>Final Avenida Teherán, Montalbán, Caracas, Distrito Capital, Venezuela.</p>
+                <p>Código postal: 1020</p>
+                <p>Tlf: 0412-1234567</p>
+            </div>
+            <div class="right-column">
+                <h1 class="main-title">ORDEN DE COMPRA</h1>
+                <div class="order-info">
+                    <p>Fecha <span>{{orden_info.fecha}}</span></p>
+                    <p>No. de orden <span>{{orden_info.id}}</span></p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section provider-info">
+            <div class="proveedor">
+                <strong>Proveedor</strong>
+                <p>Compañía<span>{{proveedor_info.nombre}}</span></p>
+                <p>Teléfono<span>{{proveedor_info.telefono}}</span></p>
+                <p>Dirección<span>{{proveedor_info.direccion}}</span></p>
+            </div>
+            <div class="enviar-a">
+                <strong>Enviar a</strong>
+                <p>Local<span>{{enviar_a_info.local}}</span></p>
+                <p>Teléfono<span>{{enviar_a_info.telefono}}</span></p>
+                <p>Dirección<span>{{enviar_a_info.direccion}}</span></p>
+            </div>
+        </div>
+
+        <table class="order-table">
+            <thead>
+                <tr>
+                    <th class="col-id">ID</th>
+                    <th class="col-name">Nombre del producto</th>
+                    <th class="col-qty">Cantidad</th>
+                    <th class="col-price">Precio unitario</th>
+                    <th class="col-total">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each detalles}}
+                <tr>
+                    <td>{{id}}</td>
+                    <td>{{producto}}</td>
+                    <td style="text-align: right;">{{cantidad}}</td>
+                    <td style="text-align: right;">{{formatCurrency precio_unitario}}</td>
+                    <td style="text-align: right;">{{formatCurrency total_linea}}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+
+        <div class="totals-section">
+            <div class="notes-box">
+                <strong>Notas / Observaciones</strong>
+                <div></div>
+            </div>
+            <div class="totals-table">
+                <p><strong>SUBTOTAL</strong> <span>{{formatCurrency totales.subtotal}}</span></p>
+                <p><strong>TOTAL IMPUESTOS (16%)</strong> <span>{{formatCurrency totales.impuestos}}</span></p>
+                <p><strong>TOTAL</strong> <span>{{formatCurrency totales.total}}</span></p>
+            </div>
+        </div>
+
+        <footer class="signatures">
+            <div class="signature-box">
+                <p>Autorizado por</p>
+            </div>
+            <div class="signature-box">
+                <p>Firma</p>
+            </div>
+        </footer>
+    </div>
+    
+    <div class="text-center mt-4">
+        <button class="btn btn-success" onclick="window.print()">
+            <i class="fas fa-print me-2"></i>Imprimir Orden
+        </button>
+        <button class="btn btn-secondary ms-2" onclick="document.getElementById('reporte-container').innerHTML = ''">
+            <i class="fas fa-times me-2"></i>Cerrar
+        </button>
+    </div>
+</div>
+</script>
+{% endverbatim %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/handlebars@4.7.8/dist/handlebars.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("Módulo de empleados - Orden de compra listo.");
+
+    // Helper para formatear números como moneda
+    Handlebars.registerHelper('formatCurrency', function(value) {
+        if (typeof value !== 'number') value = parseFloat(value);
+        return value ? '$' + value.toFixed(2) : '$0.00';
+    });
+
+    async function generarOrdenDeCompra() {
+        const ordenId = document.getElementById('ordenIdInput').value;
+        const container = document.getElementById('reporte-container');
+
+        if (!ordenId) {
+            container.innerHTML = '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i>Por favor, ingrese un ID de solicitud.</div>';
+            return;
+        }
+
+        container.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Generando orden...</span></div><p class="mt-2">Generando orden de compra...</p></div>';
+
+        try {
+            // Nueva URL del API del módulo de empleados
+            const response = await fetch(`/empleados/api/reportes/orden-compra/${ordenId}/`);
+            if (!response.ok) {
+                throw new Error(`Error ${response.status}: Los datos de la orden no fueron encontrados.`);
+            }
+            const data = await response.json();
+
+            const templateHtml = document.getElementById('plantilla-orden').innerHTML;
+            const template = Handlebars.compile(templateHtml);
+            container.innerHTML = template(data);
+
+        } catch (error) {
+            console.error('Error al generar la orden:', error);
+            container.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>${error.message}</div>`;
+        }
+    }
+
+    const generarBtn = document.getElementById('generarBtn');
+    if (generarBtn) {
+        generarBtn.addEventListener('click', generarOrdenDeCompra);
+    }
+
+    // Permitir generar con Enter
+    const input = document.getElementById('ordenIdInput');
+    if (input) {
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                generarOrdenDeCompra();
+            }
+        });
+    }
+});
+</script>
+{% endblock %} 

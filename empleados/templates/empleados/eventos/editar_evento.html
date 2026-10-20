@@ -1,0 +1,118 @@
+{% extends 'empleados/eventos/base_eventos.html' %}
+
+{% block titulo %}Editar Evento{% endblock %}
+
+{% block eventos_content %}
+<div class="container">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'empleados:lista_eventos' %}">Eventos</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'empleados:detalle_evento' evento.eve_id %}">{{ evento.eve_nombre }}</a></li>
+            <li class="breadcrumb-item active">Editar</li>
+        </ol>
+    </nav>
+
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">
+                <i class="fas fa-edit me-2"></i> Editar Evento
+            </h4>
+        </div>
+        <div class="card-body">
+            <form method="post" id="formEditarEvento">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="mb-3">
+                            <label for="eve_nombre" class="form-label">Nombre del Evento <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="eve_nombre" name="eve_nombre" 
+                                   value="{{ evento.eve_nombre }}" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="fk_tip_eve" class="form-label">Tipo de Evento <span class="text-danger">*</span></label>
+                            <select class="form-select" id="fk_tip_eve" name="fk_tip_eve" required>
+                                <option value="">Seleccione un tipo</option>
+                                {% for tipo in tipos_evento %}
+                                    <option value="{{ tipo.tip_eve_id }}" 
+                                            {% if tipo.tip_eve_id == evento.fk_tip_eve.tip_eve_id %}selected{% endif %}>
+                                        {{ tipo.tip_eve_nombre }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="eve_descripcion" class="form-label">Descripción <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="eve_descripcion" name="eve_descripcion" rows="3" required>{{ evento.eve_descripcion }}</textarea>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="eve_fecha_hora" class="form-label">Fecha y Hora <span class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control" id="eve_fecha_hora" name="eve_fecha_hora" 
+                                   value="{{ evento.eve_fecha_hora|date:'Y-m-d' }}T{{ evento.eve_fecha_hora|date:'H:i' }}" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="fk_lugar" class="form-label">Lugar <span class="text-danger">*</span></label>
+                            <select class="form-select" id="fk_lugar" name="fk_lugar" required>
+                                <option value="">Seleccione un lugar</option>
+                                {% for lugar in lugares %}
+                                    <option value="{{ lugar.lug_id }}" 
+                                            {% if lugar.lug_id == evento.fk_lugar.lug_id %}selected{% endif %}>
+                                        {{ lugar.lug_nombre }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="eve_nro_boletos" class="form-label">Número de Boletos <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="eve_nro_boletos" name="eve_nro_boletos" 
+                                   value="{{ evento.eve_nro_boletos }}" min="1" required>
+                            <div class="form-text">Capacidad máxima del evento</div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <a href="{% url 'empleados:detalle_evento' evento.eve_id %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i> Volver
+                        </a>
+                    </div>
+                    <div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i> Guardar Cambios
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validación del formulario
+    document.getElementById('formEditarEvento').addEventListener('submit', function(e) {
+        const nroBoletos = document.getElementById('eve_nro_boletos').value;
+        if (parseInt(nroBoletos) <= 0) {
+            e.preventDefault();
+            alert('El número de boletos debe ser mayor a 0');
+            return false;
+        }
+    });
+});
+</script>
+{% endblock %} 

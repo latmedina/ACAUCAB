@@ -1,0 +1,64 @@
+{% extends 'empleados/eventos/base_eventos.html' %}
+
+{% block titulo %}Modificar Invitado{% endblock %}
+
+{% block eventos_content %}
+<div class="container">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'empleados:lista_eventos' %}">Eventos</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'empleados:detalle_evento' evento_id %}">Detalle Evento</a></li>
+            <li class="breadcrumb-item active">Modificar Invitado</li>
+        </ol>
+    </nav>
+
+    <div class="card">
+        <div class="card-header bg-warning text-dark">
+            <h4 class="mb-0"><i class="fas fa-edit me-2"></i> Modificar Invitado</h4>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Nombre</label>
+                        <input type="text" name="inv_nombre" class="form-control" value="{{ invitado.inv_nombre }}" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Apellido</label>
+                        <input type="text" name="inv_apellido" class="form-control" value="{{ invitado.inv_apellido }}" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Cédula</label>
+                        <input type="text" name="inv_CI" class="form-control" value="{{ invitado.inv_CI }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Correo</label>
+                        <input type="email" name="inv_correo" class="form-control" value="{{ invitado.inv_correo|default:'' }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Tipo de Invitado</label>
+                        <select name="fk_tipo_invitado" class="form-select" required>
+                            {% for tipo in tipos %}
+                                <option value="{{ tipo.tip_inv_id }}" {% if tipo.tip_inv_id == invitado.fk_tipo_invitado_id %}selected{% endif %}>
+                                    {{ tipo.tip_inv_nombre }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end mt-4 gap-2">
+                    <a href="{% url 'empleados:asignar_invitados' evento_id %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i> Volver
+                    </a>
+                    <button type="submit" class="btn btn-warning text-dark">
+                        <i class="fas fa-save me-2"></i> Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

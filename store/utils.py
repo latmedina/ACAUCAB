@@ -3,8 +3,18 @@ from .models import *
 from django.contrib.auth.hashers import make_password
 from django.db import connection
 
-def sessionCart(request):
-    cart = request.session.get('cart', {})
+
+def get_cart_key(tipo):
+    if tipo == 'evento':
+        return 'cart_evento'
+    elif tipo == 'online':
+        return 'cart_online'
+    return 'cart_fisica'  # por defecto física
+
+
+def sessionCart(request, tipo='fisica'):
+    cart_key = get_cart_key(tipo)
+    cart = request.session.get(cart_key, {})
     items = []
     order = {'get_cart_total': 0, 'get_cart_items': 0}
     cartItems = 0
@@ -30,14 +40,16 @@ def sessionCart(request):
 
     return {'cartItems': cartItems, 'order': order, 'items': items}
 
-def cartData(request):
-    cart = request.session.get('cart', {})
+
+def cartData(request, tipo='fisica'):
+    cart_key = get_cart_key(tipo)
+    cart = request.session.get(cart_key, {})
     items = []
     order = {'get_cart_total': 0, 'get_cart_items': 0}
     cartItems = 0
 
     for prese_id_str, quantity in cart.items():
-        if not prese_id_str.strip().isdigit():  # ← evita errores con claves vacías o inválidas
+        if not prese_id_str.strip().isdigit():  # evita errores con claves vacías o inválidas
             continue
 
         try:
@@ -59,20 +71,20 @@ def cartData(request):
             continue
 
     return {'cartItems': cartItems, 'order': order, 'items': items}
-
 
 
 def guestOrder(request, data):
-	name = data['form']['name']
-	email = data['form']['email']
-	cookieData = cookieCart(request)
-	items = cookieData['items']
+    name = data['form']['name']
+    email = data['form']['email']
+    cookieData = cookieCart(request)
+    items = cookieData['items']
 
-	# Puedes implementar una tabla para guardar info de clientes si quieres persistencia
-	# Por ahora simulamos que se guarda
-	print(f"Simulando creación de pedido para invitado: {name} - {email}")
-	
-	return None, None
+    # Puedes implementar una tabla para guardar info de clientes si quieres persistencia
+    # Por ahora simulamos que se guarda
+    print(f"Simulando creación de pedido para invitado: {name} - {email}")
+
+    return None, None
+
 
 def crear_usuario_sql(username, email, password, tipo, id_entidad, emp_car_id=None, first_name='', last_name=''):
     hashed_password = make_password(password)
@@ -88,6 +100,7 @@ def crear_usuario_sql(username, email, password, tipo, id_entidad, emp_car_id=No
             last_name
         ])
 
+
 def modificar_usuario_sql(id_usuario, username, email, password, first_name, last_name):
     if password:
         password = make_password(password)
@@ -100,6 +113,7 @@ def modificar_usuario_sql(id_usuario, username, email, password, first_name, las
             first_name,
             last_name
         ])
+
 
 def eliminar_usuario_sql(id_usuario):
     print(f"Llamando procedimiento eliminar_usuario con ID: {id_usuario}")
