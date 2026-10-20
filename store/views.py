@@ -2494,7 +2494,7 @@ def vista_factura_directa(request, tipo, venta_id):
 
     except Exception as e:
         print(f"Error al generar factura directa: {e}")
-        return HttpResponse(f"<h1>Error al generar la factura</h1><p>{e}</p>", status=500)
+        return HttpResponse("<h1>Error al generar la factura</h1><p>Ocurrió un error interno.</p>", status=500)
     
 def eventos_disponibles_view(request):
     """Mostrar todos los eventos disponibles para comprar boletos"""
@@ -2651,4 +2651,4 @@ def vista_orden_compra_directa(request, orden_id):
     except Exception as e:
         # Manejo de errores
         print(f"Error al generar la orden de compra directa: {e}")
-        return HttpResponse(f"<h1>Error al generar la orden</h1><p>{e}</p>", status=500)
+        return HttpResponse("<h1>Error al generar la orden</h1><p>Ocurrió un error interno.</p>", status=500)
